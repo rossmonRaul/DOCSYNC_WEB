@@ -4,6 +4,16 @@ import { AppStore } from '../../redux/Store';
 import '../../css/Topbar.css';
 import { FaRegBell } from 'react-icons/fa';
 import { Logout } from '../logout';
+import Button from "react-bootstrap/Button";
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
+import Nav from "react-bootstrap/Nav";
+import Navbar from "react-bootstrap/Navbar";
+import NavDropdown from "react-bootstrap/NavDropdown";
+import { FaDownload, FaUpload,FaSearch } from "react-icons/fa";
+import { MdDocumentScanner } from "react-icons/md";
+import icono from "../../assets/icono.png";
+import { AiOutlineFileSearch } from "react-icons/ai";
 
 const Topbar: React.FC = () => {
     const [showOptions, setShowOptions] = useState(false);
@@ -21,34 +31,40 @@ const Topbar: React.FC = () => {
     };
     
     return (
-        <div className="top-bar">
-            <div className="user-info">
-            <div className="notifications">
-                    <FaRegBell onClick={toggleNotifications} /> {/* Icono de notificaciones */}
-                    {/* Mostrar las notificaciones si showNotifications es true */}
-                    {showNotifications && notifications.length >= 0 && (
-                        <div className="notification-list">
-                            <h3>Notificaciones:</h3>
-                            <ul>
-                                {notifications.map((notification, index) => (
-                                    <li key={index}>{notification}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
+        <Navbar
+         style={{backgroundColor: "#f2f2f2"}}
+      >
+        <Container fluid>
+          <Navbar.Brand href="#">
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="navbarScroll" />
+          <Navbar.Collapse id="navbarScroll">
+            <Nav
+             style={{width:"100%"}}
+              navbarScroll
+            >
+              <Nav.Link className="nav-link-custom" href="#action2">
+                <div className="nav-icon-text" style={{width:"200px"}}>
+                  <FaUpload size={30} style={{ marginRight: "5px" }} />
+                  Carga de archivo
                 </div>
-
-                <div className="user-name">{userState.nombre}</div>
-
-                <div className="user-avatar" onClick={handleAvatarClick}>
-                {showOptions && (
-                    <div className="avatar-options">
-                        <Logout/>
-                    </div>
-                )}
+              </Nav.Link>
+              <Nav.Link className="nav-link-custom" href="#action1">
+                <div className="nav-icon-text" style={{width:"200px"}}>
+                  <MdDocumentScanner size={30} style={{ marginRight: "5px" }} />
+                  Carga desde el scanner
                 </div>
-            </div>
-        </div>
+              </Nav.Link>
+              <Nav.Link className="nav-link-custom" href="#action1">
+                <div className="nav-icon-text"  style={{width:"200px"}}>
+                  <AiOutlineFileSearch size={30} style={{ marginRight: "5px" }} />
+                  Buscar archivos
+                </div>
+              </Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
     );
 };
 

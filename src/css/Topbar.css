@@ -75,6 +75,50 @@
     margin-bottom: 5px;
 }
 
+.nav-link-custom {
+    color: "243340" !important; /* Asegúrate de que los enlaces no sean opacos */
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* Para poner el icono sobre el texto */
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .nav-icon-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color:#fff;
+    background-color: #243340; 
+  padding: 10px;
+  border-radius: 8px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); 
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+  .brand-content {
+    display: flex;
+    align-items: center; /* Centrar verticalmente */
+  }
+  
+  .brand-content img {
+    margin-right: 10px; /* Espacio entre la imagen y el texto */
+  }
+  
+  .brand-content span {
+    font-size: 1.5rem; /* Ajusta el tamaño de fuente según sea necesario */
+    font-weight: bold;
+    color: white; /* O el color que desees */
+  }
+  
+  .nav-link-custom:hover {
+
+    color: red !important; /* Color al pasar el cursor */
+  }
+
+  .nav-icon-text:hover{
+    color: #497494 !important; /* Color al pasar el cursor */
+  }
+
 /* Estilos para pantallas más pequeñas */
 @media (max-width: 768px) {
     .top-bar {

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { FaBars, FaUserAlt, FaTh, FaUserCog, FaAngleRight, FaAngleDown } from "react-icons/fa";
-import '../../css/Sidebar.css';
 import { useSelector } from 'react-redux';
 import { AppStore } from '../../redux/Store';
 import { IoBusiness } from 'react-icons/io5';

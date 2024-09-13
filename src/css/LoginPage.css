@@ -1,9 +1,8 @@
 .login-bg {
-  margin: 0;
-  padding: 0;
+
   font-family: Arial, sans-serif;
   background-image: url('../img/LoginBg.jpg');
-  background-size: cover;
+  background-size: contain;
   background-position: center;
   background-attachment: fixed;
   justify-content: center;

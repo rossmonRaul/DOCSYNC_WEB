@@ -3,7 +3,6 @@ import { UserKey, resetUser } from "../../redux/state/User"
 import { clearSessionStorage } from "../../utilities"
 import { PublicRoutes } from "../../models/routes";
 import { useDispatch } from "react-redux";
-import '../../css/Logout.css';
 import Swal from "sweetalert2";
 
 /**
@@ -33,7 +32,7 @@ function Logout() {
         });
     };
 
-    return <button className="btn-cerrar-sesion" onClick={logOut}>Cerrar Sesión</button>;
+    return <button style={{color:"black"}} className="btn-cerrar-sesion" onClick={logOut}>Cerrar Sesión</button>;
 }
 
 export default Logout;

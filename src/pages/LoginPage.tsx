@@ -12,7 +12,6 @@ import { UserKey, createUser, resetUser } from '../redux/state/User.ts';
 import { useNavigate } from 'react-router-dom';
 import { clearSessionStorage } from '../utilities/SessionStorageUtility.tsx';
 import { PrivateRoutes, PublicRoutes } from '../models/routes.ts';
-import CrearCuentaUsuario from '../components/crearcuentausuario/CrearCuentaUsuario.tsx';
 
 /**
  * Interfaz para el estado del formulario de inicio de sesión.
@@ -109,7 +108,7 @@ const FormularioCrearCuenta: React.FC<{
   return (
     <>
       <form onSubmit={handleSubmit}>
-        <CrearCuentaUsuario  toggleForm={toggleForm}/>
+        {/*<CrearCuentaUsuario  toggleForm={toggleForm}/>*/}
       </form>
       <div className='container-btn-crear-iniciar'>
         <p >¿Ya tienes una cuenta? <Button color="link" onClick={toggleForm}>Iniciar Sesión</Button></p>
@@ -212,7 +211,14 @@ const Login: React.FC = () => {
     };
 
     try {
-      const usuarioEncontrado = await ValidarUsuario(formDataLogin);
+      //const usuarioEncontrado = await ValidarUsuario(formDataLogin);
+      let usuarioEncontrado = {
+        mensaje: "Usuario encontrado.",
+        idEmpresa: "1",
+        identificacion: '123456789',
+        idRol: 2,
+        nombre: "Juan Pereira"
+      }
       if (usuarioEncontrado.mensaje === "Usuario no encontrado.") {
         Swal.fire({
           icon: 'error',
