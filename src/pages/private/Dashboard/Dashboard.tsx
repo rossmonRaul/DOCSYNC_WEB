@@ -17,7 +17,7 @@ function Dashboard() {
         <div>
           <Sidebar>
             <div className="main-container">
-              <BordeSuperior text="Dashboard Super Usuario" />
+              <BordeSuperior />
             </div>
           </Sidebar>
         </div>
@@ -26,32 +26,27 @@ function Dashboard() {
     case 2:
       dashboardContent = (
         <div>
-          <BordeSuperior text="Dashboard Administrador" />
+          <BordeSuperior />
           <Topbar />
+          <div className="content"></div>
         </div>
       );
       break;
     case 3:
       dashboardContent = (
         <div>
-          <Sidebar>
-            <div className="main-container">
-              <BordeSuperior text="Comunidad" />
-              <div className="content"></div>
-            </div>
-          </Sidebar>
+          <BordeSuperior />
+          <Topbar />
+          <div className="content"></div>
         </div>
       );
       break;
     case 4:
       dashboardContent = (
         <div>
-          <Sidebar>
-            <div className="main-container">
-              <BordeSuperior text="Comunidad" />
-              <div className="content"></div>
-            </div>
-          </Sidebar>
+          <BordeSuperior />
+          <Topbar />
+          <div className="content"></div>
         </div>
       );
       break;

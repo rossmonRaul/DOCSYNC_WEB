@@ -9,6 +9,9 @@ import Store from './redux/Store';
 import { Roles } from './models';
 import { Dashboard } from './pages/private';
 import { Spinner } from 'reactstrap';
+import CargarArchivos from './pages/private/CargarArchivos/CargarArchivos';
+import CargaScanner from './pages/private/CargaScanner/CargaScanner';
+import BuscarArchivos from './pages/private/BuscarArchivos/BuscarArchivos';
 
 // Importar componentes con lazy loading
 const Login = lazy(() => import('./pages/LoginPage'));
@@ -44,6 +47,9 @@ function App() {
 
             {/* Rutas accesibles solo para el rol de Admin */}
             <Route element={<RolGuard rol={Roles.Admin} />}>
+              <Route path={PrivateRoutes.CARGARARCHIVOS} element={<CargarArchivos />} />
+              <Route path={PrivateRoutes.CARGASCANNER} element={<CargaScanner />} />
+              <Route path={PrivateRoutes.BUSCARARCHIVOS} element={<BuscarArchivos />} />
               <Route path={PrivateRoutes.DASHBOARD} element={<Dashboard />} />
               <Route path={PrivateRoutes.ADMINISTRARFINCAS} element={<AdministrarFincas />} />
               <Route path={PrivateRoutes.ADMINISTRAREMPRESAS} element={<AdministrarEmpresas />} />

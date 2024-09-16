@@ -1,26 +1,20 @@
 import React, { useState } from "react";
-import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import { FaDownload, FaUpload } from "react-icons/fa";
-import { MdDocumentScanner } from "react-icons/md";
-import { ArrowRepeat } from "react-bootstrap-icons";
 import { useSelector } from "react-redux";
 import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
-import { FaRegBell, FaSearch } from "react-icons/fa";
+import { FaRegBell } from "react-icons/fa";
 import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
 // Interfaz para que reciba el nombre que se desea para la pantalla
-interface BorderProps {
-  text: string;
-}
+
 
 // Componente principal
-const BordeSuperior: React.FC<BorderProps> = ({ text }) => {
+const BordeSuperior: React.FC = () => {
   // Renderizado
   const [showOptions, setShowOptions] = useState(false);
   const userState = useSelector((store: AppStore) => store.user);
