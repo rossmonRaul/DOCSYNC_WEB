@@ -33,23 +33,27 @@ export const Grid: React.FC<any> = ({
   };
 
   const onRowClicked = (row: any) => {
-    //este if se valida para cuando son filas que siempre levantan un modal al darle click, caso contrario en el grid la propiedad no debe especificarse
-    if (rowModal) {
-      setId(row[idBuscar]);
-      setFilaSeleccionada(row);
-    } else {
-      if (row[idBuscar] != id) SeleccionarFila(row);
-      else {
-        DesSeleccionarFila();
+    if (setFilaSeleccionada) {
+      //este if se valida para cuando son filas que siempre levantan un modal al darle click, caso contrario en el grid la propiedad no debe especificarse
+      if (rowModal) {
+        setId(row[idBuscar]);
+        setFilaSeleccionada(row);
+      } else {
+        if (row[idBuscar] != id) SeleccionarFila(row);
+        else {
+          DesSeleccionarFila();
+        }
       }
     }
   };
 
   const SeleccionarFila = (fila: any) => {
-    const tempId = fila[idBuscar];
-    if (id !== tempId) {
-      setId(tempId);
-      setFilaSeleccionada(fila);
+    if (setFilaSeleccionada) {
+      const tempId = fila[idBuscar];
+      if (id !== tempId) {
+        setId(tempId);
+        setFilaSeleccionada(fila);
+      }
     }
   };
 
@@ -86,7 +90,7 @@ export const Grid: React.FC<any> = ({
         backgroundColor: "#9E0000",
         borderBottomColor: "#FFFFFF",
         borderRadius: "10px",
-        color:"#fff",
+        color: "#fff",
         outline: "1px solid #FFFFFF",
       },
       selectedHighlightStyle: {

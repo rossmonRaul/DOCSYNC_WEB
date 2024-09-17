@@ -6,6 +6,8 @@ import { Button, Form } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
 import { FaUpload } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
+import { FaEye } from "react-icons/fa";
 
 interface Archivo {
   id: Number;
@@ -52,7 +54,28 @@ function CargarArchivos() {
       head: "Tipo",
       sortable: true,
     },
+    {
+      id: "Acciones",
+      name: "Acciones",
+      selector: (row: Archivo) => (
+        <>
+          <Button size="sm" className="bg-secondary me-1">
+            <FaEye />
+          </Button>
+          <Button size="sm"  onClick={() => handleDeleteArchivoTabla(row.id)} className="bg-secondary">
+            <FaTrash />
+          </Button>
+        </>
+      ),
+      head: "Seleccionar",
+      sortable: false,
+    },
   ];
+
+  const handleDeleteArchivoTabla = (id: Number) => {
+    const datosFiltrados = listaArchivosTabla.filter((r) => r.id !== id);
+    setListaArchivosTabla(datosFiltrados);
+  };
 
   // Maneja el cambio de archivos
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -125,16 +148,28 @@ function CargarArchivos() {
               <Form.Label>Selecciona un archivo</Form.Label>
               <Form.Control multiple type="file" onChange={handleFileChange} />
             </Form.Group>
-            <Button type="submit" className="mt-3" variant="primary">
-              <FaUpload className="me-2" size={20} />
-              Cargar archivos seleccionados
-            </Button>
+            {listaArchivosTablaSeleccionados.length > 0 && (
+              <Button type="submit" className="mt-3" variant="primary">
+                <FaUpload className="me-2" size={20} />
+                Cargar {listaArchivosTablaSeleccionados.length > 1 &&
+                  "los"}{" "}
+                {listaArchivosTablaSeleccionados.length}{" "}
+                {listaArchivosTablaSeleccionados.length > 1
+                  ? " archivos seleccionados"
+                  : " archivo seleccionado"}
+              </Button>
+            )}
           </Form>
-          <h2 className="mt-4">Previsualización</h2>
-          <Grid
-            gridHeading={encabezadoArchivo}
-            gridData={listaArchivosTabla}
-          ></Grid>
+          {listaArchivosTabla.length > 0 && (
+            <>
+              <h2 className="mt-4">Previsualización</h2>
+              <Grid
+                gridHeading={encabezadoArchivo}
+                gridData={listaArchivosTabla}
+                selectableRows={false}
+              ></Grid>
+            </>
+          )}
         </div>
       </div>
     </>

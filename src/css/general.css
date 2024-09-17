@@ -27,6 +27,11 @@
     background-color: #9E0000 !important;
     border: none !important;
   }
+
+  .btn-action.hover{
+    background-color: green !important;
+    border: none !important;
+  }
   
   /* Estilos para el label del filtro */
   .filtro-container label {
