@@ -6,7 +6,12 @@
   }
   
   .content {
-    width: 80%;
+    width: 90%;
+    margin-left: 40px;
+    margin-top: 20px;
+  }
+
+  .title{
     margin-left: 40px;
     margin-top: 20px;
   }
