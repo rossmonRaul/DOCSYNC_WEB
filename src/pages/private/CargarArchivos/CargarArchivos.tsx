@@ -12,6 +12,16 @@ import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 
 interface Archivo {
   id: Number;
+  autor?: string;
+  asunto?: string;
+  departamento?: string;
+  confidencialidad?: string;
+  contenidoRelevante?: string;
+  noExpediente?: string;
+  noSolicitud?: string;
+  docPadre?: string;
+  docHijo?: string;
+  titulo?: string;
   archivo: File;
 }
 
@@ -23,8 +33,6 @@ function CargarArchivos() {
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
-  const [fileExtension, setFileExtension] = useState<any>("");
-  const [fileURL, setFileURL] = useState<any>("");
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -52,27 +60,62 @@ function CargarArchivos() {
       selector: (row: { archivo: File }) => row.archivo.name,
       head: "Nombre",
       sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "Autor",
+      name: "Autor",
+      cell: (row: Archivo) => (
+        <Form.Control
+          onChange={(e) => handleInputChange(row.id, "autor", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+          type="text"
+        />
+      ),
+      head: "Autor",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "Asunto",
+      name: "Asunto",
+      cell: (row: Archivo) => (
+        <Form.Control
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+          type="text"
+        />
+      ),
+      head: "Nombre",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
     },
     {
       id: "Acciones",
       name: "Acciones",
       selector: (row: Archivo) => (
-        <>
+        <div style={{ paddingTop: "5px", paddingBottom: "5px" }}>
           <Button
             onClick={() => handleVerArchivo(row)}
             size="sm"
-            className="bg-secondary me-1"
+            className="bg-secondary me-2"
           >
             <FaEye />
           </Button>
           <Button
             size="sm"
             onClick={() => handleDeleteArchivoTabla(row.id)}
-            className="bg-secondary"
+            className="bg-secondary me-2"
           >
             <FaTrash />
           </Button>
-        </>
+        </div>
       ),
       head: "Seleccionar",
       sortable: false,
@@ -85,10 +128,6 @@ function CargarArchivos() {
   };
 
   const handleVerArchivo = (archivo: Archivo) => {
-    const url = URL.createObjectURL(archivo.archivo);
-    const extension = archivo.archivo.name.split(".").pop();
-    setFileURL(url);
-    setFileExtension(extension);
     setDocumentoVer(archivo);
   };
 
@@ -102,6 +141,23 @@ function CargarArchivos() {
     if (documentoVer?.id === id) {
       setDocumentoVer(undefined);
     }
+  };
+
+  const handleInputChange = (
+    rowId: Number,
+    columnName: string,
+    value: string
+  ) => {
+    setListaArchivosTabla(
+      listaArchivosTabla.map((row) =>
+        row.id === rowId ? { ...row, [columnName]: value } : row
+      )
+    );
+    setListaArchivosTablaSeleccionados(
+      listaArchivosTablaSeleccionados.map((row) =>
+        row.id === rowId ? { ...row, [columnName]: value } : row
+      )
+    );
   };
 
   // Maneja el cambio de archivos
@@ -121,6 +177,16 @@ function CargarArchivos() {
             const file: Archivo = {
               id: consecutivo++,
               archivo: element,
+              autor: "",
+              asunto: "",
+              confidencialidad: "",
+              contenidoRelevante: "",
+              departamento: "",
+              docHijo: "",
+              docPadre: "",
+              noExpediente: "",
+              noSolicitud: "",
+              titulo: "",
             };
             archivosAux.push(file);
             consecutivo = consecutivo++;
@@ -184,33 +250,33 @@ function CargarArchivos() {
                     onChange={handleFileChange}
                   />
                 </Form.Group>
-              </Form>
-              {listaArchivosTabla.length > 0 && (
-                <>
-                  <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
-                    {listaArchivosTablaSeleccionados.length > 0 && (
-                      <Button
-                        type="submit"
-                        className="mt-3 mb-0 btn-save"
-                        variant="primary"
-                      >
-                        <FaUpload className="me-2" size={20} />
-                        Guardar
-                      </Button>
-                    )}
-                    <h4 className="mt-4 ">
-                      Archivos seleccionados:{" "}
-                      {listaArchivosTablaSeleccionados.length}
-                    </h4>
-                  </div>
+                {listaArchivosTabla.length > 0 && (
+                  <>
+                    <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
+                      {listaArchivosTablaSeleccionados.length > 0 && (
+                        <Button
+                          type="submit"
+                          className="mt-3 mb-0 btn-save"
+                          variant="primary"
+                        >
+                          <FaUpload className="me-2" size={20} />
+                          Guardar
+                        </Button>
+                      )}
+                      <h4 className="mt-4 ms-auto">
+                        Archivos seleccionados:{" "}
+                        {listaArchivosTablaSeleccionados.length}
+                      </h4>
+                    </div>
 
-                  <Grid
-                    gridHeading={encabezadoArchivo}
-                    gridData={listaArchivosTabla}
-                    selectableRows={false}
-                  ></Grid>
-                </>
-              )}
+                    <Grid
+                      gridHeading={encabezadoArchivo}
+                      gridData={listaArchivosTabla}
+                      selectableRows={false}
+                    ></Grid>
+                  </>
+                )}
+              </Form>
             </div>
           </div>
         </div>

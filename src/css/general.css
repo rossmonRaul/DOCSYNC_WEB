@@ -30,12 +30,12 @@
 
   .btn-save{
     background-color: #497494 !important;
-    border: none !important;
+    border: black !important;
   }
 
   .btn-cancel{
     background-color: #9E0000 !important;
-    border: none !important;
+    border: black !important;
   }
 
   .btn-action.hover{
