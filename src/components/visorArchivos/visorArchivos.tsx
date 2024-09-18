@@ -62,7 +62,7 @@ export const VisorArchivos: React.FC<any> = ({ documento, cerrar }) => {
     <>
       <div className="mb-2 d-flex justify-content-between align-items-center">
         <h4 className="mb-0">Visualización del archivo: {documento.name}</h4>
-        <Button onClick={() => cerrar()}><AiOutlineClose/></Button>
+        <Button className="btn-cancel" onClick={() => cerrar()}><AiOutlineClose/></Button>
       </div>
 
       {error && <p>No se ha podido mostrar el archivo</p>}

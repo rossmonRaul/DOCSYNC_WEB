@@ -34,7 +34,7 @@ function CargarArchivos() {
     {
       id: "Seleccionar",
       name: "Seleccionar",
-      selector: (row: Archivo) => (
+      cell: (row: Archivo) => (
         <Form.Check
           type="checkbox"
           checked={listaArchivosTablaSeleccionados.some((r) => r.id === row.id)}
@@ -43,6 +43,8 @@ function CargarArchivos() {
       ),
       head: "Seleccionar",
       sortable: false,
+      width: "150px",
+      center: "true",
     },
     {
       id: "nombre",
@@ -74,6 +76,7 @@ function CargarArchivos() {
       ),
       head: "Seleccionar",
       sortable: false,
+      width: "150px",
     },
   ];
 
@@ -181,23 +184,26 @@ function CargarArchivos() {
                     onChange={handleFileChange}
                   />
                 </Form.Group>
-               
               </Form>
               {listaArchivosTabla.length > 0 && (
                 <>
-                <div className="mb-2 d-flex justify-content-between align-items-center">
-                <h4 className="mt-4 ">
-                    Archivos seleccionados:{" "}
-                    {listaArchivosTablaSeleccionados.length}
-                  </h4>
-                  {listaArchivosTablaSeleccionados.length > 0 && (
-                  <Button  type="submit" className="mt-3 mb-0" variant="primary">
-                    <FaUpload className="me-2" size={20} />
-                    Guardar
-                  </Button>
-                )}
-                </div>
-                 
+                  <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
+                    {listaArchivosTablaSeleccionados.length > 0 && (
+                      <Button
+                        type="submit"
+                        className="mt-3 mb-0 btn-save"
+                        variant="primary"
+                      >
+                        <FaUpload className="me-2" size={20} />
+                        Guardar
+                      </Button>
+                    )}
+                    <h4 className="mt-4 ">
+                      Archivos seleccionados:{" "}
+                      {listaArchivosTablaSeleccionados.length}
+                    </h4>
+                  </div>
+
                   <Grid
                     gridHeading={encabezadoArchivo}
                     gridData={listaArchivosTabla}

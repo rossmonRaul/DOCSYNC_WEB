@@ -28,7 +28,12 @@
     margin-top: 20px; /* Espacio entre el botón y el filtro */
   }
 
-  .btn{
+  .btn-save{
+    background-color: #497494 !important;
+    border: none !important;
+  }
+
+  .btn-cancel{
     background-color: #9E0000 !important;
     border: none !important;
   }
