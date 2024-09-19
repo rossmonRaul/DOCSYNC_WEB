@@ -211,13 +211,14 @@ const Login: React.FC = () => {
     };
 
     try {
-      //const usuarioEncontrado = await ValidarUsuario(formDataLogin);
+      const usuarioEncontradoApi = await ValidarUsuario(formDataLogin);
       let usuarioEncontrado = {
         mensaje: "Usuario encontrado.",
         idEmpresa: "1",
         identificacion: '123456789',
         idRol: 2,
-        nombre: "Juan Pereira"
+        nombre: "Juan Pereira",
+        token:usuarioEncontradoApi.token
       }
       if (usuarioEncontrado.mensaje === "Usuario no encontrado.") {
         Swal.fire({
@@ -230,6 +231,7 @@ const Login: React.FC = () => {
         //localstorage datos guardados
         localStorage.setItem('empresaUsuario', usuarioEncontrado.idEmpresa); 
         localStorage.setItem('identificacionUsuario', usuarioEncontrado.identificacion);
+        localStorage.setItem('token', usuarioEncontrado.token);
 
         navigate(`/${PrivateRoutes.PRIVATE}`, { replace: true });
         setIsLoggedIn(true);

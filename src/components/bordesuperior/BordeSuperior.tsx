@@ -80,7 +80,9 @@ const BordeSuperior: React.FC = () => {
                 title="Más opciones"
                 id="navbarScrollingDropdown"
               >
-                <NavDropdown.Item href="#action3">Catálogos</NavDropdown.Item>
+                <NavDropdown.Item href="#action3">Catálogos</NavDropdown.Item>           
+                <NavDropdown.Item href="catalogo-personas">Personas</NavDropdown.Item>
+                <NavDropdown.Divider />
                 <NavDropdown.Item href="#action4">
                   Historial
                 </NavDropdown.Item>

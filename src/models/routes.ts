@@ -12,5 +12,6 @@ export const PrivateRoutes = {
     ADMINISTRARFINCAS: 'administrarfincas',
     CARGARARCHIVOS: 'cargar-archivos',
     CARGASCANNER : 'cargar-scanner',
-    BUSCARARCHIVOS: 'buscar-archivos'
+    BUSCARARCHIVOS: 'buscar-archivos',
+    CATALOGOPERSONAS: 'catalogo-personas',
 };
