@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import BordeSuperior from "../../../components/bordesuperior/BordeSuperior";
-import Topbar from "../../../components/topbar/Topbar";
+import NavbarMenu from "../../../components/navbarMenu/NavbarMenu";
 import "../../../css/general.css";
 import { Button, Col, Form , Modal, Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
@@ -210,8 +209,6 @@ function CatalogoPersonas() {
 
   return (
     <>
-      <BordeSuperior />
-      <Topbar />
       <h1 className="title">Catálogo de Personas</h1>
       <div style={{ padding: "20px" }}>
         {/* Botón para abrir el modal de agregar persona */}

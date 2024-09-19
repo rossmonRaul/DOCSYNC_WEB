@@ -1,6 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-import BordeSuperior from "../../../components/bordesuperior/BordeSuperior";
-import Topbar from "../../../components/topbar/Topbar";
+import NavbarMenu from "../../../components/navbarMenu/NavbarMenu";
 import "../../../css/general.css";
 import { Button, Form } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
@@ -9,6 +8,7 @@ import { FaUpload } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
+import useWebWorker from "../../../hooks/useWebWorker";
 
 interface Archivo {
   id: Number;
@@ -25,14 +25,27 @@ interface Archivo {
   archivo: File;
 }
 
+const fibonacciWorkerFunction = () => {
+  onmessage = function (e: MessageEvent) {
+    const n = e.data;
+    const fib = (n: number): number => {
+      if (n <= 1) return n;
+      return fib(n - 1) + fib(n - 2);
+    };
+    postMessage(fib(n));
+  };
+};
+
 // Componente funcional que representa la página de carga de archivops
 function CargarArchivos() {
   const [files, setFiles] = useState<File[]>([]);
   const [idArchivoGenerado, setIdArchivoGenerado] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [number, setNumber] = useState<number>(0);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
+  const { result, error, loading } = useWebWorker(fibonacciWorkerFunction, number);
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -329,8 +342,6 @@ function CargarArchivos() {
 
   return (
     <>
-      <BordeSuperior />
-      <Topbar />
       <h1 className="title">Cargar archivos</h1>
       <div className="content">
         {/* Primera mitad de la pantalla */}

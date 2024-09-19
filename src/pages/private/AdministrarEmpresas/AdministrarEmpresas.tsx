@@ -7,9 +7,9 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../../components/sidebar/Sidebar";
 import '../../../css/AdministacionAdministradores.css';
 import TableResponsive from "../../../components/table/table.tsx";
-import BordeSuperior from "../../../components/bordesuperior/BordeSuperior.tsx";
+import NavbarMenu from "../../../components/navbarMenu/NavbarMenu.tsx";
 import Modal from "../../../components/modal/Modal.tsx";
-import Topbar from "../../../components/topbar/Topbar.tsx";
+import NavbarMenu from "../../../components/navbarMenu/NavBarMenu.tsx";
 import { CambiarEstadoEmpresas, ObtenerEmpresas } from "../../../servicios/ServicioEmpresas.ts";
 import EditarEmpresa from "../../../components/empresa/EditarEmpresa.tsx";
 import CrearEmpresa from "../../../components/empresa/CrearEmpresa.tsx";
@@ -149,8 +149,8 @@ function AdministrarEmpresas() {
     return (
         <Sidebar>
             <div className="main-container">
-                <Topbar />
-                <BordeSuperior text="Administrar Empresas" />
+                <NavbarMenu />
+                <NavbarMenu text="Administrar Empresas" />
                 <div className="content">
                     <button onClick={() => abrirCerrarModalInsertar()} className="btn-crear">Crear Empresa</button>
                     <div className="filtro-container">
