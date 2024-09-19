@@ -1,10 +1,22 @@
 export const ProcesarDatosApi = async (method: string, url: string, data: any) => {
+    const storedToken = localStorage.getItem('token');
+
+    let token
+    if (storedToken) {
+        token = storedToken
+    }
+    let headers: Record<string, string> = {
+        "Content-type": "application/json;charset=UTF-8",
+        'Accept': 'application/json',
+    };
+    // Agregar token al encabezado de autorización si está presente
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const myInit: RequestInit = {
         method: method,
-        headers: {
-            "Content-type": "application/json;charset=UTF-8",
-            'Accept': 'application/json',
-        },
+        headers: headers,
         mode: 'cors',
         cache: 'default',
     };
