@@ -5,7 +5,9 @@ import "../../../css/general.css";
 import { Button, Col, Form , Modal, Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { ObtenerPersonas, CrearPersona, EliminarPersona, ActualizarPersona } from "../../../servicios/ServicioPersonas";
-import { FaTrash,FaEye,FaPlus } from "react-icons/fa";
+import { FaTrash ,FaPlus } from "react-icons/fa";
+import { VscEdit } from "react-icons/vsc";
+
 import { AiOutlineClose  } from "react-icons/ai";
 import { RiSaveFill } from "react-icons/ri";
 import Swal from "sweetalert2";
@@ -166,12 +168,24 @@ function CatalogoPersonas() {
 
   // Encabezados de la tabla con acciones
   const encabezadoPersonas = [
-    { id: "nombreCompleto", name: "Nombre", selector: (row: Persona) => row.nombreCompleto, sortable: true, },
-    { id: "identificacion", name: "Identificación", selector: (row: Persona) => row.identificacion, sortable: true, },
-    { id: "departamento", name: "Departamento", selector: (row: Persona) => row.departamento, sortable: true },
-    { id: "puesto", name: "Puesto", selector: (row: Persona) => row.puesto, sortable: true },
-    { id: "telefono", name: "Teléfono", selector: (row: Persona) => row.telefono, sortable: true },
-    { id: "email", name: "Correo", selector: (row: Persona) => row.email, sortable: true },
+    { id: "nombreCompleto", name: "Nombre", selector: (row: Persona) => row.nombreCompleto, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "identificacion", name: "Identificación", selector: (row: Persona) => row.identificacion, sortable: true, style: {
+      fontSize: "1.2em",
+    },},
+    { id: "departamento", name: "Departamento", selector: (row: Persona) => row.departamento, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "puesto", name: "Puesto", selector: (row: Persona) => row.puesto, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "telefono", name: "Teléfono", selector: (row: Persona) => row.telefono, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "email", name: "Correo", selector: (row: Persona) => row.email, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
     {
       id: "acciones",
       name: "Acciones",
@@ -181,7 +195,7 @@ function CatalogoPersonas() {
             onClick={() => editarPersona(row)}
             size="sm"
             className="bg-secondary me-1">
-            <FaEye />
+            <VscEdit  />
           </Button>
           <Button
             size="sm"
