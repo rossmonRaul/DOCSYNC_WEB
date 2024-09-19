@@ -61,7 +61,7 @@ function CargarArchivos() {
       head: "Nombre",
       sortable: true,
       style: {
-        fontSize: "1.5em",
+        fontSize: "1.2em",
       },
     },
     {
@@ -85,12 +85,117 @@ function CargarArchivos() {
       name: "Asunto",
       cell: (row: Archivo) => (
         <Form.Control
-          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          onChange={(e) => handleInputChange(row.id, "autor", e.target.value)}
           style={{ paddingTop: "5px", paddingBottom: "5px" }}
           type="text"
         />
       ),
+      head: "Asunto",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "Departamento",
+      name: "Departamento",
+      cell: (row: Archivo) => (
+        <Form.Select
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+        />
+      ),
       head: "Nombre",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "Confidencialidad",
+      name: "Confidencialidad",
+      cell: (row: Archivo) => (
+        <Form.Check
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+        />
+      ),
+      head: "Confidencialidad",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "ContenidoRelevante",
+      name: "Cont. Relevante",
+      cell: (row: Archivo) => (
+        <Form.Control
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+        />
+      ),
+      head: "Cont. Relevante",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "NoExpediente",
+      name: "No. Expediente",
+      cell: (row: Archivo) => (
+        <Form.Control
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+        />
+      ),
+      head: "No. Expediente",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "NoExpediente",
+      name: "No. Solicitud",
+      cell: (row: Archivo) => (
+        <Form.Control
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+        />
+      ),
+      head: "No. Solicitud",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "DocPadre",
+      name: "Doc. Padre",
+      cell: (row: Archivo) => (
+        <Form.Control
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+        />
+      ),
+      head: "Doc. Padre",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "DocHijo",
+      name: "DocHijo",
+      cell: (row: Archivo) => (
+        <Form.Control
+          onChange={(e) => handleInputChange(row.id, "asunto", e.target.value)}
+          style={{ paddingTop: "5px", paddingBottom: "5px" }}
+        />
+      ),
+      head: "DocHijo",
       sortable: true,
       style: {
         fontSize: "1.5em",
@@ -227,11 +332,9 @@ function CargarArchivos() {
       <BordeSuperior />
       <Topbar />
       <h1 className="title">Cargar archivos</h1>
-      <div style={{ display: "flex", height: "100vh" }}>
+      <div className="content">
         {/* Primera mitad de la pantalla */}
-        <div
-          style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
-        >
+        <div className="row">
           {showAlert && (
             <AlertDismissible
               indicador={mensajeRespuesta.indicador}
@@ -239,56 +342,56 @@ function CargarArchivos() {
               setShow={setShowAlert}
             />
           )}
-          <div>
-            <div className="content">
-              <Form onSubmit={cargarArchivos}>
-                <Form.Group>
-                  <Form.Label>Selecciona un archivo</Form.Label>
-                  <Form.Control
-                    multiple
-                    type="file"
-                    onChange={handleFileChange}
-                  />
-                </Form.Group>
-                {listaArchivosTabla.length > 0 && (
-                  <>
-                    <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
-                      {listaArchivosTablaSeleccionados.length > 0 && (
-                        <Button
-                          type="submit"
-                          className="mt-3 mb-0 btn-save"
-                          variant="primary"
-                        >
-                          <FaUpload className="me-2" size={20} />
-                          Guardar
-                        </Button>
-                      )}
-                      <h4 className="mt-4 ms-auto">
-                        Archivos seleccionados:{" "}
-                        {listaArchivosTablaSeleccionados.length}
-                      </h4>
-                    </div>
-
+          <div className={`col-${documentoVer ? "6" : "12"}`}>
+            <Form onSubmit={cargarArchivos}>
+              <Form.Group>
+                <Form.Label>Selecciona un archivo</Form.Label>
+                <Form.Control
+                  multiple
+                  type="file"
+                  onChange={handleFileChange}
+                />
+              </Form.Group>
+              {listaArchivosTabla.length > 0 && (
+                <>
+                  <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
+                    {listaArchivosTablaSeleccionados.length > 0 && (
+                      <Button
+                        type="submit"
+                        className="mt-3 mb-0 btn-save"
+                        variant="primary"
+                      >
+                        <FaUpload className="me-2" size={20} />
+                        Guardar
+                      </Button>
+                    )}
+                    <h4 className="mt-4 ms-auto">
+                      Archivos seleccionados:{" "}
+                      {listaArchivosTablaSeleccionados.length}
+                    </h4>
+                  </div>
+                  <div>
                     <Grid
                       gridHeading={encabezadoArchivo}
                       gridData={listaArchivosTabla}
                       selectableRows={false}
                     ></Grid>
-                  </>
-                )}
-              </Form>
+                  </div>
+                </>
+              )}
+            </Form>
+          </div>
+
+          {documentoVer?.archivo && (
+            <div className="col-6">
+              <VisorArchivos
+                key={documentoVer}
+                documento={documentoVer.archivo}
+                cerrar={handleVisor}
+              />
             </div>
-          </div>
+          )}
         </div>
-        {documentoVer?.archivo && (
-          <div style={{ flex: 1, padding: "20px" }}>
-            <VisorArchivos
-              key={documentoVer}
-              documento={documentoVer.archivo}
-              cerrar={handleVisor}
-            />
-          </div>
-        )}
       </div>
     </>
   );

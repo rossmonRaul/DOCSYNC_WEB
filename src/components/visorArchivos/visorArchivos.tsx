@@ -42,32 +42,39 @@ export const VisorArchivos: React.FC<any> = ({ documento, cerrar }) => {
   if (!tiposNoSoportados.includes(fileExtension)) {
     return (
       <>
+        <div>
+          <div className="mb-2 d-flex justify-content-between align-items-center">
+            <h4 className="mb-0">
+              Visualización del archivo: {documento.name}
+            </h4>
+            <Button className="btn-cancel" onClick={() => cerrar()}>
+              <AiOutlineClose />
+            </Button>
+          </div>
+
+          {error && <p>No se ha podido mostrar el archivo</p>}
+
+          <FileViewer
+            fileType={fileExtension}
+            filePath={fileURL}
+            errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
+            onError={() => setError("error")}
+          />
+        </div>{" "}
+      </>
+    );
+  } else {
+    return (
+      <>
         <div className="mb-2 d-flex justify-content-between align-items-center">
           <h4 className="mb-0">Visualización del archivo: {documento.name}</h4>
           <Button className="btn-cancel" onClick={() => cerrar()}>
             <AiOutlineClose />
           </Button>
         </div>
-
-        {error && <p>No se ha podido mostrar el archivo</p>}
-        <FileViewer
-          fileType={fileExtension}
-          filePath={fileURL}
-          errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
-          onError={() => setError("error")}
-        />
-      </>
-    );
-  } else {
-    return (
-      <>
-       <div className="mb-2 d-flex justify-content-between align-items-center">
-          <h4 className="mb-0">Visualización del archivo: {documento.name}</h4>
-          <Button className="btn-cancel" onClick={() => cerrar()}>
-            <AiOutlineClose />
-          </Button>
-        </div>
-        <p style={{color:"#9E0000"}}>El archivo ha sido descargado ya que posee un formato no soportado.</p>
+        <p style={{ color: "#9E0000" }}>
+          El archivo ha sido descargado ya que posee un formato no soportado.
+        </p>
         <iframe
           src={fileURL}
           width="100%"
