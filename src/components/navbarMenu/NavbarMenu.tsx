@@ -109,6 +109,11 @@ const NavbarMenu: React.FC = () => {
                     Personas
                   </Nav.Link>
                 </NavDropdown.Item>
+                <NavDropdown.Item href="catalogo-estados">
+                  <Nav.Link as={Link} to={"catalogo-estados"}>
+                    Estados
+                  </Nav.Link>
+                </NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item href="#action4">Historial</NavDropdown.Item>
                 <NavDropdown.Divider />
@@ -116,7 +121,14 @@ const NavbarMenu: React.FC = () => {
                   Firma Digital
                 </NavDropdown.Item>
               </NavDropdown>
-              <div style={{display:"flex",justifyContent:"center",alignContent:"center",alignItems:"center"}}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 <div className="user-name">{userState.nombre}</div>
                 <div className="user-avatar" onClick={handleAvatarClick}>
                   {showOptions && (

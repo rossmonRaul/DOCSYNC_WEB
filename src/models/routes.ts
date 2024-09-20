@@ -14,4 +14,5 @@ export const PrivateRoutes = {
     CARGASCANNER : 'cargar-scanner',
     BUSCARARCHIVOS: 'buscar-archivos',
     CATALOGOPERSONAS: 'catalogo-personas',
+    CATALOGOESTADOS: 'catalogo-estados',
 };

@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import "./App.css";
-import NavbarMenu from "./components/navbarMenu/NavBarMenu";
+import NavbarMenu from "./components/navbarMenu/NavbarMenu";
 import { AppStore } from "./redux/Store";
 import { useSelector } from "react-redux";
 

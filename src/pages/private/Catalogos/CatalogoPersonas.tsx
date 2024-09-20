@@ -204,6 +204,7 @@ function CatalogoPersonas() {
           </Button>      
         </>
       ),
+      width:"120px",
     },
   ];
 
