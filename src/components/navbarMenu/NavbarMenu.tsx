@@ -108,10 +108,6 @@ const NavbarMenu: React.FC = () => {
                   style={{ margin: 10, marginLeft: 15 }}
                   title="Catálogos"
                 >
-                  <NavDropdown
-                    style={{ margin: 10, marginLeft: 15 }}
-                    title="Catálogos"
-                  >
                     {subMenuCatalogos.map((item, index) => {
                       if (!item.roles || item.roles.includes(userState.idRol)) {
                         return (
@@ -123,7 +119,6 @@ const NavbarMenu: React.FC = () => {
                         );
                       }
                     })}
-                  </NavDropdown>
                 </NavDropdown>
 
                 <NavDropdown.Divider />
