@@ -23,6 +23,7 @@ import CatalogoPersonas from "./pages/private/Catalogos/CatalogoPersonas.tsx";
 import AuthGuard from "./guards/AuthGuard.tsx";
 import Login from "./pages/LoginPage.tsx";
 import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
+import CatalogoTiposDocumentos from "./pages/private/Catalogos/CatalogoTiposDocumentos.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -54,6 +55,10 @@ const router = createBrowserRouter(
         <Route
           path={PrivateRoutes.CATALOGOESTADOS}
           element={<CatalogoEstados />}
+        />
+         <Route
+          path={PrivateRoutes.CATALOGOTIPOSDOCUMENTOS}
+          element={<CatalogoTiposDocumentos />}
         />
       </Route>
     </Route>

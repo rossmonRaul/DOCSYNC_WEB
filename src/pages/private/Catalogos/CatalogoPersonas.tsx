@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form, Modal, Row } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
+import CustomModal from "../../../components/modal/CustomModal"; 
+
 import { Grid } from "../../../components/table/tabla";
-import {
-  ObtenerPersonas,
-  CrearPersona,
-  EliminarPersona,
-  ActualizarPersona,
-} from "../../../servicios/ServicioPersonas";
+import {ObtenerPersonas,CrearPersona,EliminarPersona,ActualizarPersona,} from "../../../servicios/ServicioPersonas";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 
@@ -269,126 +266,105 @@ function CatalogoPersonas() {
           gridData={listaPersonas}
           handle={handleModal}
           buttonVisible={true}
-          filterColumns={[
-            "nombreCompleto",
-            "identificacion",
-            "departamento",
-            "puesto",
-            "telefono",
-            "email",
-          ]}
+          filterColumns={["nombreCompleto","identificacion","departamento", "puesto","telefono","email",]}
           selectableRows={false}
         ></Grid>
       </div>
 
       {/* Modal para agregar o editar una persona */}
-      <Modal show={showModal} onHide={handleModal} size={"lg"}>
-        <Modal.Header closeButton={false} className="d-flex align-items-center">
-          <Modal.Title>
-            {isEditing ? "Editar Persona" : "Agregar Persona"}
-          </Modal.Title>
-          <Button className="ms-auto btn-cancel" onClick={handleModal}>
-            <AiOutlineClose />
-          </Button>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md={6}>
-                <Form.Group controlId="formNombreCompleto">
-                  <Form.Label>Nombre Completo</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="nombreCompleto"
-                    value={nuevaPersona.nombreCompleto}
-                    onChange={handleChange}
-                    required
-                    maxLength={150}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group controlId="formIdentificacion">
-                  <Form.Label>Identificación</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="identificacion"
-                    value={nuevaPersona.identificacion || ""} // Valor opcional
-                    onChange={handleChange}
-                    maxLength={50}
-                    pattern="\d*"
-                    title="Solo se permiten números"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group controlId="formDepartamento">
-                  <Form.Label>Departamento</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="departamento"
-                    value={nuevaPersona.departamento}
-                    onChange={handleChange}
-                    maxLength={100}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group controlId="formPuesto">
-                  <Form.Label>Puesto</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="puesto"
-                    value={nuevaPersona.puesto}
-                    onChange={handleChange}
-                    maxLength={100}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
-                <Form.Group controlId="formTelefono">
-                  <Form.Label>Teléfono</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="telefono"
-                    value={nuevaPersona.telefono}
-                    onChange={handleChange}
-                    maxLength={12}
-                    pattern="\d*"
-                    title="Solo se permiten números"
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group controlId="formEmail">
-                  <Form.Label>Correo</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={nuevaPersona.email}
-                    onChange={handleChange}
-                    required
-                    maxLength={100}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Button
-              variant="primary"
-              type="submit"
-              className="mt-3 mb-0 btn-save"
-            >
-              <RiSaveFill className="me-2" size={24} />
-              {isEditing ? "Actualizar" : "Guardar"}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+      <CustomModal
+        show={showModal}
+        onHide={handleModal}
+        title={isEditing ? "Editar Persona" : "Agregar Persona"}
+        showSubmitButton={true}
+        submitButtonLabel={isEditing ? "Actualizar" : "Guardar"}
+        formId="formPersona"
+      >
+        <Form id="formPersona" onSubmit={handleSubmit}>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formNombreCompleto">
+                <Form.Label>Nombre Completo</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="nombreCompleto"
+                  value={nuevaPersona.nombreCompleto}
+                  onChange={handleChange}
+                  required
+                  maxLength={150}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formIdentificacion">
+                <Form.Label>Identificación</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="identificacion"
+                  value={nuevaPersona.identificacion || ""} // Valor opcional
+                  onChange={handleChange}
+                  maxLength={15}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formDepartamento">
+                <Form.Label>Departamento</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="departamento"
+                  value={nuevaPersona.departamento}
+                  onChange={handleChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formPuesto">
+                <Form.Label>Puesto</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="puesto"
+                  value={nuevaPersona.puesto}
+                  onChange={handleChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formTelefono">
+                <Form.Label>Teléfono</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="telefono"
+                  value={nuevaPersona.telefono}
+                  onChange={handleChange}
+                  maxLength={12}
+                  pattern="\d*"
+                  title="Solo se permiten números"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formEmail">
+                <Form.Label>Correo</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={nuevaPersona.email}
+                  onChange={handleChange}
+                  required
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        </Form>
+      </CustomModal>
     </>
   );
 }

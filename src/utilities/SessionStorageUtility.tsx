@@ -9,7 +9,7 @@ export const clearSessionStorage = (key: string) => {
 
     if (token) {
         // Verificar si el token ha expirado
-        const tokenData = JSON.parse(atob(token.split('.')[1])); // Decodificar el token JWT
+       /* const tokenData = JSON.parse(atob(token.split('.')[1])); // Decodificar el token JWT
         const tokenExpiration = tokenData.exp * 1000; // Convertir la fecha de expiración a milisegundos
         const currentTime = new Date().getTime(); // Obtener el tiempo actual en milisegundos
 
@@ -18,7 +18,7 @@ export const clearSessionStorage = (key: string) => {
             sessionStorage.removeItem(key);
             sessionStorage.clear();
             localStorage.removeItem('token');
-        }
+        }*/
     } else {
         sessionStorage.removeItem(key);
         sessionStorage.clear();
