@@ -12,6 +12,7 @@ import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
 import { menuItem } from "../menuItems/menuItems";
 import { Link } from "react-router-dom";
+import { subMenuCatalogos, subMenuOtros } from "../menuItems/subMenuItems";
 // Interfaz para que reciba el nombre que se desea para la pantalla
 
 // Componente principal
@@ -103,23 +104,40 @@ const NavbarMenu: React.FC = () => {
                 title="Más opciones"
                 id="navbarScrollingDropdown"
               >
-                <NavDropdown.Item href="#action3">Catálogos</NavDropdown.Item>
-                <NavDropdown.Item>
-                  <Nav.Link as={Link} to={"catalogo-personas"}>
-                    Personas
-                  </Nav.Link>
-                </NavDropdown.Item>
-                <NavDropdown.Item href="catalogo-estados">
-                  <Nav.Link as={Link} to={"catalogo-estados"}>
-                    Estados
-                  </Nav.Link>
-                </NavDropdown.Item>
+                <NavDropdown
+                  style={{ margin: 10, marginLeft: 15 }}
+                  title="Catálogos"
+                >
+                  <NavDropdown
+                    style={{ margin: 10, marginLeft: 15 }}
+                    title="Catálogos"
+                  >
+                    {subMenuCatalogos.map((item, index) => {
+                      if (!item.roles || item.roles.includes(userState.idRol)) {
+                        return (
+                          <NavDropdown.Item key={index * 5}>
+                            <Nav.Link as={Link} to={item.path}>
+                              {item.name}
+                            </Nav.Link>
+                          </NavDropdown.Item>
+                        );
+                      }
+                    })}
+                  </NavDropdown>
+                </NavDropdown>
+
                 <NavDropdown.Divider />
-                <NavDropdown.Item href="#action4">Historial</NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item href="#action5">
-                  Firma Digital
-                </NavDropdown.Item>
+                {subMenuOtros.map((item, index) => {
+                  if (!item.roles || item.roles.includes(userState.idRol)) {
+                    return (
+                      <NavDropdown.Item key={index * 10}>
+                        <Nav.Link as={Link} to={item.path}>
+                          {item.name}
+                        </Nav.Link>
+                      </NavDropdown.Item>
+                    );
+                  }
+                })}
               </NavDropdown>
               <div
                 style={{

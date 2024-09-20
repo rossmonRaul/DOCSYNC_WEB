@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import BordeSuperior from "../../../components/bordesuperior/BordeSuperior";
-import Topbar from "../../../components/topbar/Topbar";
 import "../../../css/general.css";
 import { Button, Col, Form , Modal, Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
@@ -188,8 +186,6 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
 
   return (
     <>
-      <BordeSuperior />
-      <Topbar />
       <h1 className="title">Catálogo de Estados</h1>
       <div style={{ padding: "20px" }}>
         {/* Botón para abrir el modal de agregar estado */}

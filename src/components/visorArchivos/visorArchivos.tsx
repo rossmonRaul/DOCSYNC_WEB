@@ -17,6 +17,7 @@ export const VisorArchivos: React.FC<any> = ({ documento, cerrar }) => {
     "xlsx",
     "ppt",
     "pptx",
+    "rtf",
     "txt",
     "html",
     "htm",

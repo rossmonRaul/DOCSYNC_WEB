@@ -19,9 +19,10 @@ import CargarArchivos from "./pages/private/CargarArchivos/CargarArchivos.tsx";
 import CargaScanner from "./pages/private/CargaScanner/CargaScanner.tsx";
 import BuscarArchivos from "./pages/private/BuscarArchivos/BuscarArchivos.tsx";
 import { Private } from "./pages/private/index.tsx";
-import CatalogoPersonas from "./pages/private/CatalogoPersonas/CatalogoPersonas.tsx";
+import CatalogoPersonas from "./pages/private/Catalogos/CatalogoPersonas.tsx";
 import AuthGuard from "./guards/AuthGuard.tsx";
 import Login from "./pages/LoginPage.tsx";
+import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -49,6 +50,10 @@ const router = createBrowserRouter(
         <Route
           path={PrivateRoutes.CATALOGOPERSONAS}
           element={<CatalogoPersonas />}
+        />
+        <Route
+          path={PrivateRoutes.CATALOGOESTADOS}
+          element={<CatalogoEstados />}
         />
       </Route>
     </Route>
