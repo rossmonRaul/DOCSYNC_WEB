@@ -82,6 +82,7 @@ const BordeSuperior: React.FC = () => {
               >
                 <NavDropdown.Item href="#action3">Catálogos</NavDropdown.Item>           
                 <NavDropdown.Item href="catalogo-personas">Personas</NavDropdown.Item>
+                <NavDropdown.Item href="catalogo-estados">Estados</NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item href="#action4">
                   Historial

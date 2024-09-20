@@ -10,7 +10,8 @@ import { Roles } from './models';
 import { Dashboard } from './pages/private';
 import { Spinner } from 'reactstrap';
 import CargarArchivos from './pages/private/CargarArchivos/CargarArchivos';
-import CatalogoPersonas from './pages/private/CatalogoPersonas/CatalogoPersonas';
+import CatalogoPersonas from './pages/private/Catalogos/CatalogoPersonas';
+import CatalogoEstados from './pages/private/Catalogos/CatalogoEstados';
 import CargaScanner from './pages/private/CargaScanner/CargaScanner';
 import BuscarArchivos from './pages/private/BuscarArchivos/BuscarArchivos';
 
@@ -55,6 +56,7 @@ function App() {
               <Route path={PrivateRoutes.ADMINISTRARFINCAS} element={<AdministrarFincas />} />
               <Route path={PrivateRoutes.ADMINISTRAREMPRESAS} element={<AdministrarEmpresas />} />
               <Route path={PrivateRoutes.CATALOGOPERSONAS} element={<CatalogoPersonas />} />
+              <Route path={PrivateRoutes.CATALOGOESTADOS} element={<CatalogoEstados />} />
             </Route>
             {/* Rutas accesibles solo para el rol de usuario asignado */}
             <Route element={<RolGuard rol={Roles.UsuarioAsignado} />}>
