@@ -1,17 +1,27 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-import BordeSuperior from "../../../components/bordesuperior/BordeSuperior";
-import Topbar from "../../../components/topbar/Topbar";
 import "../../../css/general.css";
-import { Button, Form } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
 import { FaUpload } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
+import { RiSaveFill } from "react-icons/ri";
+import CustomModal from "../../../components/modal/CustomModal";
 
 interface Archivo {
   id: Number;
+  autor?: string;
+  asunto?: string;
+  departamento?: string;
+  confidencialidad?: string;
+  contenidoRelevante?: string;
+  noExpediente?: string;
+  noSolicitud?: string;
+  docPadre?: string;
+  docHijo?: string;
+  titulo?: string;
   archivo: File;
 }
 
@@ -20,11 +30,11 @@ function CargarArchivos() {
   const [files, setFiles] = useState<File[]>([]);
   const [idArchivoGenerado, setIdArchivoGenerado] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
-  const [fileExtension, setFileExtension] = useState<any>("");
-  const [fileURL, setFileURL] = useState<any>("");
+  const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -49,30 +59,40 @@ function CargarArchivos() {
     {
       id: "nombre",
       name: "Nombre",
-      selector: (row: { archivo: File }) => row.archivo.name,
+      selector: (row: { archivo: File }) => {
+        if (documentoVer) {
+          if (row.archivo.name.length > 30) {
+            return row.archivo.name.substring(0, 30) + "...";
+          }
+        }
+        return row.archivo.name;
+      },
       head: "Nombre",
       sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
     },
     {
       id: "Acciones",
       name: "Acciones",
       selector: (row: Archivo) => (
-        <>
+        <div style={{ paddingTop: "5px", paddingBottom: "5px" }}>
           <Button
             onClick={() => handleVerArchivo(row)}
             size="sm"
-            className="bg-secondary me-1"
+            className="bg-secondary me-2"
           >
             <FaEye />
           </Button>
           <Button
             size="sm"
             onClick={() => handleDeleteArchivoTabla(row.id)}
-            className="bg-secondary"
+            className="bg-secondary me-2"
           >
             <FaTrash />
           </Button>
-        </>
+        </div>
       ),
       head: "Seleccionar",
       sortable: false,
@@ -85,10 +105,6 @@ function CargarArchivos() {
   };
 
   const handleVerArchivo = (archivo: Archivo) => {
-    const url = URL.createObjectURL(archivo.archivo);
-    const extension = archivo.archivo.name.split(".").pop();
-    setFileURL(url);
-    setFileExtension(extension);
     setDocumentoVer(archivo);
   };
 
@@ -102,6 +118,23 @@ function CargarArchivos() {
     if (documentoVer?.id === id) {
       setDocumentoVer(undefined);
     }
+  };
+
+  const handleInputChange = (
+    rowId: Number,
+    columnName: string,
+    value: string
+  ) => {
+    setListaArchivosTabla(
+      listaArchivosTabla.map((row) =>
+        row.id === rowId ? { ...row, [columnName]: value } : row
+      )
+    );
+    setListaArchivosTablaSeleccionados(
+      listaArchivosTablaSeleccionados.map((row) =>
+        row.id === rowId ? { ...row, [columnName]: value } : row
+      )
+    );
   };
 
   // Maneja el cambio de archivos
@@ -121,6 +154,16 @@ function CargarArchivos() {
             const file: Archivo = {
               id: consecutivo++,
               archivo: element,
+              autor: "",
+              asunto: "",
+              confidencialidad: "",
+              contenidoRelevante: "",
+              departamento: "",
+              docHijo: "",
+              docPadre: "",
+              noExpediente: "",
+              noSolicitud: "",
+              titulo: "",
             };
             archivosAux.push(file);
             consecutivo = consecutivo++;
@@ -151,17 +194,63 @@ function CargarArchivos() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {};
+
   const cargarArchivos = (event: FormEvent) => {
     event.preventDefault();
     console.log(listaArchivosTablaSeleccionados);
   };
+  // Función para manejar el cierre del modal
+  const handleModal = () => {
+    setShowModal(!showModal);
+  };
 
   return (
     <>
-      <BordeSuperior />
-      <Topbar />
+      <CustomModal
+        show={showModal}
+        onHide={handleModal}
+        title={"Información del archivo"}
+      >
+        <Form onSubmit={handleSubmit}>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formCodigoEstado">
+                <Form.Label>Autor</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="autor"
+                  value={documentoSeleccionado?.autor}
+                  required
+                  maxLength={3}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Asunto</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="descripcionEstado"
+                  value={documentoSeleccionado?.asunto}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Button
+            variant="primary"
+            type="submit"
+            className="mt-3 mb-0 btn-save"
+          >
+            <RiSaveFill className="me-2" size={24} />
+            {"Guardar información"}
+          </Button>
+        </Form>
+      </CustomModal>
       <h1 className="title">Cargar archivos</h1>
-      <div style={{ display: "flex", height: "100vh" }}>
+      <div style={{ display: "flex", height: "80vh" }}>
         {/* Primera mitad de la pantalla */}
         <div
           style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
@@ -184,33 +273,33 @@ function CargarArchivos() {
                     onChange={handleFileChange}
                   />
                 </Form.Group>
-              </Form>
-              {listaArchivosTabla.length > 0 && (
-                <>
-                  <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
-                    {listaArchivosTablaSeleccionados.length > 0 && (
-                      <Button
-                        type="submit"
-                        className="mt-3 mb-0 btn-save"
-                        variant="primary"
-                      >
-                        <FaUpload className="me-2" size={20} />
-                        Guardar
-                      </Button>
-                    )}
-                    <h4 className="mt-4 ">
-                      Archivos seleccionados:{" "}
-                      {listaArchivosTablaSeleccionados.length}
-                    </h4>
-                  </div>
+                {listaArchivosTabla.length > 0 && (
+                  <>
+                    <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
+                      {listaArchivosTablaSeleccionados.length > 0 && (
+                        <Button
+                          type="submit"
+                          className="mt-3 mb-0 btn-save"
+                          variant="primary"
+                        >
+                          <FaUpload className="me-2" size={20} />
+                          Guardar
+                        </Button>
+                      )}
+                      <h4 className="mt-4 ms-auto">
+                        Archivos seleccionados:{" "}
+                        {listaArchivosTablaSeleccionados.length}
+                      </h4>
+                    </div>
 
-                  <Grid
-                    gridHeading={encabezadoArchivo}
-                    gridData={listaArchivosTabla}
-                    selectableRows={false}
-                  ></Grid>
-                </>
-              )}
+                    <Grid
+                      gridHeading={encabezadoArchivo}
+                      gridData={listaArchivosTabla}
+                      selectableRows={false}
+                    ></Grid>
+                  </>
+                )}
+              </Form>
             </div>
           </div>
         </div>

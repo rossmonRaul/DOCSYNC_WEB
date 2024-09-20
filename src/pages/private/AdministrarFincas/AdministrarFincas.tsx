@@ -7,9 +7,9 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../../components/sidebar/Sidebar";
 import '../../../css/AdministacionAdministradores.css';
 import TableResponsive from "../../../components/table/table.tsx";
-import BordeSuperior from "../../../components/bordesuperior/BordeSuperior.tsx";
+import NavbarMenu from "../../../components/navbarMenu/NavbarMenu.tsx";
 import Modal from "../../../components/modal/Modal.tsx";
-import Topbar from "../../../components/topbar/Topbar.tsx";
+import NavbarMenu from "../../../components/navbarMenu/NavBarMenu.tsx";
 import { CambiarEstadoFincas, ObtenerFincas } from "../../../servicios/ServicioFincas.ts";
 import EditarFinca from "../../../components/finca/EditarFinca.tsx";
 import CrearFinca from "../../../components/finca/CrearFinca.tsx";
@@ -160,8 +160,8 @@ function AdministrarFincas() {
     return (
         <Sidebar>
             <div className="main-container">
-                <Topbar />
-                <BordeSuperior text="Administrar Fincas" />
+                <NavbarMenu />
+                <NavbarMenu text="Administrar Fincas" />
                 <div className="content">
                     <button onClick={() => abrirCerrarModalInsertar()} className="btn-crear">Crear Finca</button>
                     <div className="filtro-container">

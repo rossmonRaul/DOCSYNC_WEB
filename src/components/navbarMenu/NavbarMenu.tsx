@@ -10,11 +10,13 @@ import { Logout } from "../logout";
 import { FaRegBell } from "react-icons/fa";
 import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
+import { menuItem } from "../menuItems/menuItems";
+import { Link } from "react-router-dom";
+import { subMenuCatalogos, subMenuOtros } from "../menuItems/subMenuItems";
 // Interfaz para que reciba el nombre que se desea para la pantalla
 
-
 // Componente principal
-const BordeSuperior: React.FC = () => {
+const NavbarMenu: React.FC = () => {
   // Renderizado
   const [showOptions, setShowOptions] = useState(false);
   const userState = useSelector((store: AppStore) => store.user);
@@ -56,9 +58,31 @@ const BordeSuperior: React.FC = () => {
               navbarScroll
             ></Nav>
             <Form style={{ color: "#fff" }} className="d-flex">
+              <Nav style={{ width: "100%" }} navbarScroll>
+                {menuItem.map((item, index) => {
+                  if (!item.roles || item.roles.includes(userState.idRol)) {
+                    return (
+                      <Nav.Link
+                        key={index}
+                        as={Link}
+                        className="nav-link-custom"
+                        to={item.path}
+                      >
+                        <div
+                          className="nav-icon-text"
+                          style={{ width: "200px" }}
+                        >
+                          {item.icon}
+                          {item.name}
+                        </div>
+                      </Nav.Link>
+                    );
+                  }
+                })}
+              </Nav>
               <div className="notifications">
                 <FaRegBell
-                  size={35}
+                  size={30}
                   style={{ margin: 10 }}
                   onClick={toggleNotifications}
                 />{" "}
@@ -80,25 +104,51 @@ const BordeSuperior: React.FC = () => {
                 title="Más opciones"
                 id="navbarScrollingDropdown"
               >
-                <NavDropdown.Item href="#action3">Catálogos</NavDropdown.Item>           
-                <NavDropdown.Item href="catalogo-personas">Personas</NavDropdown.Item>
-                <NavDropdown.Item href="catalogo-estados">Estados</NavDropdown.Item>
+                <NavDropdown
+                  style={{ margin: 10, marginLeft: 15 }}
+                  title="Catálogos"
+                >
+                  {subMenuCatalogos.map((item, index) => {
+                    if (!item.roles || item.roles.includes(userState.idRol)) {
+                      return (
+                        <NavDropdown.Item key={index * 5}>
+                          <Nav.Link as={Link} to={item.path}>
+                            {item.name}
+                          </Nav.Link>
+                        </NavDropdown.Item>
+                      );
+                    }
+                  })}
+                </NavDropdown>
                 <NavDropdown.Divider />
-                <NavDropdown.Item href="#action4">
-                  Historial
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item href="#action5">
-                  Firma Digital
-                </NavDropdown.Item>
+                {subMenuOtros.map((item, index) => {
+                  if (!item.roles || item.roles.includes(userState.idRol)) {
+                    return (
+                      <NavDropdown.Item key={index * 10}>
+                        <Nav.Link as={Link} to={item.path}>
+                          {item.name}
+                        </Nav.Link>
+                      </NavDropdown.Item>
+                    );
+                  }
+                })}
               </NavDropdown>
-              <div className="user-name">{userState.nombre}</div>
-              <div className="user-avatar" onClick={handleAvatarClick}>
-                {showOptions && (
-                  <div className="avatar-options">
-                    <Logout />
-                  </div>
-                )}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <div className="user-name">{userState.nombre}</div>
+                <div className="user-avatar" onClick={handleAvatarClick}>
+                  {showOptions && (
+                    <div className="avatar-options">
+                      <Logout />
+                    </div>
+                  )}
+                </div>
               </div>
             </Form>
           </Navbar.Collapse>
@@ -108,4 +158,4 @@ const BordeSuperior: React.FC = () => {
   );
 };
 
-export default BordeSuperior;
+export default NavbarMenu;

@@ -1,45 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import FileViewer from "react-file-viewer";
+import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
 import { AiOutlineClose } from "react-icons/ai";
 
 export const VisorArchivos: React.FC<any> = ({ documento, cerrar }) => {
   const [error, setError] = useState("");
   const [fileExtension, setFileExtension] = useState<any>("");
   const [fileURL, setFileURL] = useState<any>("");
-  const tiposSoportados = [
-    ".pdf",
-    ".docx",
-    ".doc",
-    ".rtf",
-    ".txt",
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".gif",
-    ".bmp",
-    ".tiff",
-    ".svg",
-    ".xls",
-    ".xlsx",
-    ".csv",
-    ".ppt",
-    ".pptx",
-    ".mp3",
-    ".wav",
-    ".aac",
-    ".mp4",
-    ".avi",
-    ".mov",
-    ".wmv",
-    ".flv",
-    ".mkv",
-    ".webm",
-    ".zip",
-    ".rar",
-    ".7z",
-    ".tar",
-    ".gz",
+  const tiposNoSoportados = [
+    "doc",
+    "txt",
+    "bmp",
+    "tiff",
+    "xls",
+    "xlsx",
+    "ppt",
+    "pptx",
+    "rtf",
+    "txt",
+    "html",
+    "htm",
+    "csv",
   ].join(",");
 
   useEffect(() => {
@@ -58,20 +40,49 @@ export const VisorArchivos: React.FC<any> = ({ documento, cerrar }) => {
     }
   }, [documento]);
 
-  return (
-    <>
-      <div className="mb-2 d-flex justify-content-between align-items-center">
-        <h4 className="mb-0">Visualización del archivo: {documento.name}</h4>
-        <Button className="btn-cancel" onClick={() => cerrar()}><AiOutlineClose/></Button>
-      </div>
+  if (!tiposNoSoportados.includes(fileExtension)) {
+    return (
+      <>
+        <div>
+          <div className="mb-2 d-flex justify-content-between align-items-center">
+            <h4 className="mb-0">
+              Visualización del archivo: {documento.name}
+            </h4>
+            <Button className="btn-cancel" onClick={() => cerrar()}>
+              <AiOutlineClose />
+            </Button>
+          </div>
 
-      {error && <p>No se ha podido mostrar el archivo</p>}
-      <FileViewer
-        fileType={fileExtension}
-        filePath={fileURL}
-        errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
-        onError={() => setError("error")}
-      />
-    </>
-  );
+          {error && <p>No se ha podido mostrar el archivo</p>}
+
+          <FileViewer
+            fileType={fileExtension}
+            filePath={fileURL}
+            errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
+            onError={() => setError("error")}
+          />
+        </div>{" "}
+      </>
+    );
+  } else {
+    return (
+      <>
+        <div className="mb-2 d-flex justify-content-between align-items-center">
+          <h4 className="mb-0">Visualización del archivo: {documento.name}</h4>
+          <Button className="btn-cancel" onClick={() => cerrar()}>
+            <AiOutlineClose />
+          </Button>
+        </div>
+        <p style={{ color: "#9E0000" }}>
+          El archivo ha sido descargado ya que posee un formato no soportado.
+        </p>
+        <iframe
+          src={fileURL}
+          width="100%"
+          height="600px"
+          title="File Preview"
+        />
+      </>
+    );
+  }
 };
