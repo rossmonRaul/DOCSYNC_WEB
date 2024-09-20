@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Spinner } from "react-bootstrap";
+import { Button, Spinner } from "react-bootstrap";
 import DataTable from "react-data-table-component";
+import { FaPlus, FaUpload } from "react-icons/fa";
 
 export const Grid: React.FC<any> = ({
   gridHeading,
@@ -12,6 +13,8 @@ export const Grid: React.FC<any> = ({
   filterColumns,
   className,
   rowModal,
+  handle,
+  buttonVisible,
 }) => {
   const [id, setId] = useState(-1);
   const [records, setRecords] = useState([]);
@@ -111,14 +114,19 @@ export const Grid: React.FC<any> = ({
     <>
       {filterColumns && (
         <div
-          className={
-            className ? className : "row col-12 row justify-content-end"
-          }
-          style={{ padding: 0, margin: 0 }}
+          className="mb-6 mt-4 d-flex m justify-content-between align-items-center"
+          style={{ marginLeft: 10 }}
         >
-          <div className="col-3 row">
+          {buttonVisible && (
+            <Button variant="primary" onClick={handle} className="btn-save">
+              <FaPlus className="me-2" size={24} />
+              Agregar
+            </Button>
+          )}
+
+          <div className="">
             <input
-              className="form-control mb-2"
+              className="form-control"
               type="search"
               placeholder="Buscar"
               onChange={handleFilter}
@@ -126,8 +134,9 @@ export const Grid: React.FC<any> = ({
           </div>
         </div>
       )}
+
       <DataTable
-        className="table table-sm mt-2"
+        className="table table-sm mt-4"
         customStyles={customStyles}
         columns={gridHeading}
         data={records}

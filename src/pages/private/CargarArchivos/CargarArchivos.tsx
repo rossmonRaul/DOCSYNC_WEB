@@ -1,12 +1,14 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import "../../../css/general.css";
-import { Button, Form } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
 import { FaUpload } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
+import { RiSaveFill } from "react-icons/ri";
+import CustomModal from "../../../components/modal/CustomModal";
 
 interface Archivo {
   id: Number;
@@ -28,9 +30,11 @@ function CargarArchivos() {
   const [files, setFiles] = useState<File[]>([]);
   const [idArchivoGenerado, setIdArchivoGenerado] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
+  const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -190,13 +194,61 @@ function CargarArchivos() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {};
+
   const cargarArchivos = (event: FormEvent) => {
     event.preventDefault();
     console.log(listaArchivosTablaSeleccionados);
   };
+  // Función para manejar el cierre del modal
+  const handleModal = () => {
+    setShowModal(!showModal);
+  };
 
   return (
     <>
+      <CustomModal
+        show={showModal}
+        onHide={handleModal}
+        title={"Información del archivo"}
+      >
+        <Form onSubmit={handleSubmit}>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formCodigoEstado">
+                <Form.Label>Autor</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="autor"
+                  value={documentoSeleccionado?.autor}
+                  required
+                  maxLength={3}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Asunto</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="descripcionEstado"
+                  value={documentoSeleccionado?.asunto}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Button
+            variant="primary"
+            type="submit"
+            className="mt-3 mb-0 btn-save"
+          >
+            <RiSaveFill className="me-2" size={24} />
+            {"Guardar información"}
+          </Button>
+        </Form>
+      </CustomModal>
       <h1 className="title">Cargar archivos</h1>
       <div style={{ display: "flex", height: "80vh" }}>
         {/* Primera mitad de la pantalla */}

@@ -108,19 +108,18 @@ const NavbarMenu: React.FC = () => {
                   style={{ margin: 10, marginLeft: 15 }}
                   title="Catálogos"
                 >
-                    {subMenuCatalogos.map((item, index) => {
-                      if (!item.roles || item.roles.includes(userState.idRol)) {
-                        return (
-                          <NavDropdown.Item key={index * 5}>
-                            <Nav.Link as={Link} to={item.path}>
-                              {item.name}
-                            </Nav.Link>
-                          </NavDropdown.Item>
-                        );
-                      }
-                    })}
+                  {subMenuCatalogos.map((item, index) => {
+                    if (!item.roles || item.roles.includes(userState.idRol)) {
+                      return (
+                        <NavDropdown.Item key={index * 5}>
+                          <Nav.Link as={Link} to={item.path}>
+                            {item.name}
+                          </Nav.Link>
+                        </NavDropdown.Item>
+                      );
+                    }
+                  })}
                 </NavDropdown>
-
                 <NavDropdown.Divider />
                 {subMenuOtros.map((item, index) => {
                   if (!item.roles || item.roles.includes(userState.idRol)) {

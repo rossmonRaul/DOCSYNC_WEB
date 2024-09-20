@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form , Modal, Row} from "react-bootstrap";
+import { Button, Col, Form, Modal, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
-import { ObtenerPersonas, CrearPersona, EliminarPersona, ActualizarPersona } from "../../../servicios/ServicioPersonas";
-import { FaTrash ,FaPlus } from "react-icons/fa";
+import {
+  ObtenerPersonas,
+  CrearPersona,
+  EliminarPersona,
+  ActualizarPersona,
+} from "../../../servicios/ServicioPersonas";
+import { FaTrash, FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 
-import { AiOutlineClose  } from "react-icons/ai";
+import { AiOutlineClose } from "react-icons/ai";
 import { RiSaveFill } from "react-icons/ri";
 import Swal from "sweetalert2";
-
 
 // Interfaz para la información de la persona
 interface Persona {
@@ -20,7 +24,7 @@ interface Persona {
   nombreCompleto: string;
   puesto: string;
   telefono: string;
-  usuarioCreacion:string;
+  usuarioCreacion: string;
   usuarioModificacion: string;
 }
 
@@ -36,8 +40,8 @@ function CatalogoPersonas() {
     nombreCompleto: "",
     puesto: "",
     telefono: "",
-    usuarioCreacion:"",
-    usuarioModificacion:""
+    usuarioCreacion: "",
+    usuarioModificacion: "",
   });
   const [isEditing, setIsEditing] = useState(false);
 
@@ -58,22 +62,21 @@ function CatalogoPersonas() {
   // Función para eliminar una persona
   const eliminarPersona = async (persona: Persona) => {
     try {
-
       const response = await EliminarPersona(persona);
 
-        if (response.indicador === 0) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
-            obtenerPersonas();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
-          }
+      if (response.indicador === 0) {
+        Swal.fire({
+          icon: "success",
+          title: response.mensaje,
+        });
+        obtenerPersonas();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: response.mensaje,
+        });
+      }
     } catch (error) {
       console.error("Error al eliminar persona:", error);
     }
@@ -98,8 +101,8 @@ function CatalogoPersonas() {
       nombreCompleto: "",
       puesto: "",
       telefono: "",
-      usuarioCreacion:"",
-      usuarioModificacion:""
+      usuarioCreacion: "",
+      usuarioModificacion: "",
     });
   };
 
@@ -117,119 +120,173 @@ function CatalogoPersonas() {
     if (isEditing) {
       // editar
       try {
-
-        const identificacionUsuario = localStorage.getItem('identificacionUsuario');
-        const personaActualizar = { ...nuevaPersona, UsuarioModificacion: identificacionUsuario };
+        const identificacionUsuario = localStorage.getItem(
+          "identificacionUsuario"
+        );
+        const personaActualizar = {
+          ...nuevaPersona,
+          UsuarioModificacion: identificacionUsuario,
+        };
         const response = await ActualizarPersona(personaActualizar);
 
         if (response.indicador === 0) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
-            obtenerPersonas();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
-          }
+          Swal.fire({
+            icon: "success",
+            title: response.mensaje,
+          });
+          obtenerPersonas();
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: response.mensaje,
+          });
+        }
       } catch (error) {
         console.error("Error al actualizar la persona:", error);
       }
     } else {
       // agregar persona
       try {
-        const identificacionUsuario = localStorage.getItem('identificacionUsuario');
-        const personaACrear = { ...nuevaPersona, idPersona: "0", usuarioCreacion :identificacionUsuario };
-        const response  = await CrearPersona(personaACrear); // Crea la persona
+        const identificacionUsuario = localStorage.getItem(
+          "identificacionUsuario"
+        );
+        const personaACrear = {
+          ...nuevaPersona,
+          idPersona: "0",
+          usuarioCreacion: identificacionUsuario,
+        };
+        const response = await CrearPersona(personaACrear); // Crea la persona
         if (response.indicador === 0) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
-            obtenerPersonas();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
-          }
+          Swal.fire({
+            icon: "success",
+            title: response.mensaje,
+          });
+          obtenerPersonas();
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: response.mensaje,
+          });
+        }
       } catch (error) {
         console.error("Error al crear la persona:", error);
       }
     }
-    handleModal(); // Cierra el modal 
+    handleModal(); // Cierra el modal
   };
 
   // Encabezados de la tabla con acciones
   const encabezadoPersonas = [
-    { id: "nombreCompleto", name: "Nombre", selector: (row: Persona) => row.nombreCompleto, sortable: true,style: {
-      fontSize: "1.2em",
-    }, },
-    { id: "identificacion", name: "Identificación", selector: (row: Persona) => row.identificacion, sortable: true, style: {
-      fontSize: "1.2em",
-    },},
-    { id: "departamento", name: "Departamento", selector: (row: Persona) => row.departamento, sortable: true,style: {
-      fontSize: "1.2em",
-    }, },
-    { id: "puesto", name: "Puesto", selector: (row: Persona) => row.puesto, sortable: true,style: {
-      fontSize: "1.2em",
-    }, },
-    { id: "telefono", name: "Teléfono", selector: (row: Persona) => row.telefono, sortable: true,style: {
-      fontSize: "1.2em",
-    }, },
-    { id: "email", name: "Correo", selector: (row: Persona) => row.email, sortable: true,style: {
-      fontSize: "1.2em",
-    }, },
+    {
+      id: "nombreCompleto",
+      name: "Nombre",
+      selector: (row: Persona) => row.nombreCompleto,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "identificacion",
+      name: "Identificación",
+      selector: (row: Persona) => row.identificacion,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "departamento",
+      name: "Departamento",
+      selector: (row: Persona) => row.departamento,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "puesto",
+      name: "Puesto",
+      selector: (row: Persona) => row.puesto,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "telefono",
+      name: "Teléfono",
+      selector: (row: Persona) => row.telefono,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "email",
+      name: "Correo",
+      selector: (row: Persona) => row.email,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
     {
       id: "acciones",
       name: "Acciones",
       cell: (row: Persona) => (
         <>
-        <Button
+          <Button
             onClick={() => editarPersona(row)}
             size="sm"
-            className="bg-secondary me-1">
-            <VscEdit  />
+            className="bg-secondary me-1"
+          >
+            <VscEdit />
           </Button>
           <Button
             size="sm"
             onClick={() => eliminarPersona(row)}
-            className="bg-secondary">
+            className="bg-secondary"
+          >
             <FaTrash />
-          </Button>      
+          </Button>
         </>
       ),
-      width:"120px",
+      width: "120px",
     },
   ];
 
   return (
     <>
-      <h1 className="title">Catálogo de Personas</h1>
+      <h1 style={{marginLeft:20}} className="title">Catálogo de Personas</h1>
       <div style={{ padding: "20px" }}>
         {/* Botón para abrir el modal de agregar persona */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-save">
-          <FaPlus className="me-2" size={24} />
-          Agregar
-        </Button>
-  
         {/* Tabla de personas */}
         <Grid
           gridHeading={encabezadoPersonas}
           gridData={listaPersonas}
-          filterColumns={["nombreCompleto", "identificacion", "departamento", "puesto", "telefono", "email"]}
+          handle={handleModal}
+          buttonVisible={true}
+          filterColumns={[
+            "nombreCompleto",
+            "identificacion",
+            "departamento",
+            "puesto",
+            "telefono",
+            "email",
+          ]}
           selectableRows={false}
         ></Grid>
       </div>
-  
+
       {/* Modal para agregar o editar una persona */}
-      <Modal show={showModal} onHide={handleModal} size={'lg'}>
+      <Modal show={showModal} onHide={handleModal} size={"lg"}>
         <Modal.Header closeButton={false} className="d-flex align-items-center">
-          <Modal.Title>{isEditing ? "Editar Persona" : "Agregar Persona"}</Modal.Title>
+          <Modal.Title>
+            {isEditing ? "Editar Persona" : "Agregar Persona"}
+          </Modal.Title>
           <Button className="ms-auto btn-cancel" onClick={handleModal}>
             <AiOutlineClose />
           </Button>
@@ -260,7 +317,7 @@ function CatalogoPersonas() {
                     onChange={handleChange}
                     maxLength={50}
                     pattern="\d*"
-                    title="Solo se permiten números" 
+                    title="Solo se permiten números"
                   />
                 </Form.Group>
               </Col>
@@ -274,7 +331,7 @@ function CatalogoPersonas() {
                     name="departamento"
                     value={nuevaPersona.departamento}
                     onChange={handleChange}
-                    maxLength={100} 
+                    maxLength={100}
                   />
                 </Form.Group>
               </Col>
@@ -284,9 +341,9 @@ function CatalogoPersonas() {
                   <Form.Control
                     type="text"
                     name="puesto"
-                    value={nuevaPersona.puesto } 
+                    value={nuevaPersona.puesto}
                     onChange={handleChange}
-                    maxLength={100} 
+                    maxLength={100}
                   />
                 </Form.Group>
               </Col>
@@ -298,9 +355,9 @@ function CatalogoPersonas() {
                   <Form.Control
                     type="text"
                     name="telefono"
-                    value={nuevaPersona.telefono} 
+                    value={nuevaPersona.telefono}
                     onChange={handleChange}
-                    maxLength={12} 
+                    maxLength={12}
                     pattern="\d*"
                     title="Solo se permiten números"
                   />
@@ -315,13 +372,17 @@ function CatalogoPersonas() {
                     value={nuevaPersona.email}
                     onChange={handleChange}
                     required
-                    maxLength={100} 
+                    maxLength={100}
                   />
                 </Form.Group>
               </Col>
             </Row>
-  
-            <Button variant="primary" type="submit" className="mt-3 mb-0 btn-save">
+
+            <Button
+              variant="primary"
+              type="submit"
+              className="mt-3 mb-0 btn-save"
+            >
               <RiSaveFill className="me-2" size={24} />
               {isEditing ? "Actualizar" : "Guardar"}
             </Button>
