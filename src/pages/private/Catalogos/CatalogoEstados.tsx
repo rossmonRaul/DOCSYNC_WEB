@@ -193,7 +193,7 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
       <h1 className="title">Catálogo de Estados</h1>
       <div style={{ padding: "20px" }}>
         {/* Botón para abrir el modal de agregar estado */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-save">
+        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-crear">
           <FaPlus className="me-2" size={24} />
           Agregar
         </Button>
