@@ -3,7 +3,7 @@ import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaUpload } from "react-icons/fa";
+import { FaEdit, FaUpload } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
@@ -22,7 +22,7 @@ interface Archivo {
   docPadre?: string;
   docHijo?: string;
   titulo?: string;
-  archivo: File;
+  archivo?: File;
 }
 
 // Componente funcional que representa la página de carga de archivops
@@ -35,6 +35,7 @@ function CargarArchivos() {
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
+  const [documentoEditado, setDocumentoEditado] = useState(false);
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -79,6 +80,13 @@ function CargarArchivos() {
       selector: (row: Archivo) => (
         <div style={{ paddingTop: "5px", paddingBottom: "5px" }}>
           <Button
+            onClick={() => abrirInformacionArchivo(row, true)}
+            size="sm"
+            className="bg-secondary me-2"
+          >
+            <FaEdit />
+          </Button>
+          <Button
             onClick={() => handleVerArchivo(row)}
             size="sm"
             className="bg-secondary me-2"
@@ -120,21 +128,14 @@ function CargarArchivos() {
     }
   };
 
-  const handleInputChange = (
-    rowId: Number,
-    columnName: string,
-    value: string
-  ) => {
-    setListaArchivosTabla(
-      listaArchivosTabla.map((row) =>
-        row.id === rowId ? { ...row, [columnName]: value } : row
-      )
-    );
-    setListaArchivosTablaSeleccionados(
-      listaArchivosTablaSeleccionados.map((row) =>
-        row.id === rowId ? { ...row, [columnName]: value } : row
-      )
-    );
+  const handleInputChange = (e: any) => {
+    console.log(e.target.value);
+    if (documentoSeleccionado) {
+      setDocumentoSeleccionado({
+        ...documentoSeleccionado,
+        [e.target.name]: e.target.value,
+      });
+    }
   };
 
   // Maneja el cambio de archivos
@@ -148,7 +149,7 @@ function CargarArchivos() {
       if (selectedFiles.length > 0) {
         selectedFiles.forEach((element) => {
           const existe = listaArchivosTabla.some(
-            (a) => a.archivo.name === element.name
+            (a) => a.archivo?.name === element.name
           );
           if (!existe) {
             const file: Archivo = {
@@ -182,6 +183,42 @@ function CargarArchivos() {
   };
 
   const handleFilaSeleccionada = (row: Archivo) => {
+    if (validarDatosCompletosArchivo(row)) {
+      seleccionarDocumento(row);
+    } else {
+      abrirInformacionArchivo(row);
+    }
+  };
+
+  const guardarInformacioArchivo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowModal(false);
+
+    setListaArchivosTabla(
+      listaArchivosTabla.map((row) =>
+        row.id === documentoSeleccionado?.id
+          ? { ...row, ...documentoSeleccionado }
+          : row
+      )
+    );
+    setListaArchivosTablaSeleccionados(
+      listaArchivosTablaSeleccionados.map((row) =>
+        row.id === documentoSeleccionado?.id
+          ? { ...row, ...documentoSeleccionado }
+          : row
+      )
+    );
+
+    if (!documentoEditado) {
+      if (documentoSeleccionado) {
+        if (validarDatosCompletosArchivo(documentoSeleccionado)) {
+          seleccionarDocumento(documentoSeleccionado);
+        }
+      }
+    }
+  };
+
+  const seleccionarDocumento = (row: Archivo) => {
     if (listaArchivosTablaSeleccionados.some((r) => r.id === row.id)) {
       setListaArchivosTablaSeleccionados(
         listaArchivosTablaSeleccionados.filter((r) => r.id !== row.id)
@@ -194,15 +231,29 @@ function CargarArchivos() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {};
-
   const cargarArchivos = (event: FormEvent) => {
     event.preventDefault();
-    console.log(listaArchivosTablaSeleccionados);
   };
   // Función para manejar el cierre del modal
   const handleModal = () => {
     setShowModal(!showModal);
+  };
+
+  const validarDatosCompletosArchivo = (archivo: Archivo): boolean => {
+    const valores = Object.values(archivo);
+
+    for (const valor of valores) {
+      if (valor === undefined || valor === "") {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const abrirInformacionArchivo = (row: Archivo, editar = false) => {
+    setDocumentoSeleccionado(row);
+    setShowModal(true);
+    setDocumentoEditado(editar);
   };
 
   return (
@@ -212,7 +263,7 @@ function CargarArchivos() {
         onHide={handleModal}
         title={"Información del archivo"}
       >
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={guardarInformacioArchivo}>
           <Row>
             <Col md={6}>
               <Form.Group controlId="formCodigoEstado">
@@ -221,8 +272,8 @@ function CargarArchivos() {
                   type="text"
                   name="autor"
                   value={documentoSeleccionado?.autor}
+                  onChange={handleInputChange}
                   required
-                  maxLength={3}
                 />
               </Form.Group>
             </Col>
@@ -231,21 +282,137 @@ function CargarArchivos() {
                 <Form.Label>Asunto</Form.Label>
                 <Form.Control
                   type="text"
-                  name="descripcionEstado"
+                  name="asunto"
                   value={documentoSeleccionado?.asunto}
+                  required
+                  onChange={handleInputChange}
                   maxLength={100}
                 />
               </Form.Group>
             </Col>
           </Row>
-
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Departamento</Form.Label>
+                <Form.Select
+                  name="departamento"
+                  value={documentoSeleccionado?.departamento}
+                  required
+                  onChange={handleInputChange}
+                >
+                  <option value="">-- Selecciona una opción --</option>
+                  <option value="opcion1">Opción 1</option>
+                  <option value="opcion2">Opción 2</option>
+                  <option value="opcion3">Opción 3</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Confidencialidad</Form.Label>
+                <Form.Select
+                  name="confidencialidad"
+                  value={documentoSeleccionado?.confidencialidad}
+                  required
+                  onChange={handleInputChange}
+                >
+                  <option value="">-- Selecciona una opción --</option>
+                  <option value="Si">Sí</option>
+                  <option value="No">No</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Contenido relevante</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="contenidoRelevante"
+                  value={documentoSeleccionado?.contenidoRelevante}
+                  required
+                  onChange={handleInputChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>No. Expediente</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="noExpediente"
+                  value={documentoSeleccionado?.noExpediente}
+                  required
+                  onChange={handleInputChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>No. Solicitud</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="noSolicitud"
+                  value={documentoSeleccionado?.noSolicitud}
+                  required
+                  onChange={handleInputChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Doc. Hijo</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="docHijo"
+                  value={documentoSeleccionado?.docHijo}
+                  required
+                  onChange={handleInputChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Doc. Padre</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="docPadre"
+                  value={documentoSeleccionado?.docPadre}
+                  required
+                  onChange={handleInputChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formDescripcionEstado">
+                <Form.Label>Titulo</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="titulo"
+                  value={documentoSeleccionado?.titulo}
+                  required
+                  onChange={handleInputChange}
+                  maxLength={100}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
           <Button
             variant="primary"
             type="submit"
             className="mt-3 mb-0 btn-save"
           >
             <RiSaveFill className="me-2" size={24} />
-            {"Guardar información"}
+            {"Guardar"}
           </Button>
         </Form>
       </CustomModal>

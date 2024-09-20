@@ -8,39 +8,35 @@ export const VisorArchivos: React.FC<any> = ({ documento, cerrar }) => {
   const [error, setError] = useState("");
   const [fileExtension, setFileExtension] = useState<any>("");
   const [fileURL, setFileURL] = useState<any>("");
-  const tiposNoSoportados = [
-    "doc",
-    "txt",
+
+  const tiposSoportados = [
+    "docx",
+    "png",
+    "jpeg",
+    "jpg",
+    "pdf",
+    "mp3",
+    "mp4",
+    "webm",
+    "gif",
     "bmp",
-    "tiff",
-    "xls",
-    "xlsx",
-    "ppt",
-    "pptx",
-    "rtf",
-    "txt",
-    "html",
-    "htm",
-    "csv",
   ].join(",");
 
   useEffect(() => {
     if (documento) {
-      // Primero vaciamos temporalmente para forzar un re-render
       setFileURL("");
       setFileExtension("");
 
-      // Luego asignamos el nuevo archivo con un pequeño retraso
       setTimeout(() => {
         const url = URL.createObjectURL(documento);
         const extension = documento.name.split(".").pop();
         setFileURL(url);
         setFileExtension(extension);
-      }, 5); // Un retraso mínimo de 100ms para forzar el refresco
+      }, 5); // Un retraso mínimo de 5ms para forzar el refresco
     }
   }, [documento]);
 
-  if (!tiposNoSoportados.includes(fileExtension)) {
+  if (tiposSoportados.includes(fileExtension)) {
     return (
       <>
         <div>
