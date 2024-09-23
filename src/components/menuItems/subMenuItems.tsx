@@ -17,6 +17,11 @@ export const subMenuCatalogos: MenuItem[] = [
       name: "Estados",
       roles: [1,2,3,4],
     },
+    {
+      path: "/catalogo-tiposDocumentos",
+      name: "Tipos de Documentos",
+      roles: [1,2,3,4],
+    },
   ];
 
   export const subMenuOtros: MenuItem[] = [
