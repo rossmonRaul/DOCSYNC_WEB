@@ -9,6 +9,10 @@ import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import { RiSaveFill } from "react-icons/ri";
 import CustomModal from "../../../components/modal/CustomModal";
+import useWebWorker from "../../../hooks/useWebWorker";
+import { useWorker } from "../../../context/workerContext";
+import WorkerStatus from "../../../components/workerStatus/worketStatus";
+import { CrearDocumento } from "../../../servicios/ServicioDocumentos";
 
 interface Archivo {
   id: Number;
@@ -17,13 +21,44 @@ interface Archivo {
   departamento?: string;
   confidencialidad?: string;
   contenidoRelevante?: string;
-  noExpediente?: string;
-  noSolicitud?: string;
+  numeroExpediente?: string;
+  numeroSolicitud?: string;
   docPadre?: string;
   docHijo?: string;
   titulo?: string;
   archivo?: File;
 }
+
+const fibonacciWorkerFunction = () => {
+  onmessage = (e) => {
+    const num = e.data;
+    const fib: any = (n: any) => {
+      if (n <= 1) return n;
+      return fib(n - 1) + fib(n - 2);
+    };
+    postMessage({ result: fib(num) });
+  };
+};
+
+// sumWorker.ts
+const sumWorkerFunction = () => {
+  onmessage = (e) => {
+    const { start, end } = e.data;
+    let sum = 0;
+    for (let i = start; i <= end; i++) {
+      sum += i;
+    }
+    postMessage({ result: sum });
+  };
+};
+
+const cargarDocumentosWorker = () => {
+  onmessage = async (e) => {
+    const docs = e.data;
+    const response = await CrearDocumento(docs);
+    postMessage({ result: response.mensaje });
+  };
+};
 
 // Componente funcional que representa la página de carga de archivops
 function CargarArchivos() {
@@ -36,6 +71,10 @@ function CargarArchivos() {
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
+  const [number, setNumber] = useState(2);
+  const { startWorker, result, error, loading } = useWorker();
+
+  const [input, setInput] = useState(10);
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -162,8 +201,8 @@ function CargarArchivos() {
               departamento: "",
               docHijo: "",
               docPadre: "",
-              noExpediente: "",
-              noSolicitud: "",
+              numeroExpediente: "",
+              numeroSolicitud: "",
               titulo: "",
             };
             archivosAux.push(file);
@@ -231,15 +270,26 @@ function CargarArchivos() {
     }
   };
 
-  const cargarArchivos = (event: FormEvent) => {
+  const cargarArchivos = async (event: FormEvent) => {
     event.preventDefault();
+    startWorker(cargarDocumentosWorker, listaArchivosTablaSeleccionados);
   };
+  
   // Función para manejar el cierre del modal
   const handleModal = () => {
     setShowModal(!showModal);
   };
 
+  const handleFibonacci = () => {
+    startWorker(fibonacciWorkerFunction, input);
+  };
+
+  const handleSum = () => {
+    startWorker(sumWorkerFunction, { start: 1, end: input });
+  };
+
   const validarDatosCompletosArchivo = (archivo: Archivo): boolean => {
+    return true;
     const valores = Object.values(archivo);
 
     for (const valor of valores) {
@@ -255,9 +305,27 @@ function CargarArchivos() {
     setShowModal(true);
     setDocumentoEditado(editar);
   };
-
+  const handleChangeNumber = (e: any) => {
+    setNumber(e.target.value); // Actualiza el input para el cálculo
+  };
   return (
     <>
+      <div>
+        <h1>Worker Example</h1>
+        <input
+          type="number"
+          value={input}
+          onChange={(e) => setInput(parseInt(e.target.value))}
+          placeholder="Enter a number"
+        />
+        <button onClick={handleFibonacci} disabled={loading}>
+          {loading ? "Calculating..." : "Calculate Fibonacci"}
+        </button>
+        <button onClick={handleSum} disabled={loading}>
+          {loading ? "Calculating..." : "Calculate Sum"}
+        </button>
+      </div>
+
       <CustomModal
         show={showModal}
         onHide={handleModal}
@@ -343,8 +411,8 @@ function CargarArchivos() {
                 <Form.Label>No. Expediente</Form.Label>
                 <Form.Control
                   type="text"
-                  name="noExpediente"
-                  value={documentoSeleccionado?.noExpediente}
+                  name="numeroExpediente"
+                  value={documentoSeleccionado?.numeroExpediente}
                   required
                   onChange={handleInputChange}
                   maxLength={100}
@@ -358,8 +426,8 @@ function CargarArchivos() {
                 <Form.Label>No. Solicitud</Form.Label>
                 <Form.Control
                   type="text"
-                  name="noSolicitud"
-                  value={documentoSeleccionado?.noSolicitud}
+                  name="numeroSolicitud"
+                  value={documentoSeleccionado?.numeroSolicitud}
                   required
                   onChange={handleInputChange}
                   maxLength={100}

@@ -23,6 +23,7 @@ import CatalogoPersonas from "./pages/private/Catalogos/CatalogoPersonas.tsx";
 import AuthGuard from "./guards/AuthGuard.tsx";
 import Login from "./pages/LoginPage.tsx";
 import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
+import { WorkerProvider } from "./context/workerContext.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -62,6 +63,8 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Provider store={Store}>
-    <RouterProvider router={router} />
+    <WorkerProvider>
+      <RouterProvider router={router} />
+    </WorkerProvider>
   </Provider>
 );

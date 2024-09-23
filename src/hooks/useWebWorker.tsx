@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 
 type WorkerFunction = () => void;
 
+
 const useWebWorker = (workerFunction: WorkerFunction, inputData: any) => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState<any>(null);

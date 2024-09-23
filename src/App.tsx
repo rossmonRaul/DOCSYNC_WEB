@@ -3,6 +3,7 @@ import "./App.css";
 import NavbarMenu from "./components/navbarMenu/NavbarMenu";
 import { AppStore } from "./redux/Store";
 import { useSelector } from "react-redux";
+import WorkerStatus from "./components/workerStatus/worketStatus";
 
 // Importar componentes con lazy loading
 function App() {
@@ -11,6 +12,7 @@ function App() {
     <>
       {userState.identificacion && <NavbarMenu />}
       <Outlet />
+      <WorkerStatus/>
     </>
   );
 }
