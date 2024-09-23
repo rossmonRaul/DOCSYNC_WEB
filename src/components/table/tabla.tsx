@@ -118,7 +118,7 @@ export const Grid: React.FC<any> = ({
           style={{ marginLeft: 10 }}
         >
           {buttonVisible && (
-            <Button variant="primary" onClick={handle} className="btn-save">
+            <Button variant="primary" onClick={handle} className="btn-crear">
               <FaPlus className="me-2" size={24} />
               Agregar
             </Button>
