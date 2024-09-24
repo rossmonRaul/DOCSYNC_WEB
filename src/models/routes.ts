@@ -16,4 +16,5 @@ export const PrivateRoutes = {
     CATALOGOPERSONAS: 'catalogo-personas',
     CATALOGOESTADOS: 'catalogo-estados',
     CATALOGOTIPOSDOCUMENTOS: 'catalogo-tiposDocumentos',
+    CATALOGOJERARQUIADOCUMENTOS:'jerarquia-documento'
 };

@@ -6,8 +6,7 @@ import { ObtenerTiposDocumentos, CrearTipoDocumento, EliminarTipoDocumento, Actu
 import { FaTrash ,FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
-import { RiSaveFill } from "react-icons/ri";
-import Swal from "sweetalert2";
+import { AlertDismissible } from "../../../components/alert/alert";
 
 
 // Interfaz para la información del tipo de documento
@@ -31,6 +30,8 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
   usuarioModificacion: ""
 });
   const [isEditing, setIsEditing] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
     obtenerTiposDocumentos();
@@ -52,21 +53,17 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
 
       const response = await EliminarTipoDocumento(tipoDocumento);
 
-        if (response.indicador === 0) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
+      if(response){
+        setShowAlert(true);
+        setMensajeRespuesta(response);
             obtenerTiposDocumentos();
           } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
+            setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el tipo de documento" });
           }
     } catch (error) {
-      console.error("Error al eliminar tipo de documento:", error);
+      setShowAlert(true);
+      setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el tipo de documento" });
     }
   };
 
@@ -109,21 +106,17 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         const tipoDocumentoActualizar = { ...nuevoTipoDocumento, usuarioModificacion: identificacionUsuario };
         const response = await ActualizarTipoDocumento(tipoDocumentoActualizar);
   
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: 'success',
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerTiposDocumentos();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
+        } else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el tipo de documento" });
         }
       } catch (error) {
-        console.error("Error al actualizar el tipo de documento:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el tipo de documento" });
       }
     } else {
       // Crear tipo de documento
@@ -131,21 +124,17 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         const tipoDocumentoACrear = { ...nuevoTipoDocumento, idTipoDocumento: "0", usuarioCreacion: identificacionUsuario };
         const response = await CrearTipoDocumento(tipoDocumentoACrear);
   
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: 'success',
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerTiposDocumentos();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
+        } else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el tipo de documento" });
         }
       } catch (error) {
-        console.error("Error al crear el tipo de documento:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el tipo de documento" });
       }
     }
   
@@ -186,6 +175,12 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
     <>
       <h1 className="title">Catálogo Tipos de Documentos</h1>
       <div style={{ padding: "20px" }}>
+      {showAlert && (
+          <AlertDismissible
+          mensaje={mensajeRespuesta}
+          setShow={setShowAlert}
+          />
+        )}
         {/* Tabla de tipos de documentos */}
         <Grid
           gridHeading={encabezadoTiposDocumentos}

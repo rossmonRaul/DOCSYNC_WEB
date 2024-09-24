@@ -7,10 +7,7 @@ import { Grid } from "../../../components/table/tabla";
 import {ObtenerPersonas,CrearPersona,EliminarPersona,ActualizarPersona,} from "../../../servicios/ServicioPersonas";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
-
-import { AiOutlineClose } from "react-icons/ai";
-import { RiSaveFill } from "react-icons/ri";
-import Swal from "sweetalert2";
+import { AlertDismissible } from "../../../components/alert/alert";
 
 // Interfaz para la información de la persona
 interface Persona {
@@ -41,6 +38,8 @@ function CatalogoPersonas() {
     usuarioModificacion: "",
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
     obtenerPersonas();
@@ -61,23 +60,20 @@ function CatalogoPersonas() {
     try {
       const response = await EliminarPersona(persona);
 
-      if (response.indicador === 0) {
-        Swal.fire({
-          icon: "success",
-          title: response.mensaje,
-        });
+      if(response){
+        setShowAlert(true);
+        setMensajeRespuesta(response);
         obtenerPersonas();
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: response.mensaje,
-        });
+      }else{
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar la persona" });
       }
     } catch (error) {
-      console.error("Error al eliminar persona:", error);
+      setShowAlert(true);
+      setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar la persona" });
     }
   };
+
 
   // Función para abrir el modal y editar una persona
   const editarPersona = (persona: Persona) => {
@@ -126,21 +122,17 @@ function CatalogoPersonas() {
         };
         const response = await ActualizarPersona(personaActualizar);
 
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: "success",
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerPersonas();
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: response.mensaje,
-          });
+        }else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar la persona" });
         }
       } catch (error) {
-        console.error("Error al actualizar la persona:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar la persona" });
       }
     } else {
       // agregar persona
@@ -154,22 +146,20 @@ function CatalogoPersonas() {
           usuarioCreacion: identificacionUsuario,
         };
         const response = await CrearPersona(personaACrear); // Crea la persona
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: "success",
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerPersonas();
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: response.mensaje,
-          });
+        }else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al crear la persona" });
         }
+       
       } catch (error) {
-        console.error("Error al crear la persona:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al crear la persona" });
       }
+
     }
     handleModal(); // Cierra el modal
   };
@@ -259,7 +249,12 @@ function CatalogoPersonas() {
     <>
       <h1 style={{marginLeft:20}} className="title">Catálogo de Personas</h1>
       <div style={{ padding: "20px" }}>
-        {/* Botón para abrir el modal de agregar persona */}
+        {showAlert && (
+          <AlertDismissible
+          mensaje={mensajeRespuesta}
+          setShow={setShowAlert}
+          />
+        )}
         {/* Tabla de personas */}
         <Grid
           gridHeading={encabezadoPersonas}
