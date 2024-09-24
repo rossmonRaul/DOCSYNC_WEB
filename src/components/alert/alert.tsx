@@ -1,9 +1,11 @@
 import React, { useRef, useEffect } from "react";
-import { Alert } from "reactstrap";
+import Alert from 'react-bootstrap/Alert';
 import { CSSTransition } from "react-transition-group";
 import '../../css/alert.css';
+import { CiCircleCheck } from "react-icons/ci";
+import { CgDanger } from "react-icons/cg";
 
-export const AlertDismissible:React.FC<any> = ({ indicador, encabezado, mensaje, setShow }) => {
+export const AlertDismissible:React.FC<any> = ({ mensaje, setShow }) => {
     const ref = useRef(null);
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -16,35 +18,27 @@ export const AlertDismissible:React.FC<any> = ({ indicador, encabezado, mensaje,
     }, [setShow]);
 
     const getVariant = () => {
-        if (indicador == 0) {
+        if (mensaje.indicador == 0) {
             return "success";
-        } else if (indicador == 1) {
-            return "danger";
-        } else if (indicador == 2) {
+        } else if (mensaje.indicador == 1) {
             return "danger";
         } 
         return "info";
     };
 
-    const getTitle = () => {
-        if (encabezado) {
-            return encabezado;
-        }
-        else if (indicador === 0) {
-            return "Exitoso";
-        } else if (indicador === 1 || indicador === 2) {
-            return "Error";
-        } 
-        return "Aviso";
-    };
+  
 
     return (
-        <CSSTransition ref={ref} in={true} classNames="fade" timeout={1000} unmountOnExit>
+        <CSSTransition ref={ref} in={true}  timeout={1000} unmountOnExit>
             <div className="alert-container">
                 <div className="alert-modal">
-                    <Alert color={getVariant()} isOpen={true} toggle={() => setShow(false)}>
-                        <h5 className="alert-heading">{getTitle()}</h5>
-                        <p className="alert-message">{mensaje}</p>
+                    <Alert variant={getVariant()}>
+                        <p>
+                            {mensaje.indicador==0 ? 
+                            <CiCircleCheck size={35}/> 
+                            : <CgDanger size={35}/> }                            
+                            {mensaje.mensaje}
+                        </p>
                     </Alert>
                 </div>
             </div>

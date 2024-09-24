@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form , Modal, Row} from "react-bootstrap";
+import { Button, Col, Form , Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { ObtenerEstados, CrearEstado, EliminarEstado, ActualizarEstado } from "../../../servicios/ServicioEstados";
 import { FaTrash ,FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
-
-import { AiOutlineClose  } from "react-icons/ai";
-import { RiSaveFill } from "react-icons/ri";
-import Swal from "sweetalert2";
+import { AlertDismissible } from "../../../components/alert/alert";
 
 
-// Interfaz para la información de la estado
+// Interfaz para la información de el estado
 interface Estado {
     idEstado: string;
     codigoEstado: string;
@@ -33,12 +30,14 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
   usuarioModificacion: ""
 });
   const [isEditing, setIsEditing] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
     obtenerEstados();
   }, []);
 
-  // Función para obtener todas las estados
+  // Función para obtener todos los estados
   const obtenerEstados = async () => {
     try {
       const estados = await ObtenerEstados();
@@ -48,31 +47,28 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
     }
   };
 
-  // Función para eliminar una estado
+  // Función para eliminar un estado
   const eliminarEstado = async (estado: Estado) => {
     try {
 
       const response = await EliminarEstado(estado);
 
-        if (response.indicador === 0) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
-            obtenerEstados();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
-          }
+      if(response){
+        setShowAlert(true);
+        setMensajeRespuesta(response);
+        obtenerEstados();
+      }else{
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el estado" });
+      }
     } catch (error) {
-      console.error("Error al eliminar estado:", error);
+
+      setShowAlert(true);
+      setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el estado" });
     }
   };
 
-  // Función para abrir el modal y editar una estado
+  // Función para abrir el modal y editar un estado
   const editarEstado = (estado: Estado) => {
     setNuevaEstado(estado);
     setIsEditing(true);
@@ -100,7 +96,7 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
     });
   };
 
-  // Maneja el envío del formulario para agregar o editar una estado
+  // Maneja el envío del formulario para agregar o editar un estado
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const identificacionUsuario = localStorage.getItem('identificacionUsuario');
@@ -111,21 +107,17 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
         const estadoActualizar = { ...nuevaEstado, usuarioModificacion: identificacionUsuario };
         const response = await ActualizarEstado(estadoActualizar);
   
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: 'success',
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerEstados();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
+        }else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el estado" });
         }
       } catch (error) {
-        console.error("Error al actualizar la estado:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el estado" });
       }
     } else {
       // Crear estado
@@ -133,21 +125,17 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
         const estadoACrear = { ...nuevaEstado, idEstado: "0", usuarioCreacion: identificacionUsuario };
         const response = await CrearEstado(estadoACrear);
   
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: 'success',
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerEstados();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
+        } else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el estado" });
         }
       } catch (error) {
-        console.error("Error al crear la estado:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el estado" });
       }
     }
   
@@ -188,24 +176,31 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
     <>
       <h1 className="title">Catálogo de Estados</h1>
       <div style={{ padding: "20px" }}>
-        {/* Botón para abrir el modal de agregar estado */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-save">
-          <FaPlus className="me-2" size={24} />
-          Agregar
-        </Button>
-  
+       {showAlert && (
+          <AlertDismissible
+          mensaje={mensajeRespuesta}
+          setShow={setShowAlert}
+          />
+        )}
         {/* Tabla de estados */}
         <Grid
           gridHeading={encabezadoEstados}
           gridData={listaEstados}
+          handle={handleModal}
+          buttonVisible={true}
           filterColumns={["codigoEstado", "descripcionEstado"]}
           selectableRows={false}
         ></Grid>
       </div>
   
-      {/* Modal para agregar o editar una estado */}
-      <CustomModal show={showModal} onHide={handleModal} title={isEditing ? "Editar Estado" : "Agregar Estado"}>
-        <Form onSubmit={handleSubmit}>
+      {/* Modal para agregar o editar un estado */}
+      <CustomModal show={showModal} 
+      onHide={handleModal} 
+      title={isEditing ? "Editar Estado" : "Agregar Estado"}
+      showSubmitButton={true} 
+      submitButtonLabel={isEditing ? "Actualizar" : "Guardar"} 
+      formId="formEstado">
+        <Form  id="formEstado" onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
               <Form.Group controlId="formCodigoEstado">
@@ -233,11 +228,6 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
               </Form.Group>
             </Col>
           </Row>
-
-          <Button variant="primary" type="submit" className="mt-3 mb-0 btn-save">
-            <RiSaveFill className="me-2" size={24} />
-            {isEditing ? "Actualizar" : "Guardar"}
-          </Button>
         </Form>
       </CustomModal>
     </>

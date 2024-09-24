@@ -17,10 +17,10 @@
   }
   
   .btn-crear {
-    background-color: #548454;
+    background-color: #497494 !important;
+    border: none !important;
     color: white;
     margin-top: 10px;
-    border-color: #548454;
   }
   
   /* Estilos para el contenedor del filtro */
@@ -29,8 +29,8 @@
   }
 
   .btn-save{
-    background-color: #497494 !important;
-    border: black !important;
+    background-color: #548454 !important;
+    border: none !important;
   }
 
   .btn-cancel{
