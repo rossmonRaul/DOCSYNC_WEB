@@ -9,7 +9,7 @@ import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
 import { FaRegBell } from "react-icons/fa";
 import "../../css/TopBar.css";
-import icono from "../../assets/logo.png";
+import logo from "../../assets/logo.png";
 import { menuItem } from "../menuItems/menuItems";
 import { Link } from "react-router-dom";
 import { subMenuCatalogos, subMenuOtros } from "../menuItems/subMenuItems";
@@ -46,7 +46,7 @@ const NavbarMenu: React.FC = () => {
         <Container fluid>
           <Navbar.Brand href="#">
             <div className="brand-content">
-              <img width={50} height={50} src={icono}></img>
+              <img width={50} height={50} src={logo}></img>
               <span>DOCSYNC</span>
             </div>
           </Navbar.Brand>

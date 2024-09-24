@@ -1,5 +1,3 @@
-
-
 export const PublicRoutes = {
     LOGIN: 'login'
 };
@@ -16,5 +14,7 @@ export const PrivateRoutes = {
     CATALOGOPERSONAS: 'catalogo-personas',
     CATALOGOESTADOS: 'catalogo-estados',
     CATALOGOTIPOSDOCUMENTOS: 'catalogo-tiposDocumentos',
-    CATALOGOJERARQUIADOCUMENTOS:'jerarquia-documento'
+    CATALOGOJERARQUIADOCUMENTOS:'jerarquia-documento',
+    CATALOGOUSUARIOS: 'catalogo-usuarios',
+    ADMINROLES: 'admin-roles',
 };

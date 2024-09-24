@@ -27,6 +27,11 @@ export const subMenuCatalogos: MenuItem[] = [
       name: "Jerarquía de Documento",
       roles: [1,2,3,4],
     },
+    {
+      path: "/catalogo-usuarios",
+      name: "Usuarios",
+      roles: [1,2,3,4],
+    },
   ];
 
   export const subMenuOtros: MenuItem[] = [
@@ -38,6 +43,11 @@ export const subMenuCatalogos: MenuItem[] = [
     {
       path: "/firma-digital",
       name: "Firma Digital",
+      roles: [1,2,3,4],
+    },
+    {
+      path: "/admin-roles",
+      name: "Administración de roles",
       roles: [1,2,3,4],
     },
   ];

@@ -25,6 +25,8 @@ import Login from "./pages/LoginPage.tsx";
 import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
 import CatalogoTiposDocumentos from "./pages/private/Catalogos/CatalogoTiposDocumentos.tsx";
 import CatalogoJerarquiasDocumentos from "./pages/private/Catalogos/CatalogoJerarquiasDocumentos.tsx";
+import CatalogoUsuarios from "./pages/private/Catalogos/CatalogoUsuarios.tsx";
+import AdministrarRoles from "./pages/private/AdministrarRoles/AdministrarRoles.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -65,7 +67,14 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGOJERARQUIADOCUMENTOS}
           element={<CatalogoJerarquiasDocumentos />}
         />
-        
+        <Route
+          path={PrivateRoutes.CATALOGOUSUARIOS}
+          element={<CatalogoUsuarios />}
+        />
+        <Route
+          path={PrivateRoutes.ADMINROLES}
+          element={<AdministrarRoles />}
+        />
       </Route>
     </Route>
   )
