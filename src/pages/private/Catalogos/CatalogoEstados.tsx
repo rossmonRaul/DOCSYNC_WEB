@@ -6,8 +6,7 @@ import { ObtenerEstados, CrearEstado, EliminarEstado, ActualizarEstado } from ".
 import { FaTrash ,FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
-import { RiSaveFill } from "react-icons/ri";
-import Swal from "sweetalert2";
+import { AlertDismissible } from "../../../components/alert/alert";
 
 
 // Interfaz para la información de el estado
@@ -31,6 +30,8 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
   usuarioModificacion: ""
 });
   const [isEditing, setIsEditing] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
     obtenerEstados();
@@ -52,21 +53,18 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
 
       const response = await EliminarEstado(estado);
 
-        if (response.indicador === 0) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
-            obtenerEstados();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
-          }
+      if(response){
+        setShowAlert(true);
+        setMensajeRespuesta(response);
+        obtenerEstados();
+      }else{
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el estado" });
+      }
     } catch (error) {
-      console.error("Error al eliminar estado:", error);
+
+      setShowAlert(true);
+      setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el estado" });
     }
   };
 
@@ -109,21 +107,17 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
         const estadoActualizar = { ...nuevaEstado, usuarioModificacion: identificacionUsuario };
         const response = await ActualizarEstado(estadoActualizar);
   
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: 'success',
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerEstados();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
+        }else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el estado" });
         }
       } catch (error) {
-        console.error("Error al actualizar el estado:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el estado" });
       }
     } else {
       // Crear estado
@@ -131,21 +125,17 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
         const estadoACrear = { ...nuevaEstado, idEstado: "0", usuarioCreacion: identificacionUsuario };
         const response = await CrearEstado(estadoACrear);
   
-        if (response.indicador === 0) {
-          Swal.fire({
-            icon: 'success',
-            title: response.mensaje,
-          });
+        if(response){
+          setShowAlert(true);
+          setMensajeRespuesta(response);
           obtenerEstados();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
+        } else{
+          setShowAlert(true);
+          setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el estado" });
         }
       } catch (error) {
-        console.error("Error al crear el estado:", error);
+        setShowAlert(true);
+        setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el estado" });
       }
     }
   
@@ -186,7 +176,12 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
     <>
       <h1 className="title">Catálogo de Estados</h1>
       <div style={{ padding: "20px" }}>
-        
+       {showAlert && (
+          <AlertDismissible
+          mensaje={mensajeRespuesta}
+          setShow={setShowAlert}
+          />
+        )}
         {/* Tabla de estados */}
         <Grid
           gridHeading={encabezadoEstados}
