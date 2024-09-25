@@ -7,6 +7,8 @@ type WorkerContextType = {
   startWorker: (workerFunction: Function, input: any) => void;
   isWorkerActive: boolean;
   setNotWorking: () => void;
+  setTaskTitle: React.Dispatch<React.SetStateAction<string>>;
+  taskTitle: string,
 };
 
 const WorkerContext = createContext<WorkerContextType | undefined>(undefined);
@@ -19,6 +21,7 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [worker, setWorker] = useState<Worker | null>(null);
   const [isWorkerActive, setIsWorkerActive] = useState<boolean>(false);
+  const [taskTitle, setTaskTitle] = useState<string | any>("Ejecución de proceso");
 
   const setNotWorking = () => {
     setIsWorkerActive(false);
@@ -36,7 +39,11 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
     setWorker(newWorker);
 
     newWorker.onmessage = (e) => {
-      setResult(e.data.result);
+      if (e.data.type === "ERROR") {
+        setError(e.data.message);
+      } else {
+        setResult(e.data.result);
+      }
       setLoading(false);
     };
 
@@ -68,6 +75,8 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
         startWorker,
         isWorkerActive,
         setNotWorking,
+        setTaskTitle,
+        taskTitle
       }}
     >
       {children}

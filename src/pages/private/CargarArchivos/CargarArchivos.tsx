@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent, lazy } from "react";
+import { useState, ChangeEvent, FormEvent, lazy, useEffect } from "react";
 import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
@@ -57,9 +57,65 @@ const sumWorkerFunction = () => {
 
 const cargarDocumentosWorker = () => {
   onmessage = async (e) => {
-    const docs = e.data;
-    const response = await CrearDocumento(docs);
-    postMessage({ result: response.mensaje });
+    const { metadatosDocsEnviar, docs, urlCarga, urlMetadata, storedToken } =
+      e.data;
+    console.log(docs);
+    console.log(metadatosDocsEnviar);
+    let respuestaServidor = 0;
+    // primero carga de metadatos
+
+    try {
+      const responseCargaMetadatos = await fetch(urlMetadata, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json;charset=UTF-8",
+          Accept: "application/json",
+          Authorization: `Bearer ${storedToken}`,
+        },
+        body: JSON.stringify(metadatosDocsEnviar),
+      });
+
+      if (!responseCargaMetadatos.ok) {
+        respuestaServidor = -1;
+      }
+      const dataMetadatos = await responseCargaMetadatos.json();
+
+      if (dataMetadatos.indicador === 1) {
+        respuestaServidor = -1;
+      }
+
+      //si pudo insertar las metadata bien entonces ingresa los archivos como tal
+      if (respuestaServidor === 0) {
+        const responseCargaArchivos = await fetch(urlCarga, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+          body: docs,
+        });
+        if (!responseCargaArchivos.ok) {
+          //realizar rollback en BD metadata
+        }
+        const dataArchivos = await responseCargaArchivos.json();
+        //si hay error entonces hace rollback pero solo los que no pudieron subirse.
+        if (responseCargaArchivos.ok && dataArchivos.indicador === 1) {
+        }
+        console.log(dataArchivos);
+        postMessage({ type: "Success", result: dataArchivos.mensaje });
+      } else {
+        postMessage({
+          type: "Error",
+          message:
+            "Ocurrió un error en el servidor. Contacte con un administrador.",
+        });
+      }
+    } catch (error) {
+      postMessage({
+        type: "Error",
+        message:
+          "Ocurrió un error al realizar la petición. Contacte con un administrador.",
+      });
+    }
   };
 };
 
@@ -74,16 +130,19 @@ function CargarArchivos() {
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
-  const [number, setNumber] = useState(2);
-  const { startWorker, result, error, loading } = useWorker();
-  const identificacionUsuario = localStorage.getItem(
-    "identificacionUsuario"
-  );
+  const { startWorker, result, error, loading, setTaskTitle } = useWorker();
+  const identificacionUsuario = localStorage.getItem("identificacionUsuario");
+  const API_BASE_URL_BD = import.meta.env.VITE_API_BASE_URL;
 
+  const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
   const [input, setInput] = useState(10);
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
+
+  useEffect(() => {
+    setTaskTitle("Carga de archivos");
+  }, []);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -185,7 +244,7 @@ function CargarArchivos() {
   // Maneja el cambio de archivos
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      console.log(import.meta.env.VITE_MENSAJE)
+      console.log(import.meta.env.VITE_MENSAJE);
       const selectedFiles = Array.from(event.target.files); // Convierte FileList a un array
       setFiles(selectedFiles); // Actualiza el estado con el array de archivos
 
@@ -211,7 +270,7 @@ function CargarArchivos() {
               numeroExpediente: "",
               numeroSolicitud: "",
               titulo: "",
-              usuarioCreacion: identificacionUsuario!!
+              usuarioCreacion: identificacionUsuario!!,
             };
             archivosAux.push(file);
             consecutivo = consecutivo++;
@@ -281,7 +340,6 @@ function CargarArchivos() {
   const cargarArchivos = async (event: FormEvent) => {
     event.preventDefault();
     const formData = new FormData();
-    const storedToken = localStorage.getItem("token");
     const metadatosDocsEnviar = listaArchivosTablaSeleccionados.map((a) => ({
       ...a,
       archivo: null,
@@ -290,37 +348,18 @@ function CargarArchivos() {
       // Agrega el archivo al FormData
       formData.append("entityDocumento", a.archivo);
     });
-    const urlMongo =
-      "https://localhost:44349/api/v1.0/Documento/CrearDocumento";
+    const storedToken = localStorage.getItem("token");
+    const urlCarga = `${API_BASE_URL_CARGA}/Documento/CrearDocumento`;
 
-    console.log(metadatosDocsEnviar);
-    let token;
-    if (storedToken) {
-      token = storedToken;
-    }
+    const urlMetadata = `${API_BASE_URL_BD}/Documento/CrearDocumento`;
 
-    try {
-      const response = await fetch(urlMongo, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-    
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`); // Manejo de errores si la respuesta no es exitosa
-      }
-    
-      const data = await response.json(); // Si esperas un JSON como respuesta
-      console.log(data);
-    } catch (error) {
-      console.error('Error al hacer la petición:', error);
-    }
-
-    //const response = await CrearDocumento(metadatosDocsEnviar);
-
-    //startWorker(cargarDocumentosWorker, listaArchivosTablaSeleccionados);
+    startWorker(cargarDocumentosWorker, {
+      metadatosDocsEnviar: metadatosDocsEnviar,
+      docs: formData,
+      urlMetadata,
+      urlCarga,
+      storedToken,
+    });
   };
 
   // Función para manejar el cierre del modal
@@ -353,27 +392,8 @@ function CargarArchivos() {
     setShowModal(true);
     setDocumentoEditado(editar);
   };
-  const handleChangeNumber = (e: any) => {
-    setNumber(e.target.value); // Actualiza el input para el cálculo
-  };
   return (
     <>
-      <div>
-        <h1>Worker Example</h1>
-        <input
-          type="number"
-          value={input}
-          onChange={(e) => setInput(parseInt(e.target.value))}
-          placeholder="Enter a number"
-        />
-        <button onClick={handleFibonacci} disabled={loading}>
-          {loading ? "Calculating..." : "Calculate Fibonacci"}
-        </button>
-        <button onClick={handleSum} disabled={loading}>
-          {loading ? "Calculating..." : "Calculate Sum"}
-        </button>
-      </div>
-
       <CustomModal
         showSubmitButton={true}
         show={showModal}

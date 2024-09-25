@@ -5,11 +5,18 @@ import "../../css/workerStatus.css";
 import { FaEye } from "react-icons/fa";
 
 const WorkerStatus: React.FC<any> = ({
-  titulo = "Ejecución de proceso",
   textoListo = "Listo!",
   textoCargando = "Cargando...",
 }) => {
-  const { loading, result, error, setNotWorking, isWorkerActive } = useWorker();
+  const {
+    loading,
+    result,
+    error,
+    setNotWorking,
+    isWorkerActive,
+    taskTitle,
+    setTaskTitle,
+  } = useWorker();
   const [isVisible, setIsVisible] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -42,23 +49,22 @@ const WorkerStatus: React.FC<any> = ({
         >
           {!isMinimized && (
             <div className="status-header">
-              <h3>{titulo}</h3>
-              <div>
-              <button className="toggle-btn" onClick={handleMinimize}>
-                {isMinimized && !loading
-                  ? textoListo
-                  : isMinimized
-                  ? "Abrir"
-                  : "---"}
-              </button>
-
-              {!loading && (
-                <button className="close-btn" onClick={handleClose}>
-                  X
+              <h3>{taskTitle}</h3>
+              <div className="d-flex">
+                <button className="toggle-btn" onClick={handleMinimize}>
+                  {isMinimized && !loading
+                    ? textoListo
+                    : isMinimized
+                    ? "Abrir"
+                    : "---"}
                 </button>
-              )}
+
+                {!loading && (
+                  <button className="close-btn" onClick={handleClose}>
+                    X
+                  </button>
+                )}
               </div>
-             
             </div>
           )}
 
@@ -67,9 +73,11 @@ const WorkerStatus: React.FC<any> = ({
               {loading ? (
                 <p className="loading">{textoCargando}</p>
               ) : error ? (
-                <p className="error">Error: {error}</p>
+                <p className="error">{error}</p>
               ) : result !== null ? (
-                <p className="result">Resultado: {result}</p>
+                <>
+                  <p className="result">{result}</p>
+                </>
               ) : (
                 <p className="ready">{textoListo}</p>
               )}
@@ -77,11 +85,13 @@ const WorkerStatus: React.FC<any> = ({
           )}
 
           <button className="toggle-btn" onClick={handleMinimize}>
-            {isMinimized && !loading
-              ? textoListo
-              : isMinimized
-              ? <FaEye size={25}/>
-              : ""}
+            {isMinimized && !loading ? (
+              textoListo
+            ) : isMinimized ? (
+              <FaEye size={25} />
+            ) : (
+              ""
+            )}
           </button>
         </div>
       )}

@@ -3,6 +3,7 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
+    z-index: 99999;
     background-color: #497494; 
     color: #ffff; 
     padding: 20px;

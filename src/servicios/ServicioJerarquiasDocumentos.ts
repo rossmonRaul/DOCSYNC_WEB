@@ -1,22 +1,23 @@
 import { ProcesarDatosApi } from "./ApiFetch";
 const controlador = "JerarquiaDocumento";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const ObtenerJerarquiasDoc = async () => {
-    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/ObtenerJerarquiasDoc`;
+    const url = `${API_BASE_URL}/${controlador}/ObtenerJerarquiasDoc`;
     return await ProcesarDatosApi('GET', url, '');
 }
 
 export const ActualizarJerarquiaDoc = async (data: any) => {
-    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/ActualizarJerarquiaDoc`;
+    const url = `${API_BASE_URL}/${controlador}/ActualizarJerarquiaDoc`;
     return await ProcesarDatosApi('PUT', url, data);
 }
   
 export const CrearJerarquiaDoc = async (data: any) => {
-    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/CrearJerarquiaDoc`;
+    const url = `${API_BASE_URL}/${controlador}/CrearJerarquiaDoc`;
     return await ProcesarDatosApi('POST', url, data);
 }
  
 export const EliminarJerarquiaDoc = async (data: any) => {
-    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/EliminarJerarquiaDoc`;
+    const url = `${API_BASE_URL}/${controlador}/EliminarJerarquiaDoc`;
     return await ProcesarDatosApi('PUT', url, data);
 }
