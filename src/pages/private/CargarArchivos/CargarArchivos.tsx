@@ -17,17 +17,19 @@ import axios from "axios";
 
 interface Archivo {
   id: Number;
-  autor?: string;
-  asunto?: string;
-  departamento?: string;
-  confidencialidad?: string;
-  contenidoRelevante?: string;
-  numeroExpediente?: string;
-  numeroSolicitud?: string;
-  docPadre?: string;
-  docHijo?: string;
-  titulo?: string;
+  autor: string;
+  asunto: string;
+  departamento: string;
+  confidencialidad: string;
+  contenidoRelevante: string;
+  numeroExpediente: string;
+  numeroSolicitud: string;
+  docPadre: string;
+  docHijo: string;
+  titulo: string;
+  nombre: string;
   archivo: File;
+  usuarioCreacion: string;
 }
 
 const fibonacciWorkerFunction = () => {
@@ -74,6 +76,9 @@ function CargarArchivos() {
   const [documentoEditado, setDocumentoEditado] = useState(false);
   const [number, setNumber] = useState(2);
   const { startWorker, result, error, loading } = useWorker();
+  const identificacionUsuario = localStorage.getItem(
+    "identificacionUsuario"
+  );
 
   const [input, setInput] = useState(10);
 
@@ -180,6 +185,7 @@ function CargarArchivos() {
   // Maneja el cambio de archivos
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
+      console.log(import.meta.env.VITE_MENSAJE)
       const selectedFiles = Array.from(event.target.files); // Convierte FileList a un array
       setFiles(selectedFiles); // Actualiza el estado con el array de archivos
 
@@ -200,10 +206,12 @@ function CargarArchivos() {
               contenidoRelevante: "",
               departamento: "",
               docHijo: "",
+              nombre: element.name,
               docPadre: "",
               numeroExpediente: "",
               numeroSolicitud: "",
               titulo: "",
+              usuarioCreacion: identificacionUsuario!!
             };
             archivosAux.push(file);
             consecutivo = consecutivo++;
@@ -279,8 +287,8 @@ function CargarArchivos() {
       archivo: null,
     }));
     listaArchivosTablaSeleccionados.forEach((a) => {
-       // Agrega el archivo al FormData
-       formData.append('entityDocumento', a.archivo);
+      // Agrega el archivo al FormData
+      formData.append("entityDocumento", a.archivo);
     });
     const urlMongo =
       "https://localhost:44349/api/v1.0/Documento/CrearDocumento";
@@ -292,18 +300,25 @@ function CargarArchivos() {
     }
 
     try {
-      const response = await axios.post(urlMongo, formData, {
+      const response = await fetch(urlMongo, {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        body: formData,
       });
-
-      console.log("Respuesta del servidor:", response.data);
+    
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`); // Manejo de errores si la respuesta no es exitosa
+      }
+    
+      const data = await response.json(); // Si esperas un JSON como respuesta
+      console.log(data);
     } catch (error) {
-      console.error("Error al subir el archivo:", error);
+      console.error('Error al hacer la petición:', error);
     }
 
-    //const response = await CrearDocumento(docsEnviar);
+    //const response = await CrearDocumento(metadatosDocsEnviar);
 
     //startWorker(cargarDocumentosWorker, listaArchivosTablaSeleccionados);
   };

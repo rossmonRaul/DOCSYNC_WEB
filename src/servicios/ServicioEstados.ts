@@ -2,21 +2,21 @@ import { ProcesarDatosApi } from "./ApiFetch";
 const controlador = "Estado";
 
 export const ObtenerEstados = async () => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/ObtenerEstados`;
-    return await ProcesarDatosApi('GET', url, '');
-}
+  const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/ObtenerEstados`;
+  return await ProcesarDatosApi("GET", url, "");
+};
 
 export const ActualizarEstado = async (data: any) => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/ActualizarEstado`;
-    return await ProcesarDatosApi('PUT', url, data);
-}
-  
+  const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/ActualizarEstado`;
+  return await ProcesarDatosApi("PUT", url, data);
+};
+
 export const CrearEstado = async (data: any) => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/CrearEstado`;
-    return await ProcesarDatosApi('POST', url, data);
-}
- 
+  const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/CrearEstado`;
+  return await ProcesarDatosApi("POST", url, data);
+};
+
 export const EliminarEstado = async (data: any) => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/EliminarEstado`;
-    return await ProcesarDatosApi('PUT', url, data);
-}
+  const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/EliminarEstado`;
+  return await ProcesarDatosApi("PUT", url, data);
+};

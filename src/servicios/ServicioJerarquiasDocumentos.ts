@@ -2,21 +2,21 @@ import { ProcesarDatosApi } from "./ApiFetch";
 const controlador = "JerarquiaDocumento";
 
 export const ObtenerJerarquiasDoc = async () => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/ObtenerJerarquiasDoc`;
+    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/ObtenerJerarquiasDoc`;
     return await ProcesarDatosApi('GET', url, '');
 }
 
 export const ActualizarJerarquiaDoc = async (data: any) => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/ActualizarJerarquiaDoc`;
+    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/ActualizarJerarquiaDoc`;
     return await ProcesarDatosApi('PUT', url, data);
 }
   
 export const CrearJerarquiaDoc = async (data: any) => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/CrearJerarquiaDoc`;
+    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/CrearJerarquiaDoc`;
     return await ProcesarDatosApi('POST', url, data);
 }
  
 export const EliminarJerarquiaDoc = async (data: any) => {
-    const url = `http://localhost:5271/api/v1.0/${controlador}/EliminarJerarquiaDoc`;
+    const url = `${import.meta.env.VITE_API_BASE_URL}/${controlador}/EliminarJerarquiaDoc`;
     return await ProcesarDatosApi('PUT', url, data);
 }
