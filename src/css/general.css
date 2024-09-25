@@ -53,3 +53,9 @@
     width: 25%; /* Ancho del input al 100% del contenedor */
     margin-top: 5px; /* Espacio entre el label y el input */
   }
+
+  button{
+    display: flex;
+    align-content: center;
+    align-items: center;
+  }

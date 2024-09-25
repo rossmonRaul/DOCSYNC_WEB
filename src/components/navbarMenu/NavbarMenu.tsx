@@ -7,7 +7,7 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
 import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
-import { FaRegBell } from "react-icons/fa";
+import { FaRegBell, FaBook } from "react-icons/fa";
 import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
 import { menuItem } from "../menuItems/menuItems";
@@ -40,7 +40,7 @@ const NavbarMenu: React.FC = () => {
     <>
       <Navbar
         style={{ backgroundColor: "#9E0000" }}
-        data-bs-theme="dark"
+      
         expand="lg"
       >
         <Container fluid>
@@ -80,6 +80,51 @@ const NavbarMenu: React.FC = () => {
                   }
                 })}
               </Nav>
+              
+              <NavDropdown
+                style={{ margin: 10, marginRight: 30, marginTop: 15 }}
+                title={
+                <>
+                    <FaBook style={{ marginRight: "5px" }}/>
+                    Más opciones
+                </>
+                }
+                id="navbarScrollingDropdown"
+              >
+                {subMenuOtros.map((item, index) => {
+                  if (!item.roles || item.roles.includes(userState.idRol)) {
+                    return (
+                      <NavDropdown.Item key={index * 10}>
+                        <Nav.Link as={Link} to={item.path}>
+                        {item.icon && <item.icon />} {item.name}
+                        </Nav.Link>
+                      </NavDropdown.Item>
+                    );
+                  }
+                })}
+                <NavDropdown.Divider />
+                <NavDropdown
+                  style={{ margin: 10, marginLeft: 15 }}
+                  title={<>
+                  <FaBook style={{ marginRight: 5 }}/>
+                  Catálogos
+                  </>}
+                >
+                  {subMenuCatalogos.map((item, index) => {
+                    if (!item.roles || item.roles.includes(userState.idRol)) {
+                      return (
+                        <NavDropdown.Item key={index * 5}>
+                          <Nav.Link as={Link} to={item.path}>
+                          {item.icon && <item.icon />} {item.name}
+                          </Nav.Link>
+                        </NavDropdown.Item>
+                      );
+                    }
+                  })}
+                </NavDropdown>
+                
+                
+              </NavDropdown>
               <div className="notifications">
                 <FaRegBell
                   size={30}
@@ -99,40 +144,6 @@ const NavbarMenu: React.FC = () => {
                   </div>
                 )}
               </div>
-              <NavDropdown
-                style={{ margin: 10, marginRight: 30, marginTop: 15 }}
-                title="Más opciones"
-                id="navbarScrollingDropdown"
-              >
-                <NavDropdown
-                  style={{ margin: 10, marginLeft: 15 }}
-                  title="Catálogos"
-                >
-                  {subMenuCatalogos.map((item, index) => {
-                    if (!item.roles || item.roles.includes(userState.idRol)) {
-                      return (
-                        <NavDropdown.Item key={index * 5}>
-                          <Nav.Link as={Link} to={item.path}>
-                            {item.name}
-                          </Nav.Link>
-                        </NavDropdown.Item>
-                      );
-                    }
-                  })}
-                </NavDropdown>
-                <NavDropdown.Divider />
-                {subMenuOtros.map((item, index) => {
-                  if (!item.roles || item.roles.includes(userState.idRol)) {
-                    return (
-                      <NavDropdown.Item key={index * 10}>
-                        <Nav.Link as={Link} to={item.path}>
-                          {item.name}
-                        </Nav.Link>
-                      </NavDropdown.Item>
-                    );
-                  }
-                })}
-              </NavDropdown>
               <div
                 style={{
                   display: "flex",
