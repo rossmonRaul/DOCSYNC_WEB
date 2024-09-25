@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, lazy } from "react";
 import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
@@ -13,6 +13,7 @@ import useWebWorker from "../../../hooks/useWebWorker";
 import { useWorker } from "../../../context/workerContext";
 import WorkerStatus from "../../../components/workerStatus/worketStatus";
 import { CrearDocumento } from "../../../servicios/ServicioDocumentos";
+import axios from "axios";
 
 interface Archivo {
   id: Number;
@@ -26,7 +27,7 @@ interface Archivo {
   docPadre?: string;
   docHijo?: string;
   titulo?: string;
-  archivo?: File;
+  archivo: File;
 }
 
 const fibonacciWorkerFunction = () => {
@@ -168,7 +169,6 @@ function CargarArchivos() {
   };
 
   const handleInputChange = (e: any) => {
-    console.log(e.target.value);
     if (documentoSeleccionado) {
       setDocumentoSeleccionado({
         ...documentoSeleccionado,
@@ -272,9 +272,42 @@ function CargarArchivos() {
 
   const cargarArchivos = async (event: FormEvent) => {
     event.preventDefault();
-    startWorker(cargarDocumentosWorker, listaArchivosTablaSeleccionados);
+    const formData = new FormData();
+    const storedToken = localStorage.getItem("token");
+    const metadatosDocsEnviar = listaArchivosTablaSeleccionados.map((a) => ({
+      ...a,
+      archivo: null,
+    }));
+    listaArchivosTablaSeleccionados.forEach((a) => {
+       // Agrega el archivo al FormData
+       formData.append('entityDocumento', a.archivo);
+    });
+    const urlMongo =
+      "https://localhost:44349/api/v1.0/Documento/CrearDocumento";
+
+    console.log(metadatosDocsEnviar);
+    let token;
+    if (storedToken) {
+      token = storedToken;
+    }
+
+    try {
+      const response = await axios.post(urlMongo, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Respuesta del servidor:", response.data);
+    } catch (error) {
+      console.error("Error al subir el archivo:", error);
+    }
+
+    //const response = await CrearDocumento(docsEnviar);
+
+    //startWorker(cargarDocumentosWorker, listaArchivosTablaSeleccionados);
   };
-  
+
   // Función para manejar el cierre del modal
   const handleModal = () => {
     setShowModal(!showModal);
@@ -289,7 +322,7 @@ function CargarArchivos() {
   };
 
   const validarDatosCompletosArchivo = (archivo: Archivo): boolean => {
-    return true;
+    //return true;
     const valores = Object.values(archivo);
 
     for (const valor of valores) {
@@ -327,11 +360,13 @@ function CargarArchivos() {
       </div>
 
       <CustomModal
+        showSubmitButton={true}
         show={showModal}
         onHide={handleModal}
         title={"Información del archivo"}
+        formId="formCargaArchivos"
       >
-        <Form onSubmit={guardarInformacioArchivo}>
+        <Form id="formCargaArchivos" onSubmit={guardarInformacioArchivo}>
           <Row>
             <Col md={6}>
               <Form.Group controlId="formCodigoEstado">
@@ -474,14 +509,6 @@ function CargarArchivos() {
               </Form.Group>
             </Col>
           </Row>
-          <Button
-            variant="primary"
-            type="submit"
-            className="mt-3 mb-0 btn-save"
-          >
-            <RiSaveFill className="me-2" size={24} />
-            {"Guardar"}
-          </Button>
         </Form>
       </CustomModal>
       <h1 className="title">Cargar archivos</h1>

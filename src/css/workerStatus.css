@@ -16,7 +16,7 @@
   }
   
   .worker-status.ready {
-    background-color: #4CAF50;
+    background-color: #2B9E2B;
   }
 
   .worker-status.error {
@@ -37,8 +37,8 @@
   }
   
   .worker-status.minimized.ready {
-    background-color: #4CAF50; 
-    transition: none;
+    background-color: #2B9E2B; 
+    animation: none;
   }
   
   .worker-status.minimized h3,

@@ -27,7 +27,6 @@ import { WorkerProvider } from "./context/workerContext.tsx";
 import CatalogoTiposDocumentos from "./pages/private/Catalogos/CatalogoTiposDocumentos.tsx";
 import CatalogoJerarquiasDocumentos from "./pages/private/Catalogos/CatalogoJerarquiasDocumentos.tsx";
 
-
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
@@ -59,7 +58,7 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGOESTADOS}
           element={<CatalogoEstados />}
         />
-         <Route
+        <Route
           path={PrivateRoutes.CATALOGOTIPOSDOCUMENTOS}
           element={<CatalogoTiposDocumentos />}
         />
@@ -67,7 +66,6 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGOJERARQUIADOCUMENTOS}
           element={<CatalogoJerarquiasDocumentos />}
         />
-        
       </Route>
     </Route>
   )

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useWorker } from "../../context/workerContext";
 import "../../css/workerStatus.css";
+import { FaEye } from "react-icons/fa";
 
 const WorkerStatus: React.FC<any> = ({
   titulo = "Ejecución de proceso",
@@ -42,12 +43,22 @@ const WorkerStatus: React.FC<any> = ({
           {!isMinimized && (
             <div className="status-header">
               <h3>{titulo}</h3>
-              <h4></h4>
+              <div>
+              <button className="toggle-btn" onClick={handleMinimize}>
+                {isMinimized && !loading
+                  ? textoListo
+                  : isMinimized
+                  ? "Abrir"
+                  : "---"}
+              </button>
+
               {!loading && (
                 <button className="close-btn" onClick={handleClose}>
                   X
                 </button>
               )}
+              </div>
+             
             </div>
           )}
 
@@ -58,7 +69,7 @@ const WorkerStatus: React.FC<any> = ({
               ) : error ? (
                 <p className="error">Error: {error}</p>
               ) : result !== null ? (
-                <p className="result">Result: {result}</p>
+                <p className="result">Resultado: {result}</p>
               ) : (
                 <p className="ready">{textoListo}</p>
               )}
@@ -69,8 +80,8 @@ const WorkerStatus: React.FC<any> = ({
             {isMinimized && !loading
               ? textoListo
               : isMinimized
-              ? "Abrir"
-              : "Ocultar"}
+              ? <FaEye size={25}/>
+              : ""}
           </button>
         </div>
       )}
