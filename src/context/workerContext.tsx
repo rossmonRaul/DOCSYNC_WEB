@@ -39,7 +39,7 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
     setWorker(newWorker);
 
     newWorker.onmessage = (e) => {
-      if (e.data.type === "ERROR") {
+      if (e.data.type === "Error") {
         setError(e.data.message);
       } else {
         setResult(e.data.result);
