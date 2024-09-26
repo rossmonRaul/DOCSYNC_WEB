@@ -8,7 +8,7 @@ type WorkerContextType = {
   isWorkerActive: boolean;
   setNotWorking: () => void;
   setTaskTitle: React.Dispatch<React.SetStateAction<string>>;
-  taskTitle: string,
+  taskTitle: string;
 };
 
 const WorkerContext = createContext<WorkerContextType | undefined>(undefined);
@@ -21,10 +21,21 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [worker, setWorker] = useState<Worker | null>(null);
   const [isWorkerActive, setIsWorkerActive] = useState<boolean>(false);
-  const [taskTitle, setTaskTitle] = useState<string | any>("Ejecución de proceso");
+  const [taskTitle, setTaskTitle] = useState<string | any>(
+    "Ejecución de proceso"
+  );
 
   const setNotWorking = () => {
     setIsWorkerActive(false);
+  };
+
+  const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    if (loading) {
+      alert("hola");
+      event.preventDefault();
+      return (event.returnValue =
+        'Are you sure you want to exit?');
+    }
   };
 
   const startWorker = (workerFunction: Function, input: any) => {
@@ -45,16 +56,22 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
         setResult(e.data.result);
       }
       setLoading(false);
+
+      // Eliminar el listener 'beforeunload' al completar la tarea
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
 
     newWorker.onerror = (e) => {
       setError(e.message);
       setLoading(false);
+      // Eliminar el listener 'beforeunload' en caso de error
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
 
     return () => {
       newWorker.terminate();
       URL.revokeObjectURL(workerScriptUrl);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   };
 
@@ -76,7 +93,7 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
         isWorkerActive,
         setNotWorking,
         setTaskTitle,
-        taskTitle
+        taskTitle,
       }}
     >
       {children}
