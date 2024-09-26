@@ -1,88 +1,115 @@
 export const cargarDocumentosWorker = () => {
-    onmessage = async (e) => {
-      const { docs, urlCarga, urlMetadata, storedToken } = e.data;
-      const metadatosDocsEnviar = docs.map((a: any) => ({
-        ...a,
-        archivo: null,
-      }));
-  
-      const formData = new FormData();
-  
-      let respuestaServidor = 0;
-      // primero carga de metadatos
-  
-      try {
-        const responseCargaMetadatos = await fetch(urlMetadata, {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json;charset=UTF-8",
-            Accept: "application/json",
-            Authorization: `Bearer ${storedToken}`,
-          },
-          body: JSON.stringify(metadatosDocsEnviar),
+  const enviarPeticion = async (
+    url: any,
+    token: any,
+    datosEnvio: any,
+    headersData: any = {}
+  ) => {
+    const respuesta: any = {
+      estado: 0,
+    };
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          ...headersData,
+          Authorization: `Bearer ${token}`,
+        },
+        body: headersData["Content-type"]
+          ? JSON.stringify(datosEnvio)
+          : datosEnvio,
+      });
+
+      if (!response.ok) {
+        respuesta.estado = -1;
+      } else {
+        respuesta.data = await response.json();
+      }
+    } catch (error) {
+      respuesta.estado = -1;
+      respuesta.error =
+        "Ocurrió un error al realizar la petición. Contacte con un administrador.";
+
+      console.error(error);
+    }
+
+    return respuesta;
+  };
+
+  onmessage = async (e) => {
+    const { docs, urlCarga, urlMetadata, storedToken } = e.data;
+    const metadatosDocsEnviar = docs.map((a: any) => ({
+      ...a,
+      archivo: null,
+    }));
+
+    const formData = new FormData();
+
+    let respuestaServidor = 0;
+    // primero carga de metadatos
+
+    try {
+      const { estado: estadoMetadatos, data: dataMetadatos } =
+        await enviarPeticion(urlMetadata, storedToken, metadatosDocsEnviar, {
+          "Content-type": "application/json;charset=UTF-8",
+          Accept: "application/json",
         });
-  
-        if (!responseCargaMetadatos.ok) {
-          respuestaServidor = -1;
-        }
-        const dataMetadatos = await responseCargaMetadatos.json();
-  
-        if (dataMetadatos.indicador === 1) {
-          respuestaServidor = -1;
-        }
-  
-        //si pudo insertar las metadata bien entonces ingresa los archivos como tal
-        if (respuestaServidor === 0) {
-          const obtenerArchivoPorNombre = (nombre: any) => {
-            return docs.find((item: any) => item.nombre === nombre).archivo;
-          };
-          const docsInsertados = dataMetadatos.datos.archivosCargados;
-          docsInsertados.forEach((a: any, index: number) => {
-            // Agrega el archivo al FormData
-            formData.append(
-              `entityDocumento[${index}].IdDocumento`,
-              a.idDocumento
-            );
-            formData.append(
-              `entityDocumento[${index}].Archivo`,
-              obtenerArchivoPorNombre(a.nombre)
-            );
+
+      if (estadoMetadatos !== 0) {
+        respuestaServidor = -1;
+      }
+
+      if (dataMetadatos.indicador === 1) {
+        respuestaServidor = -1;
+      }
+
+      //si pudo insertar las metadata bien entonces ingresa los archivos como tal
+      if (respuestaServidor === 0) {
+        const obtenerArchivoPorNombre = (nombre: any) => {
+          return docs.find((item: any) => item.nombre === nombre).archivo;
+        };
+        const docsInsertados = dataMetadatos.datos.archivosCargados;
+        //preparar datos para la peticion a mongo, mandar el id del doc junto con el doc
+        docsInsertados.forEach((a: any, index: number) => {
+          // Agrega el archivo al FormData
+          formData.append(
+            `entityDocumento[${index}].IdDocumento`,
+            a.idDocumento
+          );
+          formData.append(
+            `entityDocumento[${index}].Archivo`,
+            obtenerArchivoPorNombre(a.nombre)
+          );
+        });
+
+        const { estado: estadoArchivos, data: dataArchivos } =
+          await enviarPeticion(urlCarga, storedToken, formData, {
+            Accept: "application/json",
           });
-  
-          const responseCargaArchivos = await fetch(urlCarga, {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${storedToken}`,
-            },
-            body: formData,
-          });
-          if (!responseCargaArchivos.ok) {
-            //realizar rollback en BD metadata
-  
-          }
-          const dataArchivos = await responseCargaArchivos.json();
-          //si hay error entonces hace rollback pero solo los que no pudieron subirse.
-          if (responseCargaArchivos.ok && dataArchivos.indicador === 1) {
-            console.log(dataArchivos);
-            postMessage({ type: "Error", result: dataArchivos.mensaje });
-          } else {
-            postMessage({ type: "Success", result: dataArchivos.mensaje });
-          }
+
+        if (estadoArchivos !== 0) {
+          //realizar rollback en BD metadata
+        }
+        //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
+        if (estadoArchivos === 0 && dataArchivos.indicador === 1) {
+          postMessage({ type: "Error", result: dataArchivos.mensaje });
         } else {
-          postMessage({
-            type: "Error",
-            message:
-              "Ocurrió un error en el servidor. Contacte con un administrador.",
-          });
+          postMessage({ type: "Success", result: dataArchivos.mensaje });
         }
-      } catch (error) {
+      } else {
         postMessage({
           type: "Error",
           message:
-            "Ocurrió un error al realizar la petición. Contacte con un administrador.",
+            "Ocurrió un error en el servidor. Contacte con un administrador.",
         });
-        console.error(error);
       }
-    };
+    } catch (error) {
+      postMessage({
+        type: "Error",
+        message:
+          "Ocurrió un error al realizar la petición. Contacte con un administrador.",
+      });
+      console.error(error);
+    }
   };
+};
