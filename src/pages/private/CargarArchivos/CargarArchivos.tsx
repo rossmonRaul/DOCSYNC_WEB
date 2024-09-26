@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent, lazy, useEffect } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
@@ -7,13 +7,8 @@ import { FaEdit, FaUpload } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
-import { RiSaveFill } from "react-icons/ri";
 import CustomModal from "../../../components/modal/CustomModal";
-import useWebWorker from "../../../hooks/useWebWorker";
 import { useWorker } from "../../../context/workerContext";
-import WorkerStatus from "../../../components/workerStatus/worketStatus";
-import { CrearDocumento } from "../../../servicios/ServicioDocumentos";
-import axios from "axios";
 
 interface Archivo {
   id: Number;
@@ -29,6 +24,7 @@ interface Archivo {
   titulo: string;
   nombre: string;
   archivo: File;
+  tamanioArchivo: number;
   usuarioCreacion: string;
 }
 
@@ -115,11 +111,12 @@ const cargarDocumentosWorker = () => {
         message:
           "Ocurrió un error al realizar la petición. Contacte con un administrador.",
       });
+      console.error(error);
     }
   };
 };
 
-// Componente funcional que representa la página de carga de archivops
+// Componente funcional que representa la página de carga de archivos
 function CargarArchivos() {
   const [files, setFiles] = useState<File[]>([]);
   const [idArchivoGenerado, setIdArchivoGenerado] = useState(0);
@@ -130,13 +127,13 @@ function CargarArchivos() {
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
-  const { startWorker, result, error, loading, setTaskTitle } = useWorker();
+  const { startWorker, setTaskTitle } = useWorker();
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const API_BASE_URL_BD = import.meta.env.VITE_API_BASE_URL;
-
+  const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
+  const FILE_MAX_SIZE = FILE_MAX_SIZE_MB * (1024 * 1024);
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
   const [input, setInput] = useState(10);
-
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
@@ -236,7 +233,8 @@ function CargarArchivos() {
     if (documentoSeleccionado) {
       setDocumentoSeleccionado({
         ...documentoSeleccionado,
-        [e.target.name]: e.target.value,
+        [e.target.name]:
+          e.target.type !== "checkbox" ? e.target.value : e.target.checked + "",
       });
     }
   };
@@ -244,7 +242,6 @@ function CargarArchivos() {
   // Maneja el cambio de archivos
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      console.log(import.meta.env.VITE_MENSAJE);
       const selectedFiles = Array.from(event.target.files); // Convierte FileList a un array
       setFiles(selectedFiles); // Actualiza el estado con el array de archivos
 
@@ -255,35 +252,47 @@ function CargarArchivos() {
           const existe = listaArchivosTabla.some(
             (a) => a.archivo?.name === element.name
           );
-          if (!existe) {
-            const file: Archivo = {
-              id: consecutivo++,
-              archivo: element,
-              autor: "",
-              asunto: "",
-              confidencialidad: "",
-              contenidoRelevante: "",
-              departamento: "",
-              docHijo: "",
-              nombre: element.name,
-              docPadre: "",
-              numeroExpediente: "",
-              numeroSolicitud: "",
-              titulo: "",
-              usuarioCreacion: identificacionUsuario!!,
-            };
-            archivosAux.push(file);
-            consecutivo = consecutivo++;
-          } else {
+          //validar tamanio del archivo antes de ingresar a la tabla
+          if (element.size > FILE_MAX_SIZE) {
             setMensajeRespuesta({
               indicador: 3,
-              mensaje: "El archivo ya está seleccionado",
+              mensaje: `Se han omitido los archivos que exceden los ${FILE_MAX_SIZE_MB}MB.`,
             });
             setShowAlert(true);
+          } else {
+            if (!existe) {
+              const file: Archivo = {
+                id: consecutivo++,
+                archivo: element,
+                tamanioArchivo: element.size,
+                autor: "",
+                asunto: "",
+                confidencialidad: "false",
+                contenidoRelevante: "",
+                departamento: "",
+                docHijo: "",
+                nombre: element.name,
+                docPadre: "",
+                numeroExpediente: "",
+                numeroSolicitud: "",
+                titulo: "",
+                usuarioCreacion: identificacionUsuario!!,
+              };
+              archivosAux.push(file);
+              consecutivo = consecutivo++;
+            } else {
+              setMensajeRespuesta({
+                indicador: 3,
+                mensaje:
+                  "Se han omitido los archivos duplicados o con el mismo nombre.",
+              });
+              setShowAlert(true);
+            }
           }
         });
         setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
         setIdArchivoGenerado(consecutivo);
+        setFiles([]);
       }
     }
   };
@@ -367,14 +376,6 @@ function CargarArchivos() {
     setShowModal(!showModal);
   };
 
-  const handleFibonacci = () => {
-    startWorker(fibonacciWorkerFunction, input);
-  };
-
-  const handleSum = () => {
-    startWorker(sumWorkerFunction, { start: 1, end: input });
-  };
-
   const validarDatosCompletosArchivo = (archivo: Archivo): boolean => {
     //return true;
     const valores = Object.values(archivo);
@@ -448,17 +449,17 @@ function CargarArchivos() {
             </Col>
             <Col md={6}>
               <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Confidencialidad</Form.Label>
-                <Form.Select
+                <Form.Label>Es confidencial</Form.Label>
+                <Form.Check
+                  type="switch"
                   name="confidencialidad"
-                  value={documentoSeleccionado?.confidencialidad}
-                  required
+                  checked={
+                    documentoSeleccionado?.confidencialidad === "true"
+                      ? true
+                      : false
+                  }
                   onChange={handleInputChange}
-                >
-                  <option value="">-- Selecciona una opción --</option>
-                  <option value="Si">Sí</option>
-                  <option value="No">No</option>
-                </Form.Select>
+                />
               </Form.Group>
             </Col>
           </Row>
@@ -554,8 +555,7 @@ function CargarArchivos() {
         >
           {showAlert && (
             <AlertDismissible
-              indicador={mensajeRespuesta.indicador}
-              mensaje={mensajeRespuesta.mensaje}
+              mensaje={mensajeRespuesta}
               setShow={setShowAlert}
             />
           )}
