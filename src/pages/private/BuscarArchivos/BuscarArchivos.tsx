@@ -51,7 +51,7 @@ function BuscarArchivos() {
   const [docHijo, setDocHijo] = useState("");
   const [titulo, setTitulo] = useState("");
   const [nombre, setNombre] = useState("");
-  const [opcionDepartamento, setOpcionDepartamento] = useState("1"); //
+  const [opcionDepartamento, setOpcionDepartamento] = useState(""); //
   const [opcionConfidencialidad, setOpcionSConfidencialidad] = useState('false'); //
 
   
@@ -169,8 +169,7 @@ const areInputsEmpty = () => {
   return (
       autor === '' &&
       asunto === '' &&
-      opcionDepartamento === "1" &&
-      opcionConfidencialidad === 'false' &&
+      opcionDepartamento === "" &&
       contenidoRelevante === '' &&
       numeroExpediente === '' &&
       numeroSolicitud === '' &&
@@ -437,12 +436,13 @@ const handleOpcionConfidenChange = (e:any) => {
           </Row>
         </Form>
       </CustomModal>
-      <h1 className="title">Buscar archivos</h1>   
-      
-    <div className="container-fluid">
 
-        <Row>
-            <Col md={12} className="d-flex justify-content-start">
+      <div className="container-fluid">
+      <Row>
+          <Col md={10} className="d-flex justify-content-start">
+           <h1  className="title">Buscar archivos</h1>   
+           </Col>
+            <Col md={2} className="d-flex justify-content-start">
             {(
                 <Button
                     className="btn-crear"
@@ -452,12 +452,12 @@ const handleOpcionConfidenChange = (e:any) => {
                 >
                     {mostrarBusqueda ? (
                         <>
-                            <FaEye className="me-2" size={24} />
+                            <FaEyeSlash className="me-2" size={24}  color="#9E0000" />
                             Filtros de búsqueda
                         </>
                     ) : (
                         <>
-                            <FaEyeSlash className="me-2" size={24} />
+                            <FaEye className="me-2" size={24} />                       
                             Filtros de búsqueda
                         </>
                     )}
@@ -465,13 +465,15 @@ const handleOpcionConfidenChange = (e:any) => {
 
                 )}
             </Col>
-        </Row>     
-
+        </Row>
+      </div>             
+    <hr></hr>
+    <div className="container-fluid">
+      
         {mostrarBusqueda ? (
-            <div>
-              
+            <div style={{ padding: '0 50px' }}>           
                 <Row>                 
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group className='mb-4'>
                             <label htmlFor="autor"><b>Autor</b></label>
                             <Form.Control
@@ -482,7 +484,7 @@ const handleOpcionConfidenChange = (e:any) => {
                         </Form.Group>
                     </Col>
 
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group className='mb-4'>
                             <label htmlFor="nombre"><b>Asunto</b></label>
                             <Form.Control
@@ -493,7 +495,7 @@ const handleOpcionConfidenChange = (e:any) => {
                         </Form.Group>
                     </Col>
 
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group className='mb-4'>
                             <label htmlFor="departamento"><b>Departamento</b></label>
                             <Form.Control
@@ -501,15 +503,15 @@ const handleOpcionConfidenChange = (e:any) => {
                                 value={opcionDepartamento}
                                 onChange={handleOpcionDepartamentoChange}
                             >
-                                <option value="1">-- Selecciona una opción --</option>
-                                <option value="2">Opción 1</option>
-                                <option value="3">Opción 2</option>
-                                <option value="4">Opción 3</option>
+                                <option value="">-- Selecciona una opción --</option>
+                                <option value="opcion1">Opción 1</option>
+                                <option value="opcion2">Opción 2</option>
+                                <option value="opcion3">Opción 3</option>
                             </Form.Control>
                         </Form.Group>
                     </Col>
                     
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group className='mb-4'>
                             <label htmlFor="confidencialidad"><b>Es confidencial</b></label>
                             <Form.Check
@@ -524,8 +526,9 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                  </Row>
+                  <Row style={{ padding: '0 0 20px 0' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group>
                             <label htmlFor="ContenidoRelevante"><b>Contenido relevante</b></label>
                             <Form.Control
@@ -535,7 +538,7 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group>
                             <label htmlFor="NumeroExpediente"><b>No. Expediente</b></label>
                             <Form.Control
@@ -545,7 +548,7 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group>
                             <label htmlFor="NumeroSolicitud"><b>No. Solicitud</b></label>
                             <Form.Control
@@ -555,7 +558,7 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group>
                             <label htmlFor="DocHijo"><b>Doc. Hijo</b></label>
                             <Form.Control
@@ -565,8 +568,9 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                  </Row>
+                  <Row>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group>
                             <label htmlFor="DocPadre"><b>Doc. Padre</b></label>
                             <Form.Control
@@ -576,7 +580,7 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group>
                             <label htmlFor="Titulo"><b>TÍtulo</b></label>
                             <Form.Control
@@ -586,7 +590,7 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                         <Form.Group>
                             <label htmlFor="Nombre"><b>Nombre de archivo</b></label>
                             <Form.Control
@@ -596,9 +600,9 @@ const handleOpcionConfidenChange = (e:any) => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
+                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
                       <Button 
-                          className="btn-crear"
+                          className="btn-save"
                           variant="primary"
                           onClick={handleBuscarClick}
                           style={{ marginTop: '20px' }}
@@ -610,60 +614,56 @@ const handleOpcionConfidenChange = (e:any) => {
                 </Row>
             </div>
         ): null }
-        <div ></div>
 
-        
         <div className="position-relative">
-
         {pendiente ? (
             <div style={{ height: "100vh" }}>Cargando...</div>
             ) : (
-
                     /*tabla donde se muestran los datos*/
-<div style={{ display: "flex", height: "100vh" }}>
-        {/* Primera mitad de la pantalla */}
-        <div
-          style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
-        >
-                {/* 
-          {showAlert && (
-            <AlertDismissible
-              indicador={mensajeRespuesta.indicador}
-              mensaje={mensajeRespuesta.mensaje}
-              setShow={setShowAlert}
-            />
-          )}
-          */}
-          <div>
-            <div className="content">
-            <div className=" row justify-content-between align-items-center" style={{ marginLeft: 10 }}
-        >    
-          </div>
-          <Grid
-            gridHeading={encabezadoArchivo}
-            gridData={listaArchivosTabla}
-            selectableRows={false}
-            filterColumns={["nombre"]}
-          ></Grid>
-            </div>
-          </div>
-        </div>
-        {documentoVer?.archivo && (
-          <div style={{ flex: 1, padding: "20px" }}>
-            <VisorArchivos
-              key={documentoVer}
-              documento={documentoVer.archivo}
-              cerrar={handleVisor}
-            />
-          </div>
-        )}
-      </div>
+        <div style={{ display: "flex"}}>
+                {/* Primera mitad de la pantalla */}
+                <div
+                  style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
+                >
+                        {/* 
+                  {showAlert && (
+                    <AlertDismissible
+                      indicador={mensajeRespuesta.indicador}
+                      mensaje={mensajeRespuesta.mensaje}
+                      setShow={setShowAlert}
+                    />
+                  )}
+                  */}
+                  <div>
+                    <div className="content">
+                    <div className=" row justify-content-between align-items-center" style={{ marginLeft: 10 }}
+                >    
+                  </div>
+                  <Grid
+                    gridHeading={encabezadoArchivo}
+                    gridData={listaArchivosTabla}
+                    selectableRows={false}
+                    filterColumns={["nombre"]}
+                  ></Grid>
+                    </div>
+                  </div>
+                </div>
+                {documentoVer?.archivo && (
+                  <div style={{ flex: 1, padding: "20px" }}>
+                    <VisorArchivos
+                      key={documentoVer}
+                      documento={documentoVer.archivo}
+                      cerrar={handleVisor}
+                    />
+                  </div>
+                )}
+              </div>
 
-        )}
-        </div>
-      </div>  
-      
-    </>
+                )}
+                </div>
+              </div>  
+              
+            </>
   );
 }
 
