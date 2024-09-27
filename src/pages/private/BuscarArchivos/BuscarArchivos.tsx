@@ -3,14 +3,14 @@ import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaEdit,FaSearch ,FaEyeSlash,FaEye} from "react-icons/fa";
+import { FaClipboardList ,FaSearch ,FaEyeSlash,FaEye} from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
-//import { BuscarDocumento } from "../../../servicios/ServicioDocumentos";
+import { ObtenerDocumento } from "../../../servicios/ServicioDocumentos";
 import axios from "axios";
 
 interface Archivo {
-  id: Number;
+  idDocumento: Number;
   autor: string;
   asunto: string;
   departamento: string;
@@ -51,8 +51,8 @@ function BuscarArchivos() {
   const [docHijo, setDocHijo] = useState("");
   const [titulo, setTitulo] = useState("");
   const [nombre, setNombre] = useState("");
-  const [opcionDepartamento, setOpcionDepartamento] = useState(1); //
-  const [opcionConfidencialidad, setOpcionSConfidencialidad] = useState(1); //
+  const [opcionDepartamento, setOpcionDepartamento] = useState("1"); //
+  const [opcionConfidencialidad, setOpcionSConfidencialidad] = useState('false'); //
 
   
   //const [listaDeRegistros, setListaDeRegistros] = useState([]);
@@ -72,7 +72,7 @@ function BuscarArchivos() {
       cell: (row: Archivo) => (
         <Form.Check
           type="checkbox"
-          checked={listaArchivosTablaSeleccionados.some((r) => r.id === row.id)}
+          checked={listaArchivosTablaSeleccionados.some((r) => r.idDocumento === row.idDocumento)}
           onChange={() => handleFilaSeleccionada(row)}
         />
       ),
@@ -84,13 +84,13 @@ function BuscarArchivos() {
     {
       id: "nombre",
       name: "Nombre",
-      selector: (row: { archivo: File }) => {
+      selector: (row: Archivo) => {
         if (documentoVer) {
-          if (row.archivo.name.length > 30) {
-            return row.archivo.name.substring(0, 30) + "...";
+          if (row.nombre.length > 30) {
+            return row.nombre;
           }
         }
-        return row.archivo.name;
+        return row.nombre;
       },
       head: "Nombre",
       sortable: true,
@@ -108,7 +108,7 @@ function BuscarArchivos() {
             size="sm"
             className="bg-secondary me-2"
           >
-            <FaEdit />
+            <FaClipboardList />
           </Button>
           <Button
             onClick={() => handleVerArchivo(row)}
@@ -130,33 +130,38 @@ function BuscarArchivos() {
     setPendiente(true);
     setListaArchivosTabla([]);
 
-    const data = {
-        /*opcionSeleccionada: opcionSeleccionada,
-        identificacion: identificacion,
+    const filtro = {
+        autor: autor,
+        asunto: asunto,
+        contenidoRelevante: contenidoRelevante,
+        numeroExpediente: numeroExpediente,
+        numeroSolicitud: numeroSolicitud,
+        docPadre: docPadre,
+        docHijo: docHijo,
+        titulo: titulo,
         nombre: nombre,
-        primerApellido: primerApellido,
-        segundoApellido: segundoApellido,
-        fecha: fecha*/
+        departamento: opcionDepartamento,
+        confidencialidad: opcionConfidencialidad,
     };
 
-
-
 // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
-console.log('data del buscar antes de ejecutar el sp')
-console.log(data)
+console.log('filtro del buscar antes de ejecutar el sp')
+console.log(filtro)
 
-//const resultadosObtenidos = await ObtenerArchivos(data);
+ const resultadosObtenidos = await ObtenerDocumento(filtro);
 
+ console.log('resultadosObtenidos:')
+ console.log(resultadosObtenidos)
 
-    //setListaArchivosTabla(resultadosObtenidos);
+    setListaArchivosTabla(resultadosObtenidos);
     setPendiente(false);
 
-    /*if (resultadosObtenidos.length === 0) {
+    if (resultadosObtenidos.length === 0) {
         setMensajeRespuesta({ indicador: 1, mensaje: "No se encontraron resultados." });
     } else {
         setMostrarBusqueda(!mostrarBusqueda)
         setMensajeRespuesta({});
-    }*/
+    }
 
 };
 
@@ -164,8 +169,8 @@ const areInputsEmpty = () => {
   return (
       autor === '' &&
       asunto === '' &&
-      opcionDepartamento === 1 &&
-      opcionConfidencialidad === 1 &&
+      opcionDepartamento === "1" &&
+      opcionConfidencialidad === 'false' &&
       contenidoRelevante === '' &&
       numeroExpediente === '' &&
       numeroSolicitud === '' &&
@@ -181,7 +186,7 @@ const handleOpcionDepartamentoChange = (e:any) => {
 };
 
 const handleOpcionConfidenChange = (e:any) => {
-  setOpcionSConfidencialidad(e.target.value);
+  setOpcionSConfidencialidad(e.target.type !== "checkbox" ? e.target.value : e.target.checked + "",);
 };
 
 //////////////////////////////
@@ -213,20 +218,20 @@ const handleOpcionConfidenChange = (e:any) => {
     }
   };
 
-  const guardarInformacioArchivo = async (e: React.FormEvent) => {
+  /*const guardarInformacioArchivo = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowModal(false);
 
     setListaArchivosTabla(
       listaArchivosTabla.map((row) =>
-        row.id === documentoSeleccionado?.id
+        row.idDocumento === documentoSeleccionado?.idDocumento
           ? { ...row, ...documentoSeleccionado }
           : row
       )
     );
     setListaArchivosTablaSeleccionados(
       listaArchivosTablaSeleccionados.map((row) =>
-        row.id === documentoSeleccionado?.id
+        row.idDocumento === documentoSeleccionado?.idDocumento
           ? { ...row, ...documentoSeleccionado }
           : row
       )
@@ -239,12 +244,12 @@ const handleOpcionConfidenChange = (e:any) => {
         }
       }
     }
-  };
+  };*/
 
   const seleccionarDocumento = (row: Archivo) => {
-    if (listaArchivosTablaSeleccionados.some((r) => r.id === row.id)) {
+    if (listaArchivosTablaSeleccionados.some((r) => r.idDocumento === row.idDocumento)) {
       setListaArchivosTablaSeleccionados(
-        listaArchivosTablaSeleccionados.filter((r) => r.id !== row.id)
+        listaArchivosTablaSeleccionados.filter((r) => r.idDocumento !== row.idDocumento)
       );
     } else {
       setListaArchivosTablaSeleccionados([
@@ -283,13 +288,13 @@ const handleOpcionConfidenChange = (e:any) => {
   return (
     <>
       <CustomModal
-        showSubmitButton={true}
+        showSubmitButton={false}
         show={showModal}
         onHide={handleModal}
         title={"Información del archivo"}
         formId="formCargaArchivos"
       >
-        <Form id="formCargaArchivos" onSubmit={guardarInformacioArchivo}>
+        <Form id="formCargaArchivos">
           <Row>
             <Col md={6}>
               <Form.Group controlId="formCodigoEstado">
@@ -299,7 +304,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   name="autor"
                   value={documentoSeleccionado?.autor}
                   onChange={handleInputChange}
-                  required
+                  disabled = {true}
                 />
               </Form.Group>
             </Col>
@@ -310,7 +315,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="asunto"
                   value={documentoSeleccionado?.asunto}
-                  required
+                  disabled = {true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -324,8 +329,7 @@ const handleOpcionConfidenChange = (e:any) => {
                 <Form.Select
                   name="departamento"
                   value={documentoSeleccionado?.departamento}
-                  required
-                  onChange={handleInputChange}
+                  disabled = {true}
                 >
                   <option value="">-- Selecciona una opción --</option>
                   <option value="opcion1">Opción 1</option>
@@ -336,17 +340,17 @@ const handleOpcionConfidenChange = (e:any) => {
             </Col>
             <Col md={6}>
               <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Confidencialidad</Form.Label>
-                <Form.Select
+                <Form.Label>Es confidencial</Form.Label>
+                <Form.Check
+                  type="switch"
                   name="confidencialidad"
-                  value={documentoSeleccionado?.confidencialidad}
-                  required
-                  onChange={handleInputChange}
-                >
-                  <option value="">-- Selecciona una opción --</option>
-                  <option value="Si">Sí</option>
-                  <option value="No">No</option>
-                </Form.Select>
+                  checked={
+                    documentoSeleccionado?.confidencialidad === "true"
+                      ? true
+                      : false
+                  }
+                  disabled = {true}
+                />
               </Form.Group>
             </Col>
           </Row>
@@ -358,8 +362,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="contenidoRelevante"
                   value={documentoSeleccionado?.contenidoRelevante}
-                  required
-                  onChange={handleInputChange}
+                  disabled = {true}
                   maxLength={100}
                 />
               </Form.Group>
@@ -371,7 +374,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="numeroExpediente"
                   value={documentoSeleccionado?.numeroExpediente}
-                  required
+                  disabled = {true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -386,7 +389,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="numeroSolicitud"
                   value={documentoSeleccionado?.numeroSolicitud}
-                  required
+                  disabled = {true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -399,7 +402,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="docHijo"
                   value={documentoSeleccionado?.docHijo}
-                  required
+                  disabled = {true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -412,7 +415,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="docPadre"
                   value={documentoSeleccionado?.docPadre}
-                  required
+                  disabled = {true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -425,7 +428,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="titulo"
                   value={documentoSeleccionado?.titulo}
-                  required
+                  disabled = {true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -492,7 +495,7 @@ const handleOpcionConfidenChange = (e:any) => {
 
                     <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
                         <Form.Group className='mb-4'>
-                            <label htmlFor="buscar"><b>Departamento</b></label>
+                            <label htmlFor="departamento"><b>Departamento</b></label>
                             <Form.Control
                                 as="select"
                                 value={opcionDepartamento}
@@ -508,16 +511,17 @@ const handleOpcionConfidenChange = (e:any) => {
                     
                     <Col md={3} className="d-flex flex-column" style={{ padding: '0 30px' }}>
                         <Form.Group className='mb-4'>
-                            <label htmlFor="buscar"><b>Confidencialidad</b></label>
-                            <Form.Control
-                                as="select"
-                                value={opcionConfidencialidad}
-                                onChange={handleOpcionConfidenChange}
-                            >
-                                <option value="1">-- Selecciona una opción --</option>
-                                <option value="2">Sí</option>
-                                <option value="3">No</option>
-                            </Form.Control>
+                            <label htmlFor="confidencialidad"><b>Es confidencial</b></label>
+                            <Form.Check
+                              type="switch"
+                              name="confidencialidad"
+                              checked={
+                                opcionConfidencialidad === "true"
+                                  ? true
+                                  : false
+                              }
+                              onChange={handleOpcionConfidenChange}
+                            />
                         </Form.Group>
                     </Col>
 
@@ -599,24 +603,24 @@ const handleOpcionConfidenChange = (e:any) => {
                           onClick={handleBuscarClick}
                           style={{ marginTop: '20px' }}
                           disabled={areInputsEmpty()} >
-                          <FaSearch className="mr-2" size={24} />
+                          <FaSearch className="me-2" size={24} />
                           Buscar
                       </Button>
                     </Col>
                 </Row>
             </div>
         ): null }
-        <div style={{ marginTop: '7vh' }}></div>
+        <div ></div>
 
         
         <div className="position-relative">
 
         {pendiente ? (
-            <div>Cargando...</div>
+            <div style={{ height: "100vh" }}>Cargando...</div>
             ) : (
 
                     /*tabla donde se muestran los datos*/
-<div style={{ display: "flex", height: "80vh" }}>
+<div style={{ display: "flex", height: "100vh" }}>
         {/* Primera mitad de la pantalla */}
         <div
           style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}

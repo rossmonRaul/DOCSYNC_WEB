@@ -6,3 +6,8 @@ export const CrearDocumento= async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/CrearDocumento`;
     return await ProcesarDatosApi('POST', url, data);
 }
+
+export const ObtenerDocumento= async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/ObtenerDocumento`;
+    return await ProcesarDatosApi('POST', url, data);
+}
