@@ -114,7 +114,7 @@ export const Grid: React.FC<any> = ({
     <>
       {filterColumns && (
         <div
-          className="mb-6 mt-4 d-flex m justify-content-between align-items-center"
+          className="mb-6 mt-0 d-flex justify-content-between align-items-center"
           style={{ marginLeft: 10 }}
         >
           {buttonVisible && (
@@ -124,14 +124,14 @@ export const Grid: React.FC<any> = ({
             </Button>
           )}
 
-          <div className="">
-            <input
-              className="form-control"
-              type="search"
-              placeholder="Buscar"
-              onChange={handleFilter}
-            />
-          </div>
+           <div className={buttonVisible ? "" : "ms-auto"}>
+          <input
+            className="form-control"
+            type="search"
+            placeholder="Buscar"
+            onChange={handleFilter}
+          />
+        </div>
         </div>
       )}
 
