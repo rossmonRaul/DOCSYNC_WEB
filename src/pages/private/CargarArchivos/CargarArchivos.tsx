@@ -9,6 +9,7 @@ import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
 import { useWorker } from "../../../context/workerContext";
+import { cargarDocumentosWorker } from "./cargaDocumentosWorker";
 
 interface Archivo {
   id: Number;
@@ -28,94 +29,6 @@ interface Archivo {
   usuarioCreacion: string;
 }
 
-const fibonacciWorkerFunction = () => {
-  onmessage = (e) => {
-    const num = e.data;
-    const fib: any = (n: any) => {
-      if (n <= 1) return n;
-      return fib(n - 1) + fib(n - 2);
-    };
-    postMessage({ result: fib(num) });
-  };
-};
-
-// sumWorker.ts
-const sumWorkerFunction = () => {
-  onmessage = (e) => {
-    const { start, end } = e.data;
-    let sum = 0;
-    for (let i = start; i <= end; i++) {
-      sum += i;
-    }
-    postMessage({ result: sum });
-  };
-};
-
-const cargarDocumentosWorker = () => {
-  onmessage = async (e) => {
-    const { metadatosDocsEnviar, docs, urlCarga, urlMetadata, storedToken } =
-      e.data;
-    console.log(docs);
-    console.log(metadatosDocsEnviar);
-    let respuestaServidor = 0;
-    // primero carga de metadatos
-
-    try {
-      const responseCargaMetadatos = await fetch(urlMetadata, {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json;charset=UTF-8",
-          Accept: "application/json",
-          Authorization: `Bearer ${storedToken}`,
-        },
-        body: JSON.stringify(metadatosDocsEnviar),
-      });
-
-      if (!responseCargaMetadatos.ok) {
-        respuestaServidor = -1;
-      }
-      const dataMetadatos = await responseCargaMetadatos.json();
-
-      if (dataMetadatos.indicador === 1) {
-        respuestaServidor = -1;
-      }
-
-      //si pudo insertar las metadata bien entonces ingresa los archivos como tal
-      if (respuestaServidor === 0) {
-        const responseCargaArchivos = await fetch(urlCarga, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${storedToken}`,
-          },
-          body: docs,
-        });
-        if (!responseCargaArchivos.ok) {
-          //realizar rollback en BD metadata
-        }
-        const dataArchivos = await responseCargaArchivos.json();
-        //si hay error entonces hace rollback pero solo los que no pudieron subirse.
-        if (responseCargaArchivos.ok && dataArchivos.indicador === 1) {
-        }
-        console.log(dataArchivos);
-        postMessage({ type: "Success", result: dataArchivos.mensaje });
-      } else {
-        postMessage({
-          type: "Error",
-          message:
-            "Ocurrió un error en el servidor. Contacte con un administrador.",
-        });
-      }
-    } catch (error) {
-      postMessage({
-        type: "Error",
-        message:
-          "Ocurrió un error al realizar la petición. Contacte con un administrador.",
-      });
-      console.error(error);
-    }
-  };
-};
-
 // Componente funcional que representa la página de carga de archivos
 function CargarArchivos() {
   const [files, setFiles] = useState<File[]>([]);
@@ -133,7 +46,6 @@ function CargarArchivos() {
   const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
   const FILE_MAX_SIZE = FILE_MAX_SIZE_MB * (1024 * 1024);
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
-  const [input, setInput] = useState(10);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
@@ -349,24 +261,22 @@ function CargarArchivos() {
   const cargarArchivos = async (event: FormEvent) => {
     event.preventDefault();
     const formData = new FormData();
-    const metadatosDocsEnviar = listaArchivosTablaSeleccionados.map((a) => ({
-      ...a,
-      archivo: null,
-    }));
-    listaArchivosTablaSeleccionados.forEach((a) => {
+    listaArchivosTablaSeleccionados.forEach((a, index) => {
       // Agrega el archivo al FormData
-      formData.append("entityDocumento", a.archivo);
+      formData.append(`entityDocumento[${index}].IdDocumento`, "1");
+      formData.append(`entityDocumento[${index}].Archivo`, a.archivo);
     });
     const storedToken = localStorage.getItem("token");
     const urlCarga = `${API_BASE_URL_CARGA}/Documento/CrearDocumento`;
 
     const urlMetadata = `${API_BASE_URL_BD}/Documento/CrearDocumento`;
+    const urlReversion = `${API_BASE_URL_BD}/Documento/ReversarDocumento`;
 
     startWorker(cargarDocumentosWorker, {
-      metadatosDocsEnviar: metadatosDocsEnviar,
-      docs: formData,
+      docs: listaArchivosTablaSeleccionados,
       urlMetadata,
       urlCarga,
+      urlReversion,
       storedToken,
     });
   };
@@ -533,7 +443,7 @@ function CargarArchivos() {
             </Col>
             <Col md={6}>
               <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Titulo</Form.Label>
+                <Form.Label>Título</Form.Label>
                 <Form.Control
                   type="text"
                   name="titulo"
