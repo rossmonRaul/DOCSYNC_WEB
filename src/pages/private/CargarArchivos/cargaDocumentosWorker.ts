@@ -37,7 +37,7 @@ export const cargarDocumentosWorker = () => {
   };
 
   onmessage = async (e) => {
-    const { docs, urlCarga, urlMetadata, storedToken } = e.data;
+    const { docs, urlCarga, urlMetadata, urlReversion, storedToken } = e.data;
     const metadatosDocsEnviar = docs.map((a: any) => ({
       ...a,
       archivo: null,
@@ -88,8 +88,26 @@ export const cargarDocumentosWorker = () => {
           });
 
         if (estadoArchivos !== 0) {
-          //realizar rollback en BD metadata
+          //realizar rollback en BD metadata si el servicio de mongo no esta disponible
+
+          const responseRollback = await enviarPeticion(
+            urlReversion,
+            storedToken,
+            docsInsertados,
+            {
+              "Content-type": "application/json;charset=UTF-8",
+              Accept: "application/json",
+            }
+          );
+          console.log(responseRollback);
+          
+          postMessage({
+            type: "Error",
+            message:
+              "Ocurrió un error en el servidor. Contacte con un administrador.",
+          });
         }
+        
         //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
         if (estadoArchivos === 0 && dataArchivos.indicador === 1) {
           postMessage({ type: "Error", result: dataArchivos.mensaje });

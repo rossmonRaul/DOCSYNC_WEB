@@ -270,11 +270,13 @@ function CargarArchivos() {
     const urlCarga = `${API_BASE_URL_CARGA}/Documento/CrearDocumento`;
 
     const urlMetadata = `${API_BASE_URL_BD}/Documento/CrearDocumento`;
+    const urlReversion = `${API_BASE_URL_BD}/Documento/ReversarDocumento`;
 
     startWorker(cargarDocumentosWorker, {
       docs: listaArchivosTablaSeleccionados,
       urlMetadata,
       urlCarga,
+      urlReversion,
       storedToken,
     });
   };
