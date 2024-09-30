@@ -30,6 +30,7 @@ interface Archivo {
   archivo: File;
   tamanioArchivo: number;
   usuarioCreacion: string;
+  fechaCreacion:string;
 }
 
 // Componente funcional que representa la página de carga de archivos
@@ -207,6 +208,7 @@ function CargarArchivos() {
                 numeroSolicitud: "",
                 titulo: "",
                 usuarioCreacion: identificacionUsuario!!,
+                fechaCreacion:(new Date()).toISOString(),
               };
               archivosAux.push(file);
               consecutivo = consecutivo++;
