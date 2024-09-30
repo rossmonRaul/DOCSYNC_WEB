@@ -11,6 +11,8 @@ import CustomModal from "../../../components/modal/CustomModal";
 import { useWorker } from "../../../context/workerContext";
 import { cargarDocumentosWorker } from "./cargaDocumentosWorker";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import { FaCheckCircle } from "react-icons/fa";
+import { recortarTexto } from "../../../utils/utils";
 
 interface Archivo {
   id: Number;
@@ -76,17 +78,32 @@ function CargarArchivos() {
       name: "Nombre",
       selector: (row: { archivo: File }) => {
         if (documentoVer) {
-          if (row.archivo.name.length > 30) {
-            return row.archivo.name.substring(0, 30) + "...";
-          }
+          return recortarTexto(row.archivo.name);
         }
-        return row.archivo.name;
+        return recortarTexto(row.archivo.name, 100);
       },
       head: "Nombre",
       sortable: true,
       style: {
         fontSize: "1.5em",
       },
+      width: "700px",
+    },
+    {
+      id: "estado",
+      selector: (row: Archivo) => {
+        if (validarDatosCompletosArchivo(row)) {
+          return (
+            <>
+              <FaCheckCircle color="green" size={20} />
+              Listo para cargar...
+            </>
+          );
+        } else {
+          return "";
+        }
+      },
+      sorteable: false,
     },
     {
       id: "Acciones",
@@ -280,6 +297,13 @@ function CargarArchivos() {
       urlReversion,
       storedToken,
     });
+
+    const archivosNoCargados = listaArchivosTabla.filter(
+      (a) => !listaArchivosTablaSeleccionados.some((s) => s.id === a.id)
+    );
+
+    setListaArchivosTabla(archivosNoCargados);
+    setListaArchivosTablaSeleccionados([]);
   };
 
   // Función para manejar el cierre del modal

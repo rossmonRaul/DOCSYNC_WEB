@@ -103,14 +103,14 @@ export const cargarDocumentosWorker = () => {
 
           postMessage({
             type: "Error",
-            message:
+            result:
               "Error. No se ha podido establecer conexión con el servidor.",
           });
         } else {
           //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
           if (
             estadoArchivos === 0 &&
-            dataArchivos.indicador === 0 &&
+            dataArchivos.datos &&
             dataArchivos.datos.archivosNoCargados &&
             dataArchivos.datos.archivosNoCargados.length > 0
           ) {
@@ -132,14 +132,14 @@ export const cargarDocumentosWorker = () => {
       } else {
         postMessage({
           type: "Error",
-          message:
+          result:
             "Ocurrió un error en el servidor. Contacte con un administrador.",
         });
       }
     } catch (error) {
       postMessage({
         type: "Error",
-        message:
+        result:
           "Ocurrió un error al realizar la petición. Contacte con un administrador.",
       });
       console.error(error);
