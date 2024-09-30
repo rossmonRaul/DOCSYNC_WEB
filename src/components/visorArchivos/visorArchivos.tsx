@@ -69,9 +69,11 @@ export const VisorArchivos: React.FC<any> = ({ documento, cerrar }) => {
             <AiOutlineClose />
           </Button>
         </div>
-        <p style={{ color: "#9E0000" }}>
-          El archivo ha sido descargado ya que posee un formato no soportado.
-        </p>
+        {!["html", "sql"].includes(fileExtension) && (
+          <p style={{ color: "#9E0000" }}>
+            El archivo ha sido descargado ya que posee un formato no soportado.
+          </p>
+        )}
         <iframe
           src={fileURL}
           width="100%"

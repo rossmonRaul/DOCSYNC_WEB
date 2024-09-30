@@ -10,6 +10,7 @@ import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
 import { useWorker } from "../../../context/workerContext";
 import { cargarDocumentosWorker } from "./cargaDocumentosWorker";
+import BootstrapSwitchButton from "bootstrap-switch-button-react";
 
 interface Archivo {
   id: Number;
@@ -146,7 +147,7 @@ function CargarArchivos() {
       setDocumentoSeleccionado({
         ...documentoSeleccionado,
         [e.target.name]:
-          e.target.type !== "checkbox" ? e.target.value : e.target.checked + "",
+          e.target.type !== "switch" ? e.target.value : e.target.checked + "",
       });
     }
   };
@@ -309,7 +310,7 @@ function CargarArchivos() {
         showSubmitButton={true}
         show={showModal}
         onHide={handleModal}
-        title={"Información del archivo"}
+        title={documentoSeleccionado?.archivo.name || "Información del archivo"}
         formId="formCargaArchivos"
       >
         <Form id="formCargaArchivos" onSubmit={guardarInformacioArchivo}>
@@ -360,16 +361,25 @@ function CargarArchivos() {
             <Col md={6}>
               <Form.Group controlId="formDescripcionEstado">
                 <Form.Label>Es confidencial</Form.Label>
-                <Form.Check
-                  type="switch"
-                  name="confidencialidad"
-                  checked={
-                    documentoSeleccionado?.confidencialidad === "true"
-                      ? true
-                      : false
-                  }
-                  onChange={handleInputChange}
-                />
+                <div className="w-100">
+                  <BootstrapSwitchButton
+                    checked={documentoSeleccionado?.confidencialidad === "true"}
+                    onlabel="Sí"
+                    onstyle="danger"
+                    offlabel="No"
+                    offstyle="success"
+                    style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
+                    onChange={(checked: boolean) =>
+                      handleInputChange({
+                        target: {
+                          type: "switch",
+                          name: "confidencialidad",
+                          checked,
+                        },
+                      })
+                    }
+                  />
+                </div>
               </Form.Group>
             </Col>
           </Row>
@@ -473,7 +483,9 @@ function CargarArchivos() {
             <div className="content">
               <Form onSubmit={cargarArchivos}>
                 <Form.Group>
-                  <Form.Label>Selecciona un archivo</Form.Label>
+                  <Form.Label>
+                    Selecciona un archivo (peso máximo {FILE_MAX_SIZE_MB} MB)
+                  </Form.Label>
                   <Form.Control
                     multiple
                     type="file"

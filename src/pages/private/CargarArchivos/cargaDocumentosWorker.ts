@@ -100,19 +100,34 @@ export const cargarDocumentosWorker = () => {
             }
           );
           console.log(responseRollback);
-          
+
           postMessage({
             type: "Error",
             message:
-              "Ocurrió un error en el servidor. Contacte con un administrador.",
+              "Error. No se ha podido establecer conexión con el servidor.",
           });
-        }
-        
-        //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
-        if (estadoArchivos === 0 && dataArchivos.indicador === 1) {
-          postMessage({ type: "Error", result: dataArchivos.mensaje });
         } else {
-          postMessage({ type: "Success", result: dataArchivos.mensaje });
+          //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
+          if (
+            estadoArchivos === 0 &&
+            dataArchivos.indicador === 0 &&
+            dataArchivos.datos.archivosNoCargados &&
+            dataArchivos.datos.archivosNoCargados.length > 0
+          ) {
+            const responseRollback = await enviarPeticion(
+              urlReversion,
+              storedToken,
+              dataArchivos.datos.archivosNoCargados,
+              {
+                "Content-type": "application/json;charset=UTF-8",
+                Accept: "application/json",
+              }
+            );
+            console.log(responseRollback);
+            postMessage({ type: "Error", result: dataArchivos.mensaje });
+          } else {
+            postMessage({ type: "Success", result: dataArchivos.mensaje });
+          }
         }
       } else {
         postMessage({
