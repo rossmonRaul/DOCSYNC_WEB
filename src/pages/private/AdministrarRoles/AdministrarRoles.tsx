@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form , Modal, Row} from "react-bootstrap";
+import { Button, Col, Form , Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { 
   ObtenerRoles,
@@ -12,11 +12,11 @@ import {
 } from "../../../servicios/ServicioUsuario";
 import { FaTrash ,FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
-import { AiOutlineClose  } from "react-icons/ai";
-import { RiAddLine, RiSaveFill } from "react-icons/ri";
-import Swal from "sweetalert2";
+import { RiAddLine } from "react-icons/ri";
 import { Input } from 'reactstrap';
-
+import { AlertDismissible } from "../../../components/alert/alert";
+import CustomModal from "../../../components/modal/CustomModal";
+import BootstrapSwitchButton from "bootstrap-switch-button-react";
 
 // Componente principal
 function AdministrarRoles() {
@@ -27,16 +27,13 @@ function AdministrarRoles() {
   const [roles, setRoles] = useState<any[]>([]);
   const [rol, setRol] = useState<string>("");
   const [nombreRol, setNombreRol] = useState<string>("");
-  const [permiteVer, setPermiteVer] = useState<string>("");
-  const [permiteAgregar, setPermiteAgregar] = useState<string>("");
-  const [permiteDescargar, setPermiteDescargar] = useState<string>("");
   const [categoriaSelected, setCategoriaSelected] = useState<string>("");
   const [opcionSelected, setOpcionSelected] = useState<string>("");
-  const [estados] = useState<any>([{idEstado: 1, estado: "Activo"}, {idEstado: 0, estado: 'Inactivo'}]);
-  const [estado, setEstado] = useState<string>("");
-  const [permisos] = useState<any>([{idPermiso: 1, permiso: "Sí"}, {idPermiso: 0, permiso: 'No'}]);
+  const [estado, setEstado] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
     obtenerRoles();
@@ -96,11 +93,8 @@ function AdministrarRoles() {
 
   // Función para abrir el modal y editar
   const editarRol = (rol: any) => {
-    setEstado(rol.estado ? "1" : "0");
+    setEstado(rol.estado);
     setRol(rol.idRol);
-    setPermiteAgregar(rol.permiteAgregar ? "1" : "0");
-    setPermiteDescargar(rol.permiteDescargar ? "1" : "0");
-    setPermiteVer(rol.setPermiteVer ? "1" : "0");
     setNombreRol(rol.rol)
     setIsEditing(true);
     setShowModal(true);
@@ -111,12 +105,9 @@ function AdministrarRoles() {
   const handleModal = () => {
     setShowModal(!showModal);
     setIsEditing(false);
-    setEstado('');
+    setEstado(false);
     setRol('');
     setNombreRol('');
-    setPermiteAgregar('');
-    setPermiteDescargar('');
-    setPermiteVer('');
     setOpcionesRol([]);
   };
 
@@ -137,12 +128,9 @@ function AdministrarRoles() {
     if(opcionSelected){
       const opcion = opciones.filter((x: any) => x.idOpcion === parseInt(opcionSelected))[0];
 
-      if(opcionesRol.find((x: any) => x.idOpcion == parseInt(opcionSelected))){
-        Swal.fire({
-          title: 'Opción existente',
-          text: 'El rol ya cuenta con acceso a esta opción',
-          icon: 'warning'
-        });
+      if(opcionesRol.find((x: any) => x.idOpcion == parseInt(opcionSelected))){        
+        setShowAlert(true);
+        setMensajeRespuesta({indicador: 1, mensaje: "El rol ya cuenta con acceso a esta opción"});
       }
       else{      
         const data = {
@@ -153,44 +141,39 @@ function AdministrarRoles() {
 
         setOpcionesRol((prevOpcionesRol: any[]) => [...prevOpcionesRol, data]);
 
-        Swal.fire({
-          title: 'Opción agregada',
-          text: 'Opción agregada para el rol',
-          timer: 1000,
-          icon: 'success'
-        });
+        setShowAlert(true);
+        setMensajeRespuesta({indicador: 0, mensaje: "Opción agregada para el rol"});
 
         setOpcionSelected('');
         setCategoriaSelected('');
       }
     }
-    else
-      Swal.fire({
-        title: 'Elija una opción',
-        text: 'Debe elegir una opción para agregar',
-        icon: 'warning'
-      });
+    else{
+      setShowAlert(true);
+      setMensajeRespuesta({indicador: 1, mensaje: "Debe elegir una opción para agregar"});
+    }
   }
 
   const eliminarOpcion = (opcion: any) => {
-    Swal.fire({
-      title: "Eliminar acceso",
-      text: "¿Estás seguro de que deseas eliminar el acceso a la opción "+opcion.opcion+"?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Sí",
-      cancelButtonText: "No"
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-              setOpcionesRol((prevOpcionesRol: any[]) =>
-                prevOpcionesRol.filter((op: any) => op.idOpcion !== opcion.idOpcion)
-              );
-            } catch (error) {
-              Swal.fire("Error al quitar el acceso para el rol", "", "error");                    
-          }
-      }
-    });       
+    // Swal.fire({
+    //   title: "Eliminar acceso",
+    //   text: "¿Estás seguro de que deseas eliminar el acceso a la opción "+opcion.opcion+"?",
+    //   icon: "question",
+    //   showCancelButton: true,
+    //   confirmButtonText: "Sí",
+    //   cancelButtonText: "No"
+    // }).then(async (result) => {
+    //     if (result.isConfirmed) {
+            
+      setOpcionesRol((prevOpcionesRol: any[]) =>
+        prevOpcionesRol.filter((op: any) => op.idOpcion !== opcion.idOpcion)
+      );
+
+      setShowAlert(true);
+      setMensajeRespuesta({indicador: 0, mensaje: 'Acceso eliminado'});
+
+      // }
+    // });       
   }
 
   // Maneja el envío del formulario para agregar o editar
@@ -199,97 +182,75 @@ function AdministrarRoles() {
 
     if (isEditing) {
       try {
-        const identificacionUsuario = localStorage.getItem('identificacionUsuario');
-
-        let opcionesRolBD = "";
-
-        opcionesRol.forEach(op => {
-          opcionesRolBD += op.idOpcion  + ","
-        });
-
-        const nuevoRol = {
-          idRol: rol,
-          nombreRol: nombreRol,
-          estado: estado === '1' ? true : false,
-          permiteAgregar: permiteAgregar === '1' ? true : false,
-          permiteDescargar: permiteDescargar === '1' ? true : false,
-          permiteVer: permiteVer === '1' ? true : false,
-          opcionesMenu: opcionesRolBD,
-          usuarioModificacion: identificacionUsuario,
-          fechaModificacion: (new Date()).toISOString()
-        };
-
-        const response  = await ActualizarRol(nuevoRol);
-
-        if (response.indicador === 1) {
-          Swal.fire({
-              icon: 'success',
-              title: response.mensaje,      
-          });
-          obtenerRoles();           
-          handleModal(); // Cierra el modal 
+        if(nombreRol === ''){
+          setShowAlert(true);
+          setMensajeRespuesta({indicador: 1, mensaje: 'Debe indicar el nombre del rol'});
         }
-        else if(response.indicador === 2){
-          Swal.fire({
-            icon: 'warning',
-            title: 'Atención',
-            text: response.mensaje,
+        else{
+
+          const identificacionUsuario = localStorage.getItem('identificacionUsuario');
+
+          let opcionesRolBD = "";
+
+          opcionesRol.forEach(op => {
+            opcionesRolBD += op.idOpcion  + ","
           });
+
+          const nuevoRol = {
+            idRol: rol,
+            nombreRol: nombreRol,
+            estado: estado,
+            opcionesMenu: opcionesRolBD,
+            usuarioModificacion: identificacionUsuario,
+            fechaModificacion: (new Date()).toISOString()
+          };
+
+          const response  = await ActualizarRol(nuevoRol);
+
+          if (response.indicador === 0) {
+            obtenerRoles();           
+            handleModal(); // Cierra el modal 
+          }        
+          
+          setShowAlert(true);
+          setMensajeRespuesta(response);
         }
-        else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
-        }
+
       } catch (error) {
         console.error("Error al actualizar rol:", error);
       }
     } else {
       try {      
-        const identificacionUsuario = localStorage.getItem('identificacionUsuario');
-
-        let opcionesRolBD = "";
-
-        opcionesRol.forEach(op => {
-          opcionesRolBD += op.idOpcion  + ","
-        });
-
-        const nuevoRol = {
-          nombreRol: nombreRol,
-          estado: estado === '1' ? true : false,
-          permiteAgregar: permiteAgregar === '1' ? true : false,
-          permiteDescargar: permiteDescargar === '1' ? true : false,
-          permiteVer: permiteVer === '1' ? true : false,
-          opcionesMenu: opcionesRolBD,
-          usuarioCreacion: identificacionUsuario,
-          fechaCreacion: (new Date()).toISOString()
-        };
-
-        const response  = await CrearRol(nuevoRol);
-
-        if (response.indicador === 1) {
-          Swal.fire({
-              icon: 'success',
-              title: response.mensaje,      
-          });
-          obtenerRoles();           
-          handleModal(); // Cierra el modal 
+        if(nombreRol === ''){
+          setShowAlert(true);
+          setMensajeRespuesta({indicador: 1, mensaje: 'Debe indicar el nombre del rol'});
         }
-        else if(response.indicador === 2){
-          Swal.fire({
-            icon: 'warning',
-            title: 'Atención',
-            text: response.mensaje,
+        else{
+          const identificacionUsuario = localStorage.getItem('identificacionUsuario');
+
+          let opcionesRolBD = "";
+
+          opcionesRol.forEach(op => {
+            opcionesRolBD += op.idOpcion  + ","
           });
-        }
-        else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: response.mensaje,
-          });
+
+          const nuevoRol = {
+            nombreRol: nombreRol,
+            estado: estado,
+            opcionesMenu: opcionesRolBD,
+            usuarioCreacion: identificacionUsuario,
+            fechaCreacion: (new Date()).toISOString()
+          };
+
+          const response  = await CrearRol(nuevoRol);
+
+          if (response.indicador === 0) {
+            obtenerRoles();           
+            handleModal(); // Cierra el modal 
+          }
+
+          setShowAlert(true);
+          setMensajeRespuesta(response);
         }
       } catch (error) {
         console.error("Error al crear rol:", error);
@@ -307,7 +268,7 @@ function AdministrarRoles() {
     },},
     {
       id: "acciones",
-      name: "Acciones",
+      name: "Acción",
       cell: (row: any) => (
         <>
         <Button
@@ -330,7 +291,7 @@ function AdministrarRoles() {
     },},
     {
       id: "acciones",
-      name: "Acciones",
+      name: "Acción",
       cell: (row: any) => (
         <>
           <Button
@@ -348,8 +309,14 @@ function AdministrarRoles() {
     <>
       <h1 className="title">Administración de roles</h1>
       <div style={{ paddingLeft: "2.6rem", paddingRight: "2.6rem" }}>
+      {showAlert && (
+        <AlertDismissible
+        mensaje={mensajeRespuesta}
+        setShow={setShowAlert}
+        />
+      )}
         {/* Botón para abrir el modal de agregar */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-save">
+        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-crear">
           <FaPlus className="me-2" size={24} />
           Agregar
         </Button>
@@ -364,15 +331,15 @@ function AdministrarRoles() {
       </div>
   
       {/* Modal para agregar o editar */}
-      <Modal show={showModal} onHide={handleModal} size={'lg'}>
-        <Modal.Header closeButton={false} className="d-flex align-items-center">
-          <Modal.Title>{isEditing ? "Editar rol" : "Agregar rol"}</Modal.Title>
-          <Button className="ms-auto btn-cancel" onClick={handleModal}>
-            <AiOutlineClose />
-          </Button>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmit}>
+      <CustomModal
+          show={showModal}
+          onHide={handleModal}
+          title={isEditing ? "Editar rol" : "Agregar rol"}
+          showSubmitButton={true}
+          submitButtonLabel={isEditing ? "Actualizar" : "Guardar"}
+          formId="formRol"
+          >
+          <Form onSubmit={handleSubmit} id="formRol">
             <Row>
               <Col md={6}>
                 <Form.Group controlId="formNombre">
@@ -386,82 +353,31 @@ function AdministrarRoles() {
                     style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
                   />
                 </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group controlId="formPermAgregar">
-                  <Form.Label>Permite agregar</Form.Label>
-                  <Input
-                        type="select"
-                        id="rol"
-                        value={permiteAgregar}
-                        onChange={(e: any) => setPermiteAgregar(e.target.value)}
-                        className="custom-select"
-                        style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                    >
-                        <option value="">Seleccione</option>
-                        {permisos.map((permiso: any) => (
-                            <option key={permiso.idPermiso} value={permiso.idPermiso}>{permiso.permiso}</option>
-                        ))}
-                    </Input>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group controlId="formRol">
-                <Form.Group controlId="formPermDesc">
-                  <Form.Label style={{marginTop: '3%'}}>Permite descargar</Form.Label>
-                  <Input
-                        type="select"
-                        id="rol"
-                        value={permiteDescargar}
-                        onChange={(e: any) => setPermiteDescargar(e.target.value)}
-                        className="custom-select"
-                        style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                    >
-                        <option value="">Seleccione</option>
-                        {permisos.map((permiso: any) => (
-                            <option key={permiso.idPermiso} value={permiso.idPermiso}>{permiso.permiso}</option>
-                        ))}
-                    </Input>
-                </Form.Group>
-                </Form.Group>
               </Col>              
               <Col md={6}>
-              <Form.Group controlId="formPermVer">
-                  <Form.Label style={{marginTop: '3%'}}>Permite ver</Form.Label>
-                  <Input
-                        type="select"
-                        id="rol"
-                        value={permiteVer}
-                        onChange={(e: any) => setPermiteVer(e.target.value)}
-                        className="custom-select"
-                        style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                    >
-                        <option value="">Seleccione</option>
-                        {permisos.map((permiso: any) => (
-                            <option key={permiso.idPermiso} value={permiso.idPermiso}>{permiso.permiso}</option>
-                        ))}
-                    </Input>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
                 <Form.Group controlId="formEstado">
-                  <Form.Label style={{marginTop: '3%'}}>Estado</Form.Label>
-                  <Input
-                        type="select"
-                        id="opcion"
-                        onChange={(e: any) => setEstado(e.target.value)}
-                        value={estado}
-                        className="custom-select"
-                        style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                    >
-                        <option value="">Seleccione</option>
-                        {estados.map((estado: any) => (
-                            <option key={estado.idEstado} value={estado.idEstado}>{estado.estado}</option>
-                        ))}
-                    </Input>
+                  <div style={{
+                      display: 'flex',
+                      alignContent: 'start',
+                      alignItems: 'start',
+                      flexDirection: 'column'
+                    }}>
+                    <Form.Label>Rol activo</Form.Label>
+                    <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={estado === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
+                      onChange={(checked) => setEstado(checked)}
+                    />
+                    </div>
+                  </div>
                 </Form.Group>
               </Col>
-              <Col md={6}></Col>
+              <Col md={12}><br /></Col>
               <Col md={4}>
                 <Form.Group controlId="formPermAgregar">
                     <Form.Label style={{marginTop: '5%'}}>Categoria</Form.Label>
@@ -521,25 +437,9 @@ function AdministrarRoles() {
                   selectableRows={false}
                 ></Grid>
               </Col>
-            </Row>
-            <div style={{display: 'flex', justifyContent: 'end'}}>
-              <Button  
-                      type="submit" 
-                      className="mt-3 mb-0 btn-crear"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        alignContent: 'center',
-                        backgroundColor: '#548454'
-                      }}
-              >
-                <RiSaveFill className="me-2" size={24} />
-                {isEditing ? "Actualizar" : "Guardar"}
-              </Button>
-            </div>
+            </Row>            
           </Form>
-        </Modal.Body>
-      </Modal>
+        </CustomModal>
     </>
   );
 }

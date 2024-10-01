@@ -4,14 +4,18 @@
  */
 import React, { useEffect, useState } from "react";
 import { FormGroup, Label, Input, Button, Col, FormFeedback } from "reactstrap";
+import { Form, Row } from "react-bootstrap";
 import "../css/LoginPage.css";
-import { ValidarUsuario } from "../servicios/ServicioUsuario.ts";
-import Swal from "sweetalert2";
+import { CambiarContrasennaTemporal, ValidarUsuario } from "../servicios/ServicioUsuario.ts";
 import { useDispatch } from "react-redux";
 import { UserKey, createUser, resetUser } from "../redux/state/User.ts";
 import { useNavigate } from "react-router-dom";
 import { clearSessionStorage } from "../utilities/SessionStorageUtility.tsx";
 import { PrivateRoutes, PublicRoutes } from "../models/routes.ts";
+import { IoLogIn } from "react-icons/io5";
+import icono from "../assets/iconoLogin.png"
+import CustomModal from "../components/modal/CustomModal.tsx";
+import { AlertDismissible } from "../components/alert/alert";
 
 /**
  * Interfaz para el estado del formulario de inicio de sesión.
@@ -34,7 +38,6 @@ const FormularioInicioSesion: React.FC<{
   errors: Record<string, string>;
 }> = ({
   onSubmit,
-  toggleForm,
   formData,
   handleInputChange,
   handleInputBlur,
@@ -43,20 +46,20 @@ const FormularioInicioSesion: React.FC<{
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     onSubmit(formData);
-  };
-
-  const [empresaUsuario, setEmpresaUsuario] = useState<string>(
-    () => localStorage.getItem("empresaUsuario") || ""
-  );
+  };  
 
   return (
     <>
-      <div className="form-header">
-        <h2>Iniciar Sesión</h2>
-        <p>Inicia sesión en tu cuenta</p>
+      <div className="form-header" style={{alignItems: 'center'}}>
+        <div className="brand-content">
+          <img width={150} height={100} src={icono}></img>
+          <span style={{color: 'black'}}>DocSync <br /> Inicio de sesión</span>
+        </div>
+        <br />
+        {/* <h2>Iniciar sesión</h2> */}
       </div>
       <form onSubmit={handleSubmit}>
-        <FormGroup row>
+        <FormGroup row className="input">
           <Label for="usuario" sm={2} className="input-label">
             Usuario
           </Label>
@@ -85,6 +88,7 @@ const FormularioInicioSesion: React.FC<{
               type="password"
               id="contrasena"
               name="contrasena"
+              placeholder="Ingresa tu contraseña"
               value={formData.contrasena}
               onChange={handleInputChange}
               onBlur={() => handleInputBlur("contrasena")} // Llama a handleInputBlur cuando se dispara el evento onBlur
@@ -95,48 +99,15 @@ const FormularioInicioSesion: React.FC<{
           </Col>
           <FormFeedback>{errors.contrasena}</FormFeedback>
         </FormGroup>
-        <FormGroup row>
-          <Col sm={{ size: 9, offset: 2 }}>
-            <Button type="submit" color="primary" className="btn-styled">
-              Iniciar Sesión
+        <FormGroup>
+          <div>
+            <Button type="submit" color="success" className="btn-styled">
+            <IoLogIn  className="me-2" size={24}/>
+              Iniciar sesión
             </Button>
-          </Col>
+          </div>  
         </FormGroup>
-      </form>
-      {/* boton para crear cuenta */}
-      {/* <div className='container-btn-crear-iniciar'>
-        <p>¿No tienes una cuenta? <Button color="link" className='btn-crear-iniciar' onClick={toggleForm}>Crear una Cuenta</Button></p>
-      </div>  */}
-    </>
-  );
-};
-
-/**
- * Componente funcional que representa el formulario de creación de cuenta.
- */
-const FormularioCrearCuenta: React.FC<{
-  toggleForm: () => void;
-  formData: FormData;
-  handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}> = ({ toggleForm }) => {
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    toggleForm();
-  };
-
-  return (
-    <>
-      <form onSubmit={handleSubmit}>
-        {/*<CrearCuentaUsuario  toggleForm={toggleForm}/>*/}
-      </form>
-      <div className="container-btn-crear-iniciar">
-        <p>
-          ¿Ya tienes una cuenta?{" "}
-          <Button color="link" onClick={toggleForm}>
-            Iniciar Sesión
-          </Button>
-        </p>
-      </div>
+      </form>      
     </>
   );
 };
@@ -152,8 +123,21 @@ const Login: React.FC = () => {
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [contrasena1, setContrasenna1] = useState("");
+  const [contrasena2, setContrasenna2] = useState("");
+  const [identificacion, setIdentificacion] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
-  useEffect(() => {
+  const handleModal = () => {
+    setShowModal(!showModal);
+    setContrasenna1("");
+    setContrasenna2("");
+  };
+
+  useEffect(() => {          
     clearSessionStorage(UserKey);
     dispatch(resetUser());
     navigate(`/${PublicRoutes.LOGIN}`, { replace: true });
@@ -232,84 +216,169 @@ const Login: React.FC = () => {
   const handleLoginSubmit = async () => {
     const formDataLogin = {
       identificacion: formData.usuario,
-      contrasena: formData.contrasena,
+      correoElectronico: formData.usuario,
+      contrasena: formData.contrasena
     };
 
     try {
-      const usuarioEncontradoApi = await ValidarUsuario(formDataLogin);
-      let usuarioEncontrado = {
-        mensaje: "Usuario encontrado.",
-        idEmpresa: "1",
-        identificacion: "123456789",
-        idRol: 2,
-        nombre: "Juan Pereira",
-        token: usuarioEncontradoApi.token,
-      };
-      if (usuarioEncontrado.mensaje === "Usuario no encontrado.") {
-        Swal.fire({
-          icon: "error",
-          title: "¡Credenciales incorrectas!",
-          text: "Los datos del usuario ingresado no existen",
-        });
-      } else if (usuarioEncontrado.mensaje === "Usuario encontrado.") {
-        dispatch(createUser(usuarioEncontrado));
-        //localstorage datos guardados
-        localStorage.setItem("empresaUsuario", usuarioEncontrado.idEmpresa);
-        localStorage.setItem(
-          "identificacionUsuario",
-          usuarioEncontrado.identificacion
-        );
-        localStorage.setItem("token", usuarioEncontrado.token);
+      const response = await ValidarUsuario(formDataLogin);     
+      
+      if(response){
+        const usuario = response.usuario;
 
-        navigate(`/${PrivateRoutes.PRIVATE}`, { replace: true });
-        setIsLoggedIn(true);
-      } else if (usuarioEncontrado.mensaje === "Credenciales incorrectas.") {
-        Swal.fire({
-          icon: "error",
-          title: "¡Credenciales incorrectas!",
-          text: "Los datos del usuario ingresado son incorrectas",
-        });
-      } else if (usuarioEncontrado.mensaje === "Usuario o empresa inactivos.") {
-        Swal.fire({
-          icon: "error",
-          title: "No puedes iniciar sesión",
-          text: "Usuario o empresa inactivos",
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "¡Oops!",
-          text: usuarioEncontrado.mensaje,
-        });
+        if(usuario.mensaje === "1"){
+          dispatch(createUser(usuario));
+          //localstorage datos guardados
+          localStorage.setItem(
+            "identificacionUsuario",
+            usuario.identificacion
+          );
+          localStorage.setItem("token", response.token);
+          localStorage.setItem("idRol", response.usuario.idRol);
+
+          navigate(`/${PrivateRoutes.PRIVATE}`, { replace: true });
+
+          setIsLoggedIn(true);
+        }
+        else if(usuario.mensaje === "2"){ // Contraseña temporal
+          setShowAlert(true);
+          setCorreo(response.usuario.correo);
+          setIdentificacion(response.usuario.identificacion);
+
+          setMensajeRespuesta({
+            indicador: 3,
+            mensaje: "La contraseña ingresada es temporal, por favor cree una"
+          });
+
+          
+          localStorage.setItem("token", response.token);
+
+          handleModal();
+        }
+        else if(usuario.mensaje === "3"){
+          setShowAlert(true);          
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "El usuario está bloqueado, contacte a un administrador"
+          });
+        }
+        else if(usuario.mensaje === "4"){
+          setShowAlert(true);          
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "El rol del usuario está bloqueado, contacte a un administrador"
+          });
+        }
+        else if(usuario.mensaje === "5"){
+          setShowAlert(true);          
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "Las credenciales son incorrectas o el usuario no existe"
+          });
+        }
+        else{
+          setShowAlert(true);          
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: usuario.mensaje
+          });
+        }
+      }
+      else{
+        setShowAlert(true);
+        setMensajeRespuesta({indicador: 1, mensaje: "Ocurrió un error al contactar con el servicio"});
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  return (
+  const handleSubmitContrasenna = async (e: React.FormEvent) => {    
+    e.preventDefault();
+
+    if(contrasena1 !== contrasena2){
+      setShowAlert(true);
+      setMensajeRespuesta({indicador: 1, mensaje: "Las contraseñas no coinciden"});
+    }
+    else{
+      const data = {
+        identificacion: identificacion,
+        correoElectronico: correo,
+        contrasennaTemporal: contrasena1
+      }
+
+      const response = await CambiarContrasennaTemporal(data);
+
+      setShowAlert(true);
+      setMensajeRespuesta(response);
+
+      if(response.indicador == "0")
+      {        
+        localStorage.setItem("token", '');
+        handleModal();
+      }
+    }
+  }
+
+  return (    
     <div className={`container ${isLoggedIn ? "" : "login-bg"}`}>
+      {showAlert && (
+        <AlertDismissible
+        mensaje={mensajeRespuesta}
+        setShow={setShowAlert}
+        />
+      )}
       <div className="container-lg">
-        <div className="form-container">
-          {formData.mostrarCrearCuenta ? (
-            <FormularioCrearCuenta
-              toggleForm={toggleForm}
-              formData={formData}
-              handleInputChange={handleInputChange}
-            />
-          ) : (
-            <FormularioInicioSesion
-              onSubmit={handleSubmitConValidacion}
-              toggleForm={toggleForm}
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleInputBlur={handleInputBlur}
-              errors={errors}
-            />
-          )}
+        <div className="form-container">          
+          <FormularioInicioSesion
+            onSubmit={handleSubmitConValidacion}
+            toggleForm={toggleForm}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleInputBlur={handleInputBlur}
+            errors={errors}
+          />
+          <CustomModal
+          show={showModal}
+          onHide={handleModal}
+          title={"Crea tu contraseña"}
+          showSubmitButton={true}
+          submitButtonLabel={"Guardar"}
+          formId="formContrasenna"
+          >
+            <Form id="formContrasenna" onSubmit={handleSubmitContrasenna}>
+              <Row>
+                <Col md={12}>
+                  <Form.Group controlId="formContrasenna1">
+                    <Form.Label>Contraseña</Form.Label>
+                    <Form.Control
+                      type="password"
+                      name="contrasenna"
+                      value={contrasena1}
+                      onChange={(e: any) => setContrasenna1(e.target.value)}
+                      required
+                      maxLength={50}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={12}>
+                    <Form.Group controlId="formContrasenna2">
+                      <Form.Label style={{marginTop: '2%'}}>Confirmar contraseña</Form.Label>
+                      <Form.Control
+                        type="password"
+                        name="contrasenna2"
+                        value={contrasena2}
+                        onChange={(e: any) =>  setContrasenna2(e.target.value)}
+                        maxLength={15}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+            </Form>
+          </CustomModal>
         </div>
       </div>
-    </div>
+    </div>    
   );
 };
 

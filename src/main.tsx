@@ -42,7 +42,7 @@ const router = createBrowserRouter(
         {/* Rutas privada */}
         <Route path={`${PrivateRoutes.PRIVATE}/*`} element={<Private />} />
       </Route>
-      <Route element={<RolGuard rol={Roles.Admin} />}>
+      {/* <Route element={<RolGuard rol={Roles.SuperAdmin} />}> */}
         <Route
           path={PrivateRoutes.CARGARARCHIVOS}
           element={<CargarArchivos />}
@@ -76,7 +76,7 @@ const router = createBrowserRouter(
           path={PrivateRoutes.ADMINROLES}
           element={<AdministrarRoles />}
         />
-      </Route>
+      {/* </Route> */}
     </Route>
   )
 );

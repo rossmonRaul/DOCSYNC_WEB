@@ -24,9 +24,7 @@ export const AlertDismissible:React.FC<any> = ({ mensaje, setShow }) => {
             return "danger";
         } 
         return "info";
-    };
-
-  
+    };  
 
     return (
         <CSSTransition ref={ref} in={true}  timeout={1000} unmountOnExit>
@@ -35,8 +33,8 @@ export const AlertDismissible:React.FC<any> = ({ mensaje, setShow }) => {
                     <Alert variant={getVariant()}>
                         <p>
                             {mensaje.indicador==0 ? 
-                            <CiCircleCheck size={35}/> 
-                            : <CgDanger size={35}/> }                            
+                            <CiCircleCheck size={35} style={{marginRight: '5px'}}/> 
+                            : <CgDanger size={35} style={{marginRight: '5px'}}/> }                            
                             {mensaje.mensaje}
                         </p>
                     </Alert>

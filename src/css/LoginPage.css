@@ -1,11 +1,29 @@
-.login-bg {
+/* #root , */
+ .login-bg
+  {
 
   font-family: Arial, sans-serif;
-  background-image: url('../img/LoginBg.jpg');
-  background-size: contain;
+  background-image: url('../img/fondoLogin.jpg');
+  background-size: cover;
   background-position: center;
   background-attachment: fixed;
   justify-content: center;
+}
+
+.brand-content {
+  display: flex;
+  justify-content: start;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+}
+
+.brand-content span {
+  font-size: 1.3rem; /* Ajusta el tamaño de fuente según sea necesario */
+  font-weight: bold;
+}
+
+.container{
 }
 
 .container-lg {
@@ -68,6 +86,10 @@
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
 }
 
 .btn-styled-danger {
