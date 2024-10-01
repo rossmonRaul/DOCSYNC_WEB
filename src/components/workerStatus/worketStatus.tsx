@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useWorker } from "../../context/workerContext";
 import "../../css/workerStatus.css";
 import { FaEye } from "react-icons/fa";
+import { CiMinimize1 } from "react-icons/ci";
+import { IoClose } from "react-icons/io5";
 
 const WorkerStatus: React.FC<any> = ({
   textoListo = "Listo!",
@@ -15,7 +17,6 @@ const WorkerStatus: React.FC<any> = ({
     setNotWorking,
     isWorkerActive,
     taskTitle,
-    setTaskTitle,
   } = useWorker();
   const [isVisible, setIsVisible] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -56,12 +57,12 @@ const WorkerStatus: React.FC<any> = ({
                     ? textoListo
                     : isMinimized
                     ? "Abrir"
-                    : "---"}
+                    : <CiMinimize1 size={20}/>}
                 </button>
 
                 {!loading && (
                   <button className="close-btn" onClick={handleClose}>
-                    X
+                    <IoClose size={25}/>
                   </button>
                 )}
               </div>
@@ -86,7 +87,7 @@ const WorkerStatus: React.FC<any> = ({
 
           <button className="toggle-btn" onClick={handleMinimize}>
             {isMinimized && !loading ? (
-              textoListo
+             error?"Ha ocurrido un error!": textoListo
             ) : isMinimized ? (
               <FaEye size={25} />
             ) : (

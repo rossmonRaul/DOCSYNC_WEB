@@ -22,6 +22,7 @@ export const cargarDocumentosWorker = () => {
 
       if (!response.ok) {
         respuesta.estado = -1;
+        console.error(response);
       } else {
         respuesta.data = await response.json();
       }
@@ -59,7 +60,7 @@ export const cargarDocumentosWorker = () => {
         respuestaServidor = -1;
       }
 
-      if (dataMetadatos.indicador === 1) {
+      if (!dataMetadatos || dataMetadatos.indicador === 1) {
         respuestaServidor = -1;
       }
 

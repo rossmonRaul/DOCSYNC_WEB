@@ -87,7 +87,7 @@ function CargarArchivos() {
       style: {
         fontSize: "1.5em",
       },
-      width: "700px",
+      width: documentoVer ? "250px" : "800px",
     },
     {
       id: "estado",
@@ -334,7 +334,10 @@ function CargarArchivos() {
         showSubmitButton={true}
         show={showModal}
         onHide={handleModal}
-        title={documentoSeleccionado?.archivo.name || "Información del archivo"}
+        title={
+          recortarTexto(documentoSeleccionado?.archivo.name!!, 50) ||
+          "Información del archivo"
+        }
         formId="formCargaArchivos"
       >
         <Form id="formCargaArchivos" onSubmit={guardarInformacioArchivo}>
