@@ -17,12 +17,12 @@ export const menuItem: MenuItem[] = [
     icon: <FaUpload size={30} style={{ marginRight: "5px" }}/>,
     roles: [1, 2,3,4],
   },
-  {
-    path: "/cargar-scanner",
-    name: "Carga desde el scanner",
-    icon: <MdDocumentScanner size={30} style={{ marginRight: "5px" }} />,
-    roles: [1,2,3,4],
-  },
+  // {
+  //   path: "/cargar-scanner",
+  //   name: "Carga desde el scanner",
+  //   icon: <MdDocumentScanner size={30} style={{ marginRight: "5px" }} />,
+  //   roles: [1,2,3,4],
+  // },
   {
     path: "/buscar-archivos",
     name: "Buscar archivos",

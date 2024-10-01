@@ -56,7 +56,7 @@ function CatalogoPersonas() {
   const obtenerUsuarios = async () => {
     try {
       const response = await ObtenerUsuarios();
-      setUsuarios(response.filter(x => x.estado === true));
+      setUsuarios(response.filter((x: any) => x.estado === true));
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
     }
@@ -65,7 +65,7 @@ function CatalogoPersonas() {
   const obtenerPersonas = async () => {
     try {
       const response = await ObtenerPersonas();
-      setPersonas(response.filter(x => x.estado === true));
+      setPersonas(response.filter((x: any) => x.estado === true));
     } catch (error) {
       console.error("Error al obtener personas:", error);
     }
@@ -264,7 +264,7 @@ function CatalogoPersonas() {
                         style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '2%'}}
                     >
                         <option value="">Seleccione</option>
-                        {personas.map(persona => (
+                        {personas.map((persona: any) => (
                             <option key={persona.idPersona} value={persona.idPersona}>{persona.nombreCompleto}</option>
                         ))}
                     </Input>

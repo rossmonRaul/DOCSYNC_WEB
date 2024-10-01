@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form , Modal, Row} from "react-bootstrap";
+import { Button, Col, Form , Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { 
   ObtenerUsuarios,
@@ -12,10 +12,11 @@ import {
 import { ObtenerPersonas } from "../../../servicios/ServicioPersonas";
 import { FaTrash ,FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
-import { AiOutlineClose  } from "react-icons/ai";
-import { RiSaveFill } from "react-icons/ri";
-import Swal from "sweetalert2";
 import { Input } from 'reactstrap';
+import { AlertDismissible } from "../../../components/alert/alert";
+import CustomModal from "../../../components/modal/CustomModal";
+import BootstrapSwitchButton from "bootstrap-switch-button-react";
+
 
 interface Usuario {
   idUsuario: string;
@@ -37,15 +38,17 @@ function CatalogoPersonas() {
   const [listaUsuarios, setUsuarios] = useState<Usuario[]>([]);
   const [correoE, setCorreoE] = useState<string>("");
   const [rol, setRol] = useState<string>("");
+  const [idUsuario, setIdUsuario] = useState<string>("");
   const [identificacion, setIdentificacion] = useState<string>("");
   const [contrasennaT, setContrasennaT] = useState<string>("");
   const [persona, setPersona] = useState<string>("");
   const [personas, setPersonas] = useState<any>([]);
   const [roles, setRoles] = useState<any>([]);
-  const [estados] = useState<any>([{idEstado: 1, estado: "Activo"}, {idEstado: 0, estado: 'Inactivo'}]);
-  const [estado, setEstado] = useState<string>("");
+  const [estado, setEstado] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
     obtenerUsuarios();
@@ -90,19 +93,10 @@ function CatalogoPersonas() {
 
       const response = await EliminarUsuario(data);
 
-        if (response.indicador === 1) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
-            obtenerUsuarios();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
-          }
+      setShowAlert(true);
+      setMensajeRespuesta(response);
+      obtenerUsuarios();
+        
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
     }
@@ -111,12 +105,13 @@ function CatalogoPersonas() {
   // Función para abrir el modal y editar
   const editarUsuario = (usuario: any) => {
     setCorreoE(usuario.correoElectronico);
-    setEstado(usuario.estado ? "1" : "0");
+    setEstado(usuario.estado);
     setRol(usuario.idRol);
     setIdentificacion(usuario.identificacion)
     setPersona(usuario.idPersona);
     setIsEditing(true);
     setShowModal(true);
+    setIdUsuario(usuario.idUsuario);
   };
 
   // Función para manejar el cierre del modal
@@ -124,7 +119,7 @@ function CatalogoPersonas() {
     setShowModal(!showModal);
     setIsEditing(false);
     setCorreoE('');
-    setEstado('');
+    setEstado(false);
     setRol('');
     setIdentificacion('')
     setPersona('');
@@ -153,10 +148,6 @@ function CatalogoPersonas() {
       setRol(e.target.value);
   }
 
-  const handleEstadoChange = (e: any) => {
-    setEstado(e.target.value);
-  }
-
   const handlePassChange = (e: any) => {
     setContrasennaT(e.target.value);
   }
@@ -170,33 +161,37 @@ function CatalogoPersonas() {
 
         const identificacionUsuario = localStorage.getItem('identificacionUsuario');
 
-        const usuario = {
-          idPersona: persona,
-          idRol: rol,
-          correoElectronico: correoE,
-          contrasennaTemporal: contrasennaT,
-          estado: estado === '1' ? true : false,
-          idUsuario: 0,
-          usuarioModificacion: identificacionUsuario,
-          fechaModificacion: (new Date()).toISOString(),
-          contrasenna: ''
-        };
-        
-        const response = await ActualizarUsuario(usuario);
+        if(persona === ''){
+          setShowAlert(true);
+          setMensajeRespuesta({indicador: 1, mensaje: "Seleccione una persona"});
+        }
+        else if(rol === ''){
+          setShowAlert(true);
+          setMensajeRespuesta({indicador: 1, mensaje: "Seleccione el rol del usuario"});
+        }
+        else{
+          const usuario = {
+            idPersona: persona,
+            idRol: rol,
+            correoElectronico: correoE,
+            contrasennaTemporal: contrasennaT.length > 0 ? contrasennaT : null,
+            estado: estado,
+            idUsuario: idUsuario,
+            usuarioModificacion: identificacionUsuario,
+            fechaModificacion: (new Date()).toISOString(),
+            contrasenna: null
+          };
+          
+          const response = await ActualizarUsuario(usuario);         
 
-        if (response.indicador === 1) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
+          if(response.indicador === 0){
+            handleModal();
             obtenerUsuarios();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
-          }
+          }              
+
+          setShowAlert(true);
+          setMensajeRespuesta(response);
+        }
 
       } catch (error) {
         console.error("Error al actualizar usuario:", error);
@@ -204,39 +199,47 @@ function CatalogoPersonas() {
     } else {
       try {      
         const identificacionUsuario = localStorage.getItem('identificacionUsuario');
+        
+        if(persona === ''){
+          setShowAlert(true);
+          setMensajeRespuesta({indicador: 1, mensaje: "Seleccione una persona"});
+        }
+        else if(rol === ''){
+          setShowAlert(true);
+          setMensajeRespuesta({indicador: 1, mensaje: "Seleccione el rol del usuario"});
+        }
+        else if(contrasennaT.length < 1){
+          setShowAlert(true);
+          setMensajeRespuesta({indicador: 1, mensaje: "Debe ingresar una contraseña para el usuario"});
+        }
+        else{
+          const nuevoUsuario = {
+            idPersona: persona,
+            idRol: rol,
+            correoElectronico: correoE,
+            contrasennaTemporal: contrasennaT,
+            estado: estado,
+            idUsuario: 0,
+            usuarioCreacion: identificacionUsuario,
+            fechaCreacion: (new Date()).toISOString(),
+            contrasenna: ''
+          };
 
-        const nuevoUsuario = {
-          idPersona: persona,
-          idRol: rol,
-          correoElectronico: correoE,
-          contrasennaTemporal: contrasennaT,
-          estado: estado === '1' ? true : false,
-          idUsuario: 0,
-          usuarioCreacion: identificacionUsuario,
-          fechaCreacion: (new Date()).toISOString(),
-          contrasenna: ''
-        };
+          const response  = await AgregarUsuario(nuevoUsuario);
 
-        const response  = await AgregarUsuario(nuevoUsuario);
-
-        if (response.indicador === 1) {
-            Swal.fire({
-                icon: 'success',
-                title: response.mensaje,      
-            });
+          if(response.indicador === 0){           
+            handleModal(); // Cierra el modal 
             obtenerUsuarios();
-          } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: response.mensaje,
-            });
           }
+
+          setShowAlert(true);
+          setMensajeRespuesta(response);
+        }
+
       } catch (error) {
         console.error("Error al crear la usuario:", error);
       }
     }
-    handleModal(); // Cierra el modal 
   };
 
   // Encabezados de la tabla con acciones
@@ -244,7 +247,7 @@ function CatalogoPersonas() {
     { id: "identificacion", name: "Identificación", selector: (row: Usuario) => row.identificacion, sortable: true,style: {
       fontSize: "1.2em",
     }, },
-    { id: "nombreCompleto", name: "Nombre completo", selector: (row: Usuario) => row.nombreCompleto, sortable: true, style: {
+    { id: "nombreCompleto", name: "Nombre", selector: (row: Usuario) => row.nombreCompleto, sortable: true, style: {
       fontSize: "1.2em",
     },},
     { id: "rol", name: "Rol", selector: (row: Usuario) => row.rol, sortable: true,style: {
@@ -253,7 +256,10 @@ function CatalogoPersonas() {
     { id: "puesto", name: "Puesto", selector: (row: Usuario) => row.puesto, sortable: true,style: {
       fontSize: "1.2em",
     }, },
-    { id: "correoElectronico", name: "Correo electrónico", selector: (row: Usuario) => row.correoElectronico, sortable: true,style: {
+    { id: "correoElectronico", name: "Correo", selector: (row: Usuario) => row.correoElectronico, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "estado", name: "Estado", selector: (row: Usuario) => (row.estado ? 'Activo' : 'Inactivo'), sortable: true,style: {
       fontSize: "1.2em",
     }, },
     {
@@ -282,8 +288,14 @@ function CatalogoPersonas() {
     <>
       <h1 className="title">Catálogo de usuarios</h1>
       <div style={{ paddingLeft: "2.6rem", paddingRight: "2.6rem" }}>
+      {showAlert && (
+        <AlertDismissible
+        mensaje={mensajeRespuesta}
+        setShow={setShowAlert}
+        />
+      )}
         {/* Botón para abrir el modal de agregar */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-save">
+        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-crear">
           <FaPlus className="me-2" size={24} />
           Agregar
         </Button>
@@ -298,15 +310,15 @@ function CatalogoPersonas() {
       </div>
   
       {/* Modal para agregar o editar */}
-      <Modal show={showModal} onHide={handleModal} size={'lg'}>
-        <Modal.Header closeButton={false} className="d-flex align-items-center">
-          <Modal.Title>{isEditing ? "Editar usuario" : "Agregar usuario"}</Modal.Title>
-          <Button className="ms-auto btn-cancel" onClick={handleModal}>
-            <AiOutlineClose />
-          </Button>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmit}>
+        <CustomModal
+          show={showModal}
+          onHide={handleModal}
+          title={isEditing ? "Editar usuario" : "Agregar usuario"}
+          showSubmitButton={true}
+          submitButtonLabel={isEditing ? "Actualizar" : "Guardar"}
+          formId="formUsuario"
+          >
+          <Form onSubmit={handleSubmit} id="formUsuario">
             <Row>
               <Col md={6}>
                 <Form.Group controlId="formPersona">
@@ -386,41 +398,30 @@ function CatalogoPersonas() {
               </Col>
               <Col md={6}>
                 <Form.Group controlId="formEstado">
-                  <Form.Label style={{marginTop: '3%'}}>Estado</Form.Label>
-                  <Input
-                        type="select"
-                        id="opcion"
-                        onChange={handleEstadoChange}
-                        value={estado}
-                        className="custom-select"
-                        style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                    >
-                        <option value="">Seleccione</option>
-                        {estados.map((estado: any) => (
-                            <option key={estado.idEstado} value={estado.idEstado}>{estado.estado}</option>
-                        ))}
-                    </Input>
+                  <div style={{
+                      display: 'flex',
+                      alignContent: 'start',
+                      alignItems: 'start',
+                      flexDirection: 'column'
+                    }}>
+                    <Form.Label style={{marginTop: '3%'}}>Usuario activo</Form.Label>
+                    <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={estado === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
+                      onChange={(checked) => setEstado(checked)}
+                    />
+                    </div>
+                  </div>
                 </Form.Group>
               </Col>
             </Row>
-            <div style={{display: 'flex', justifyContent: 'end'}}>
-              <Button  
-                      type="submit" 
-                      className="mt-3 mb-0 btn-crear"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        alignContent: 'center',
-                        backgroundColor: '#548454'
-                      }}
-              >
-                <RiSaveFill className="me-2" size={24} />
-                {isEditing ? "Actualizar" : "Guardar"}
-              </Button>
-            </div>
           </Form>
-        </Modal.Body>
-      </Modal>
+        </CustomModal>
     </>
   );
 }

@@ -28,7 +28,14 @@ const CustomModal: React.FC<CustomModalProps> = ({ show, onHide, title, children
       <Modal.Body>{children}</Modal.Body>
       <Modal.Footer>   
         {showSubmitButton && (             
-           <Button variant="primary" type="submit" form={formId} className="mt-3 mb-0 btn-save">
+           <Button variant="primary" type="submit" form={formId} className="mt-3 mb-0 btn-save"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignContent: 'center',
+              alignItems: 'center'
+            }}
+           >
             <RiSaveFill className="me-2" size={24} /> 
            {submitButtonLabel}
          </Button>

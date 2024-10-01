@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Nav from "react-bootstrap/Nav";
@@ -7,18 +7,34 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
 import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
-import { FaRegBell, FaBook } from "react-icons/fa";
+import { FaRegBell, FaBook, FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog, FaUpload } from "react-icons/fa";
+import { IconType } from 'react-icons/lib';
 import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
-import { menuItem } from "../menuItems/menuItems";
-import { Link } from "react-router-dom";
-import { subMenuCatalogos, subMenuOtros } from "../menuItems/subMenuItems";
+import { Link, useNavigate } from "react-router-dom";
+import { ObtenerAccesoMenuPorRol } from "../../servicios/ServicioUsuario";
+import { AiOutlineFileSearch } from "react-icons/ai";
+
 // Interfaz para que reciba el nombre que se desea para la pantalla
+interface MenuItem {
+  path: string;
+  name: string;
+  icon?: IconType;
+  idRol?: number;
+  children?: MenuItem[]; // Para elementos colapsables
+}
 
 // Componente principal
 const NavbarMenu: React.FC = () => {
+  const navigate = useNavigate(); // Hook de react-router-dom para la navegación
+
   // Renderizado
   const [showOptions, setShowOptions] = useState(false);
+  const [subMenuCatalogos, setSubMenuCatalogos] = useState([]);
+  const [subMenuOtros, setSubMenuOtros] = useState([]);
+  const [mostrarCatalogos, setMostrarCatalogos] = useState<boolean>(false);
+  const [mostrarEncabezado, setMostrarEncabezado] = useState<boolean>(false);
+  const [menuItem, setMenuItems] = useState([]);
   const userState = useSelector((store: AppStore) => store.user);
   const [showNotifications, setShowNotifications] = useState(false);
   const [
@@ -36,6 +52,71 @@ const NavbarMenu: React.FC = () => {
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
   };
+
+  const iconMap: { [key: string]: IconType } = {
+    FaHistory: FaHistory,
+    FaSignature: FaSignature,
+    FaUser: FaUser,
+    FaFlag: FaFlag,
+    FaFileAlt: FaFileAlt,
+    FaSitemap: FaSitemap,
+    FaUsers: FaUsers,
+    FaUserCog: FaUserCog,
+    FaBook: FaBook,
+    FaUpload: FaUpload,
+    AiOutlineFileSearch: AiOutlineFileSearch
+  };
+
+  const obtenerOpcionesMenu = async () => {
+
+    const data={
+      idRol: localStorage.getItem("idRol")
+    };
+
+    const menu = await ObtenerAccesoMenuPorRol(data);      
+
+    // Validar si rol tiene acceso a la vista
+    if(menu.filter((x: any) => x.path === location.pathname).length < 1){
+        navigate('/private/dashboard');
+    }
+    
+    // Llenar opciones para catálogos
+    const menuCat = menu.filter((x: any) => x.nombreCategoria === "Catálogos"); // Esta manera se va a cambiar
+
+    menuCat.forEach((element: any) => {
+      element.icon = iconMap[element.icon]
+      element.iconCategoria = iconMap[element.iconCategoria]
+    });
+
+    setSubMenuCatalogos(menuCat);
+    
+    setMostrarCatalogos(menuCat.length > 0);    
+
+    //Llenar opciones que no tienen submenú
+    const menuOtros = menu.filter((x: any) => x.name === x.nombreCategoria && !x.esOpcionEncabezado);
+
+    menuOtros.forEach((element: any) => {
+      element.icon = iconMap[element.icon]
+    });
+
+    setSubMenuOtros(menuOtros);
+
+    //Opciones de encabezado
+    const menuEnc = menu.filter((x: any) => x.esOpcionEncabezado);
+
+    menuEnc.forEach((element: any) => {
+      element.icon = iconMap[element.icon]
+    });
+
+    setMenuItems(menuEnc);
+
+    setMostrarEncabezado(menuEnc.length > 0);
+  }
+
+  useEffect(() => {
+    obtenerOpcionesMenu();
+  });
+
   return (
     <>
       <Navbar
@@ -56,11 +137,12 @@ const NavbarMenu: React.FC = () => {
               className="me-auto my-2 my-lg-0"
               style={{ maxHeight: "100px" }}
               navbarScroll
-            ></Nav>
+            ></Nav>            
             <Form style={{ color: "#fff" }} className="d-flex">
+            {mostrarEncabezado &&
               <Nav style={{ width: "100%" }} navbarScroll>
-                {menuItem.map((item, index) => {
-                  if (!item.roles || item.roles.includes(userState.idRol)) {
+                {menuItem.map((item: MenuItem, index) => {
+                  if (!item.idRol || item.idRol === userState.idRol) {
                     return (
                       <Nav.Link
                         key={index}
@@ -72,7 +154,7 @@ const NavbarMenu: React.FC = () => {
                           className="nav-icon-text"
                           style={{ width: "200px" }}
                         >
-                          {item.icon}
+                          {item.icon && <item.icon size={30} style={{ marginRight: "5px" }}/>}
                           {item.name}
                         </div>
                       </Nav.Link>
@@ -80,19 +162,20 @@ const NavbarMenu: React.FC = () => {
                   }
                 })}
               </Nav>
+            }
               
               <NavDropdown
                 style={{ margin: 10, marginRight: 30, marginTop: 15 }}
                 title={
                 <>
-                    <FaBook style={{ marginRight: "5px" }}/>
+                    <FaBook style={{ margin: "8%" }}/>
                     Más opciones
                 </>
                 }
                 id="navbarScrollingDropdown"
               >
-                {subMenuOtros.map((item, index) => {
-                  if (!item.roles || item.roles.includes(userState.idRol)) {
+                {subMenuOtros.map((item: MenuItem, index) => {
+                  if (!item.idRol || item.idRol === userState.idRol) {
                     return (
                       <NavDropdown.Item key={index * 10}>
                         <Nav.Link as={Link} to={item.path}>
@@ -102,33 +185,37 @@ const NavbarMenu: React.FC = () => {
                     );
                   }
                 })}
-                <NavDropdown.Divider />
-                <NavDropdown
+                {mostrarCatalogos &&
+                  <NavDropdown.Divider />
+                }                 
+                {mostrarCatalogos &&
+                  <NavDropdown
                   style={{ margin: 10, marginLeft: 15 }}
                   title={<>
                   <FaBook style={{ marginRight: 5 }}/>
                   Catálogos
                   </>}
                 >
-                  {subMenuCatalogos.map((item, index) => {
-                    if (!item.roles || item.roles.includes(userState.idRol)) {
+                  {subMenuCatalogos.map((item: MenuItem, index) => {
+                    if (!item.idRol || item.idRol === userState.idRol) {
                       return (
                         <NavDropdown.Item key={index * 5}>
                           <Nav.Link as={Link} to={item.path}>
-                          {item.icon && <item.icon />} {item.name}
+                          {item.icon && <item.icon style={{marginRight: '5%'}}/>}
+                          {item.name}
                           </Nav.Link>
                         </NavDropdown.Item>
                       );
                     }
                   })}
                 </NavDropdown>
-                
+                }                   
                 
               </NavDropdown>
               <div className="notifications">
                 <FaRegBell
                   size={30}
-                  style={{ margin: 10 }}
+                  style={{ margin: 15 }}
                   onClick={toggleNotifications}
                 />{" "}
                 {/* Icono de notificaciones */}
@@ -150,6 +237,8 @@ const NavbarMenu: React.FC = () => {
                   justifyContent: "center",
                   alignContent: "center",
                   alignItems: "center",
+                  flexDirection: 'row',
+                  width: "100%"
                 }}
               >
                 <div className="user-name">{userState.nombre}</div>
