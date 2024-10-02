@@ -1,13 +1,18 @@
 import { useState, ChangeEvent, FormEvent, lazy, useEffect } from "react";
 import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { es } from "date-fns/locale/es";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaClipboardList ,FaSearch ,FaEyeSlash,FaEye} from "react-icons/fa";
+import { FaClipboardList, FaSearch, FaEyeSlash, FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
 import { ObtenerDocumento } from "../../../servicios/ServicioDocumentos";
 import axios from "axios";
+import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import { format } from 'date-fns';
 
 interface Archivo {
   idDocumento: Number;
@@ -24,11 +29,14 @@ interface Archivo {
   nombre: string;
   archivo: File;
   usuarioCreacion: string;
+  fechaCreacion: Date;
+  fechaModificacion: Date;
+
 }
 
 // Componente funcional que representa la página de carga de archivops
 function BuscarArchivos() {
-  //const [showAlert, setShowAlert] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
@@ -38,7 +46,7 @@ function BuscarArchivos() {
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
-  const [mensajeRespuesta, setMensajeRespuesta] = useState({});
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({ indicador: 0, mensaje: "" });
 
   const [autor, setAutor] = useState("");
   const [asunto, setAsunto] = useState("");
@@ -53,8 +61,9 @@ function BuscarArchivos() {
   const [nombre, setNombre] = useState("");
   const [opcionDepartamento, setOpcionDepartamento] = useState(""); //
   const [opcionConfidencialidad, setOpcionSConfidencialidad] = useState('false'); //
+  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(null);
+  const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
 
-  
   //const [listaDeRegistros, setListaDeRegistros] = useState([]);
 
 
@@ -85,14 +94,21 @@ function BuscarArchivos() {
       id: "nombre",
       name: "Nombre",
       selector: (row: Archivo) => {
-        if (documentoVer) {
-          if (row.nombre.length > 30) {
-            return row.nombre;
-          }
-        }
         return row.nombre;
       },
       head: "Nombre",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+    },
+    {
+      id: "FechaCarga",
+      name: "Fecha de Carga",
+      selector: (row: Archivo) => {
+        const fecha = row.fechaModificacion?row.fechaModificacion:row.fechaCreacion; 
+        return fecha ? format(fecha, 'dd/MM/yyyy') : ""; 
+      },
       sortable: true,
       style: {
         fontSize: "1.5em",
@@ -126,69 +142,91 @@ function BuscarArchivos() {
   ];
 
   const handleBuscarClick = async () => {
-      
+
     setPendiente(true);
     setListaArchivosTabla([]);
 
+    // Convertir fechas vacías a null
+    const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
+    const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
+
+    // Validar que la fecha final no sea menor que la fecha inicial
+    if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
+      setShowAlert(true);
+      setMensajeRespuesta({ indicador: 1, mensaje: "La fecha final no puede ser menor que la fecha inicial." });
+      setPendiente(false);
+      return;
+    }
+
     const filtro = {
-        autor: autor,
-        asunto: asunto,
-        contenidoRelevante: contenidoRelevante,
-        numeroExpediente: numeroExpediente,
-        numeroSolicitud: numeroSolicitud,
-        docPadre: docPadre,
-        docHijo: docHijo,
-        titulo: titulo,
-        nombre: nombre,
-        departamento: opcionDepartamento,
-        confidencialidad: opcionConfidencialidad,
+      autor: autor,
+      asunto: asunto,
+      contenidoRelevante: contenidoRelevante,
+      numeroExpediente: numeroExpediente,
+      numeroSolicitud: numeroSolicitud,
+      docPadre: docPadre,
+      docHijo: docHijo,
+      titulo: titulo,
+      nombre: nombre,
+      departamento: opcionDepartamento,
+      confidencialidad: opcionConfidencialidad,
+      fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+      fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+
     };
 
-// Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
-console.log('filtro del buscar antes de ejecutar el sp')
-console.log(filtro)
-
- const resultadosObtenidos = await ObtenerDocumento(filtro);
-
- console.log('resultadosObtenidos:')
- console.log(resultadosObtenidos)
+    // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
+    //console.log('filtro del buscar antes de ejecutar el sp')
+    //console.log(filtro)
+    const resultadosObtenidos = await ObtenerDocumento(filtro);
+    //console.log('resultadosObtenidos:')
+    //console.log(resultadosObtenidos)
 
     setListaArchivosTabla(resultadosObtenidos);
     setPendiente(false);
 
     if (resultadosObtenidos.length === 0) {
-        setMensajeRespuesta({ indicador: 1, mensaje: "No se encontraron resultados." });
+      setShowAlert(true);
+      setMensajeRespuesta({ indicador: 2, mensaje: "No se encontraron resultados." });
     } else {
-        setMostrarBusqueda(!mostrarBusqueda)
-        setMensajeRespuesta({});
+      setMostrarBusqueda(!mostrarBusqueda)
     }
+  };
 
-};
+  const countEmptyFields = () => {
+    let count = 0;
+    // Cuenta los campos que no están vacíos
+    if (autor !== '') count++;
+    if (asunto !== '') count++;
+    if (opcionDepartamento !== "") count++;
+    if (contenidoRelevante !== '') count++;
+    if (numeroExpediente !== '') count++;
+    if (numeroSolicitud !== '') count++;
+    if (docPadre !== '') count++;
+    if (docHijo !== '') count++;
+    if (titulo !== '') count++;
+    if (nombre !== '') count++;
+    if (fechaFiltroInicial !== null && fechaFiltroFinal !== null)
+      count++;
+    else if (fechaFiltroInicial !== null && fechaFiltroFinal == null || fechaFiltroFinal !== null && fechaFiltroInicial == null)
+      count = 0;
 
-const areInputsEmpty = () => {
-  return (
-      autor === '' &&
-      asunto === '' &&
-      opcionDepartamento === "" &&
-      contenidoRelevante === '' &&
-      numeroExpediente === '' &&
-      numeroSolicitud === '' &&
-      docPadre === '' &&
-      docHijo === '' &&
-      titulo === '' &&
-      nombre === '' 
-  );
-};
+    return count;
+  };
 
-const handleOpcionDepartamentoChange = (e:any) => {
-  setOpcionDepartamento(e.target.value);
-};
+  const areInputsEmpty = () => {
+    return countEmptyFields() < 3; // Valida si hay menos de 3 campos llenos
+  };
 
-const handleOpcionConfidenChange = (e:any) => {
-  setOpcionSConfidencialidad(e.target.type !== "checkbox" ? e.target.value : e.target.checked + "",);
-};
+  const handleOpcionDepartamentoChange = (e: any) => {
+    setOpcionDepartamento(e.target.value);
+  };
 
-//////////////////////////////
+  const handleOpcionConfidenChange = (e: any) => {
+    setOpcionSConfidencialidad(e.target.type !== "switch" ? e.target.value : e.target.checked + "",);
+  };
+
+  //////////////////////////////
 
 
   const handleVisor = () => {
@@ -207,7 +245,6 @@ const handleOpcionConfidenChange = (e:any) => {
       });
     }
   };
-
 
   const handleFilaSeleccionada = (row: Archivo) => {
     if (validarDatosCompletosArchivo(row)) {
@@ -258,7 +295,6 @@ const handleOpcionConfidenChange = (e:any) => {
     }
   };
 
-
   // Función para manejar el cierre del modal
   const handleModal = () => {
     setShowModal(!showModal);
@@ -283,7 +319,6 @@ const handleOpcionConfidenChange = (e:any) => {
   };
 
 
-
   return (
     <>
       <CustomModal
@@ -303,7 +338,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   name="autor"
                   value={documentoSeleccionado?.autor}
                   onChange={handleInputChange}
-                  disabled = {true}
+                  disabled={true}
                 />
               </Form.Group>
             </Col>
@@ -314,7 +349,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="asunto"
                   value={documentoSeleccionado?.asunto}
-                  disabled = {true}
+                  disabled={true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -328,7 +363,7 @@ const handleOpcionConfidenChange = (e:any) => {
                 <Form.Select
                   name="departamento"
                   value={documentoSeleccionado?.departamento}
-                  disabled = {true}
+                  disabled={true}
                 >
                   <option value="">-- Selecciona una opción --</option>
                   <option value="opcion1">Opción 1</option>
@@ -340,18 +375,19 @@ const handleOpcionConfidenChange = (e:any) => {
             <Col md={6}>
               <Form.Group controlId="formDescripcionEstado">
                 <Form.Label>Es confidencial</Form.Label>
-                <Form.Check
-                  type="switch"
-                  name="confidencialidad"
-                  checked={
-                    documentoSeleccionado?.confidencialidad === "true"
-                      ? true
-                      : false
-                  }
-                  disabled = {true}
-                />
+                <div className="w-100">
+                  <BootstrapSwitchButton
+                    checked={documentoSeleccionado?.confidencialidad === "True"? true: false}
+                    onlabel="Sí"
+                    onstyle="danger"
+                    offlabel="No"
+                    offstyle="success"
+                    style="w-100 mx-3;"
+                    disabled={true}
+                  />
+                </div>
               </Form.Group>
-            </Col>
+            </Col>         
           </Row>
           <Row>
             <Col md={6}>
@@ -361,7 +397,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="contenidoRelevante"
                   value={documentoSeleccionado?.contenidoRelevante}
-                  disabled = {true}
+                  disabled={true}
                   maxLength={100}
                 />
               </Form.Group>
@@ -373,7 +409,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="numeroExpediente"
                   value={documentoSeleccionado?.numeroExpediente}
-                  disabled = {true}
+                  disabled={true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -388,7 +424,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="numeroSolicitud"
                   value={documentoSeleccionado?.numeroSolicitud}
-                  disabled = {true}
+                  disabled={true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -401,7 +437,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="docHijo"
                   value={documentoSeleccionado?.docHijo}
-                  disabled = {true}
+                  disabled={true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -414,7 +450,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="docPadre"
                   value={documentoSeleccionado?.docPadre}
-                  disabled = {true}
+                  disabled={true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -427,7 +463,7 @@ const handleOpcionConfidenChange = (e:any) => {
                   type="text"
                   name="titulo"
                   value={documentoSeleccionado?.titulo}
-                  disabled = {true}
+                  disabled={true}
                   onChange={handleInputChange}
                   maxLength={100}
                 />
@@ -438,232 +474,271 @@ const handleOpcionConfidenChange = (e:any) => {
       </CustomModal>
 
       <div className="container-fluid">
-      <Row>
+        <Row>
           <Col md={10} className="d-flex justify-content-start">
-           <h1  className="title">Buscar archivos</h1>   
-           </Col>
-            <Col md={2} className="d-flex justify-content-start">
+            <h1 className="title">Buscar archivos</h1>
+          </Col>
+          <Col md={2} className="d-flex justify-content-start">
             {(
-                <Button
-                    className="btn-crear"
-                    variant="primary" 
-                    type="submit"
-                    onClick={() => setMostrarBusqueda(!mostrarBusqueda)}
-                >
-                    {mostrarBusqueda ? (
-                        <>
-                            <FaEyeSlash className="me-2" size={24}  color="#9E0000" />
-                            Filtros de búsqueda
-                        </>
-                    ) : (
-                        <>
-                            <FaEye className="me-2" size={24} />                       
-                            Filtros de búsqueda
-                        </>
-                    )}
-                </Button>
-
+              <Button
+                className="btn-crear"
+                variant="primary"
+                type="submit"
+                onClick={() => setMostrarBusqueda(!mostrarBusqueda)}
+              >
+                {mostrarBusqueda ? (
+                  <>
+                    <FaEyeSlash className="me-2" size={24} color="#9E0000" />
+                    Filtros de búsqueda
+                  </>
+                ) : (
+                  <>
+                    <FaEye className="me-2" size={24} />
+                    Filtros de búsqueda
+                  </>
                 )}
-            </Col>
+              </Button>
+
+            )}
+          </Col>
         </Row>
-      </div>             
-    <hr></hr>
-    <div className="container-fluid">
-      
+      </div>
+      <hr></hr>
+      <div className="container-fluid">
+
         {mostrarBusqueda ? (
-            <div style={{ padding: '0 50px' }}>           
-                <Row>                 
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group className='mb-4'>
-                            <label htmlFor="autor"><b>Autor</b></label>
-                            <Form.Control
-                                type="text"
-                                value={autor}
-                                onChange={(e) => setAutor(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
+          <div style={{ padding: '0 60px' }}>
+            <Row>
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group className='mb-4'>
+                  <label htmlFor="autor"><b>Autor</b></label>
+                  <Form.Control
+                    type="text"
+                    value={autor}
+                    onChange={(e) => setAutor(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
 
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group className='mb-4'>
-                            <label htmlFor="nombre"><b>Asunto</b></label>
-                            <Form.Control
-                                type="text"
-                                value={asunto}
-                                onChange={(e) => setAsunto(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group className='mb-4'>
+                  <label htmlFor="nombre"><b>Asunto</b></label>
+                  <Form.Control
+                    type="text"
+                    value={asunto}
+                    onChange={(e) => setAsunto(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
 
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group className='mb-4'>
-                            <label htmlFor="departamento"><b>Departamento</b></label>
-                            <Form.Control
-                                as="select"
-                                value={opcionDepartamento}
-                                onChange={handleOpcionDepartamentoChange}
-                            >
-                                <option value="">-- Selecciona una opción --</option>
-                                <option value="opcion1">Opción 1</option>
-                                <option value="opcion2">Opción 2</option>
-                                <option value="opcion3">Opción 3</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Col>
-                    
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group className='mb-4'>
-                            <label htmlFor="confidencialidad"><b>Es confidencial</b></label>
-                            <Form.Check
-                              type="switch"
-                              name="confidencialidad"
-                              checked={
-                                opcionConfidencialidad === "true"
-                                  ? true
-                                  : false
-                              }
-                              onChange={handleOpcionConfidenChange}
-                            />
-                        </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row style={{ padding: '0 0 20px 0' }}>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group>
-                            <label htmlFor="ContenidoRelevante"><b>Contenido relevante</b></label>
-                            <Form.Control
-                                type="text"
-                                value={contenidoRelevante}
-                                onChange={(e) => setContenidoRelevante(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group>
-                            <label htmlFor="NumeroExpediente"><b>No. Expediente</b></label>
-                            <Form.Control
-                                type="text"
-                                value={numeroExpediente}
-                                onChange={(e) => setNumeroExpediente(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group>
-                            <label htmlFor="NumeroSolicitud"><b>No. Solicitud</b></label>
-                            <Form.Control
-                                type="text"
-                                value={numeroSolicitud}
-                                onChange={(e) => setNumeroSolicitud(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group>
-                            <label htmlFor="DocHijo"><b>Doc. Hijo</b></label>
-                            <Form.Control
-                                type="text"
-                                value={docHijo}
-                                onChange={(e) => setDocHijo(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group>
-                            <label htmlFor="DocPadre"><b>Doc. Padre</b></label>
-                            <Form.Control
-                                type="text"
-                                value={docPadre}
-                                onChange={(e) => setDocPadre(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group>
-                            <label htmlFor="Titulo"><b>TÍtulo</b></label>
-                            <Form.Control
-                                type="text"
-                                value={titulo}
-                                onChange={(e) => setTitulo(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                        <Form.Group>
-                            <label htmlFor="Nombre"><b>Nombre de archivo</b></label>
-                            <Form.Control
-                                type="text"
-                                value={nombre}
-                                onChange={(e) => setNombre(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Col>
-                    <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                      <Button 
-                          className="btn-save"
-                          variant="primary"
-                          onClick={handleBuscarClick}
-                          style={{ marginTop: '20px' }}
-                          disabled={areInputsEmpty()} >
-                          <FaSearch className="me-2" size={24} />
-                          Buscar
-                      </Button>
-                    </Col>
-                </Row>
-            </div>
-        ): null }
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group className='mb-4'>
+                  <label htmlFor="departamento"><b>Departamento</b></label>
+                  <Form.Control
+                    as="select"
+                    value={opcionDepartamento}
+                    onChange={handleOpcionDepartamentoChange}
+                  >
+                    <option value="">-- Selecciona una opción --</option>
+                    <option value="opcion1">Opción 1</option>
+                    <option value="opcion2">Opción 2</option>
+                    <option value="opcion3">Opción 3</option>
+                  </Form.Control>
+                </Form.Group>
+              </Col>
+
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group className='mb-4'>
+                  <label htmlFor="confidencialidad"><b>Es confidencial</b></label>
+
+                  <BootstrapSwitchButton
+                    checked={opcionConfidencialidad === "true"}
+                    onlabel="Sí"
+                    onstyle="danger"
+                    offlabel="No"
+                    offstyle="success"
+                    style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
+                    onChange={(checked: boolean) =>
+                      handleOpcionConfidenChange({
+                        target: {
+                          type: "switch",
+                          name: "confidencialidad",
+                          checked,
+                        },
+                      })
+                    }
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row style={{ padding: '0 0 20px 0' }}>
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group>
+                  <label htmlFor="ContenidoRelevante"><b>Contenido relevante</b></label>
+                  <Form.Control
+                    type="text"
+                    value={contenidoRelevante}
+                    onChange={(e) => setContenidoRelevante(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group>
+                  <label htmlFor="NumeroExpediente"><b>No. Expediente</b></label>
+                  <Form.Control
+                    type="text"
+                    value={numeroExpediente}
+                    onChange={(e) => setNumeroExpediente(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group>
+                  <label htmlFor="NumeroSolicitud"><b>No. Solicitud</b></label>
+                  <Form.Control
+                    type="text"
+                    value={numeroSolicitud}
+                    onChange={(e) => setNumeroSolicitud(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group>
+                  <label htmlFor="DocHijo"><b>Doc. Hijo</b></label>
+                  <Form.Control
+                    type="text"
+                    value={docHijo}
+                    onChange={(e) => setDocHijo(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row style={{ padding: '0 0 20px 0' }}>
+              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group>
+                  <label htmlFor="DocPadre"><b>Doc. Padre</b></label>
+                  <Form.Control
+                    type="text"
+                    value={docPadre}
+                    onChange={(e) => setDocPadre(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={5} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group>
+                  <label htmlFor="Titulo"><b>TÍtulo</b></label>
+                  <Form.Control
+                    type="text"
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={2} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <label htmlFor="FechaFiltroInicial"><b>Fecha inicial</b></label>
+                <Form.Group>
+                  <DatePicker
+                    showIcon
+                    selected={fechaFiltroInicial}
+                    onChange={(date) => setFechaFiltroInicial(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="form-control"
+                    locale={es}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={2} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <label htmlFor="FechaFiltroFinal"><b>Fecha final</b></label>
+                <Form.Group>
+                  <DatePicker
+                    showIcon
+                    selected={fechaFiltroFinal}
+                    onChange={(date) => setFechaFiltroFinal(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className='form-control'
+                    locale={es}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+                <Form.Group>
+                  <label htmlFor="Nombre"><b>Nombre de archivo</b></label>
+                  <Form.Control
+                    type="text"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6} className="d-flex flex-column" style={{ padding: '3px 10px' }}>
+                <Button
+                  className="btn-save"
+                  variant="primary"
+                  onClick={handleBuscarClick}
+                  style={{ marginTop: '20px' }}
+                  disabled={areInputsEmpty()} >
+                  <FaSearch className="me-2" size={24} />
+                  Buscar
+                </Button>
+              </Col>
+            </Row>
+          </div>
+        ) : null}
 
         <div className="position-relative">
-        {pendiente ? (
+          {pendiente ? (
             <div style={{ height: "100vh" }}>Cargando...</div>
-            ) : (
-                    /*tabla donde se muestran los datos*/
-        <div style={{ display: "flex"}}>
-                {/* Primera mitad de la pantalla */}
-                <div
-                  style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
-                >
-                        {/* 
-                  {showAlert && (
-                    <AlertDismissible
-                      indicador={mensajeRespuesta.indicador}
-                      mensaje={mensajeRespuesta.mensaje}
-                      setShow={setShowAlert}
-                    />
-                  )}
-                  */}
-                  <div>
-                    <div className="content">
-                    <div className=" row justify-content-between align-items-center" style={{ marginLeft: 10 }}
-                >    
-                  </div>
-                  <Grid
-                    gridHeading={encabezadoArchivo}
-                    gridData={listaArchivosTabla}
-                    selectableRows={false}
-                    filterColumns={["nombre"]}
-                  ></Grid>
-                    </div>
-                  </div>
-                </div>
-                {documentoVer?.archivo && (
-                  <div style={{ flex: 1, padding: "20px" }}>
-                    <VisorArchivos
-                      key={documentoVer}
-                      documento={documentoVer.archivo}
-                      cerrar={handleVisor}
-                    />
-                  </div>
-                )}
-              </div>
+          ) : (
+            /*tabla donde se muestran los datos*/
+            <div style={{ display: "flex" }}>
+              {/* Primera mitad de la pantalla */}
+              <div
+                style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
+              >
 
+                {showAlert && (
+                  <AlertDismissible
+                    indicador={0}
+                    mensaje={mensajeRespuesta}
+                    setShow={setShowAlert}
+                  />
                 )}
+
+                <div>
+                  <div className="content">
+                    <div className=" row justify-content-between align-items-center" style={{ marginLeft: 10 }}>
+                    </div>
+
+                    <Grid
+                      gridHeading={encabezadoArchivo}
+                      gridData={listaArchivosTabla}
+                      selectableRows={false}
+                      filterColumns={["nombre"]}
+                    ></Grid>
+                  </div>
                 </div>
-              </div>  
-              
-            </>
+              </div>
+              {documentoVer?.archivo && (
+                <div style={{ flex: 1, padding: "20px" }}>
+                  <VisorArchivos
+                    key={documentoVer}
+                    documento={documentoVer.archivo}
+                    cerrar={handleVisor}
+                  />
+                </div>
+              )}
+            </div>
+
+          )}
+        </div>
+      </div>
+
+    </>
   );
 }
 

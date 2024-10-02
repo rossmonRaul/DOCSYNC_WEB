@@ -59,3 +59,6 @@
     align-content: center;
     align-items: center;
   }
+.react-datepicker-popper{
+  z-index: 2 !important;
+}
