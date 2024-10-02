@@ -7,7 +7,7 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
 import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
-import { FaRegBell, FaBook, FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog, FaUpload } from "react-icons/fa";
+import { FaRegBell, FaBook, FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog, FaUpload, FaBuilding } from "react-icons/fa";
 import { IconType } from 'react-icons/lib';
 import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
@@ -30,6 +30,8 @@ const NavbarMenu: React.FC = () => {
 
   // Renderizado
   const [showOptions, setShowOptions] = useState(false);
+  const [validarAcceso, setValidarAcceso] = useState<boolean>(true);
+  const [menuCompleto, setMenuCompleto] = useState([]);
   const [subMenuCatalogos, setSubMenuCatalogos] = useState([]);
   const [subMenuOtros, setSubMenuOtros] = useState([]);
   const [mostrarCatalogos, setMostrarCatalogos] = useState<boolean>(false);
@@ -64,7 +66,8 @@ const NavbarMenu: React.FC = () => {
     FaUserCog: FaUserCog,
     FaBook: FaBook,
     FaUpload: FaUpload,
-    AiOutlineFileSearch: AiOutlineFileSearch
+    AiOutlineFileSearch: AiOutlineFileSearch,
+    FaBuilding: FaBuilding
   };
 
   const obtenerOpcionesMenu = async () => {
@@ -73,20 +76,18 @@ const NavbarMenu: React.FC = () => {
       idRol: localStorage.getItem("idRol")
     };
 
-    const menu = await ObtenerAccesoMenuPorRol(data);      
+    const menu = await ObtenerAccesoMenuPorRol(data);    
 
-    // Validar si rol tiene acceso a la vista
-    if(menu.filter((x: any) => x.path === location.pathname).length < 1){
-        navigate('/private/dashboard');
-    }
-    
-    // Llenar opciones para catálogos
-    const menuCat = menu.filter((x: any) => x.nombreCategoria === "Catálogos"); // Esta manera se va a cambiar
-
-    menuCat.forEach((element: any) => {
+    // Se mapean todos los iconos
+    menu.forEach((element: any) => {
       element.icon = iconMap[element.icon]
       element.iconCategoria = iconMap[element.iconCategoria]
     });
+
+    setMenuCompleto(menu);
+    
+    // Llenar opciones para catálogos
+    const menuCat = menu.filter((x: any) => x.idCategoria === 1); // Esta manera se va a cambiar
 
     setSubMenuCatalogos(menuCat);
     
@@ -95,18 +96,10 @@ const NavbarMenu: React.FC = () => {
     //Llenar opciones que no tienen submenú
     const menuOtros = menu.filter((x: any) => x.name === x.nombreCategoria && !x.esOpcionEncabezado);
 
-    menuOtros.forEach((element: any) => {
-      element.icon = iconMap[element.icon]
-    });
-
     setSubMenuOtros(menuOtros);
 
     //Opciones de encabezado
     const menuEnc = menu.filter((x: any) => x.esOpcionEncabezado);
-
-    menuEnc.forEach((element: any) => {
-      element.icon = iconMap[element.icon]
-    });
 
     setMenuItems(menuEnc);
 
@@ -114,7 +107,14 @@ const NavbarMenu: React.FC = () => {
   }
 
   useEffect(() => {
-    obtenerOpcionesMenu();
+    // Validar si rol tiene acceso a la vista
+    if(validarAcceso){
+      if(menuCompleto.filter((x: any) => x.path === location.pathname).length < 1)
+        navigate('/private/dashboard');
+      setValidarAcceso(false); // Para que solo se valide una vez que se ingresa a nueva vista
+    }
+
+    if(menuCompleto.length < 1) obtenerOpcionesMenu(); // Para que solo haga llamado al API una vez
   });
 
   return (

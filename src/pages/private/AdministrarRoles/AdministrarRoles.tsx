@@ -146,6 +146,7 @@ function AdministrarRoles() {
 
         setOpcionSelected('');
         setCategoriaSelected('');
+        obtenerOpcionesMenu();
       }
     }
     else{
@@ -278,7 +279,7 @@ function AdministrarRoles() {
             <VscEdit  />
           </Button>     
         </>
-      ),
+      ), width:"px"
     },
   ];
 
@@ -301,7 +302,7 @@ function AdministrarRoles() {
             <FaTrash />
           </Button>      
         </>
-      ),
+      ), width:"120px",
     },
   ];
 

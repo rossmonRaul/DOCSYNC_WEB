@@ -280,7 +280,7 @@ function CatalogoPersonas() {
             <FaTrash />
           </Button>      
         </>
-      ),
+      ), width:"120px",
     },
   ];
 
@@ -346,8 +346,6 @@ function CatalogoPersonas() {
                     name="identificacion"
                     value={identificacion || ""} // Valor opcional
                     maxLength={50}
-                    pattern="\d*"
-                    title="Solo se permiten números" 
                     readOnly
                     style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
                   />
@@ -412,7 +410,7 @@ function CatalogoPersonas() {
                       onstyle="success"
                       offlabel="No"
                       offstyle="danger"
-                      style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
+                      style="w-100 mx-3;"
                       onChange={(checked) => setEstado(checked)}
                     />
                     </div>
