@@ -9,10 +9,13 @@ import { AlertDismissible } from "../../../components/alert/alert";
 import { FaClipboardList, FaSearch, FaEyeSlash, FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
-import { ObtenerDocumento } from "../../../servicios/ServicioDocumentos";
+import {
+  ObtenerDocumento,
+  ObtenerDocumentosPorContenido,
+} from "../../../servicios/ServicioDocumentos";
 import axios from "axios";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 
 interface Archivo {
   idDocumento: Number;
@@ -31,7 +34,6 @@ interface Archivo {
   usuarioCreacion: string;
   fechaCreacion: Date;
   fechaModificacion: Date;
-
 }
 
 // Componente funcional que representa la página de carga de archivops
@@ -46,7 +48,10 @@ function BuscarArchivos() {
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
-  const [mensajeRespuesta, setMensajeRespuesta] = useState({ indicador: 0, mensaje: "" });
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({
+    indicador: 0,
+    mensaje: "",
+  });
 
   const [autor, setAutor] = useState("");
   const [asunto, setAsunto] = useState("");
@@ -60,18 +65,20 @@ function BuscarArchivos() {
   const [titulo, setTitulo] = useState("");
   const [nombre, setNombre] = useState("");
   const [opcionDepartamento, setOpcionDepartamento] = useState(""); //
-  const [opcionConfidencialidad, setOpcionSConfidencialidad] = useState('false'); //
-  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(null);
+  const [opcionConfidencialidad, setOpcionSConfidencialidad] =
+    useState("false"); //
+  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(
+    null
+  );
   const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
+  const [contenido, setContenido] = useState("");
 
   //const [listaDeRegistros, setListaDeRegistros] = useState([]);
-
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -81,7 +88,9 @@ function BuscarArchivos() {
       cell: (row: Archivo) => (
         <Form.Check
           type="checkbox"
-          checked={listaArchivosTablaSeleccionados.some((r) => r.idDocumento === row.idDocumento)}
+          checked={listaArchivosTablaSeleccionados.some(
+            (r) => r.idDocumento === row.idDocumento
+          )}
           onChange={() => handleFilaSeleccionada(row)}
         />
       ),
@@ -106,8 +115,10 @@ function BuscarArchivos() {
       id: "FechaCarga",
       name: "Fecha de Carga",
       selector: (row: Archivo) => {
-        const fecha = row.fechaModificacion?row.fechaModificacion:row.fechaCreacion; 
-        return fecha ? format(fecha, 'dd/MM/yyyy') : ""; 
+        const fecha = row.fechaModificacion
+          ? row.fechaModificacion
+          : row.fechaCreacion;
+        return fecha ? format(fecha, "dd/MM/yyyy") : "";
       },
       sortable: true,
       style: {
@@ -142,7 +153,6 @@ function BuscarArchivos() {
   ];
 
   const handleBuscarClick = async () => {
-
     setPendiente(true);
     setListaArchivosTabla([]);
 
@@ -153,7 +163,10 @@ function BuscarArchivos() {
     // Validar que la fecha final no sea menor que la fecha inicial
     if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
       setShowAlert(true);
-      setMensajeRespuesta({ indicador: 1, mensaje: "La fecha final no puede ser menor que la fecha inicial." });
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "La fecha final no puede ser menor que la fecha inicial.",
+      });
       setPendiente(false);
       return;
     }
@@ -170,9 +183,9 @@ function BuscarArchivos() {
       nombre: nombre,
       departamento: opcionDepartamento,
       confidencialidad: opcionConfidencialidad,
-      fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+      fechaFiltroInicial:
+        fechaFiltroInicial === null ? null : fechaFiltroInicial,
       fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
-
     };
 
     // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
@@ -187,28 +200,70 @@ function BuscarArchivos() {
 
     if (resultadosObtenidos.length === 0) {
       setShowAlert(true);
-      setMensajeRespuesta({ indicador: 2, mensaje: "No se encontraron resultados." });
+      setMensajeRespuesta({
+        indicador: 2,
+        mensaje: "No se encontraron resultados.",
+      });
     } else {
-      setMostrarBusqueda(!mostrarBusqueda)
+      setMostrarBusqueda(!mostrarBusqueda);
+    }
+  };
+
+  const handleBuscarPorContenidoClick = async () => {
+    setPendiente(true);
+
+    if (contenido !== "") {
+      // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
+      //console.log('filtro del buscar antes de ejecutar el sp')
+      //console.log(filtro)
+      const resultadosObtenidos = await ObtenerDocumentosPorContenido({
+        archivosBuscar: listaArchivosTabla.map((a) => a.idDocumento+""),
+        contenido,
+      });
+
+      if (resultadosObtenidos.indicador === 0) {
+        const coincidencias = resultadosObtenidos.datos;
+        const archivosContenido = listaArchivosTabla.filter(
+          (a) =>
+            !coincidencias.some((s: any) => s.idDocumento === a.idDocumento)
+        );
+      }
+
+      /*
+      setListaArchivosTabla(resultadosObtenidos);
+      setPendiente(false);
+
+      if (resultadosObtenidos.length === 0) {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 2,
+          mensaje: "No se encontraron resultados.",
+        });
+      } else {
+        setMostrarBusqueda(!mostrarBusqueda);
+      }
+        */
     }
   };
 
   const countEmptyFields = () => {
     let count = 0;
     // Cuenta los campos que no están vacíos
-    if (autor !== '') count++;
-    if (asunto !== '') count++;
+    if (autor !== "") count++;
+    if (asunto !== "") count++;
     if (opcionDepartamento !== "") count++;
-    if (contenidoRelevante !== '') count++;
-    if (numeroExpediente !== '') count++;
-    if (numeroSolicitud !== '') count++;
-    if (docPadre !== '') count++;
-    if (docHijo !== '') count++;
-    if (titulo !== '') count++;
-    if (nombre !== '') count++;
-    if (fechaFiltroInicial !== null && fechaFiltroFinal !== null)
-      count++;
-    else if (fechaFiltroInicial !== null && fechaFiltroFinal == null || fechaFiltroFinal !== null && fechaFiltroInicial == null)
+    if (contenidoRelevante !== "") count++;
+    if (numeroExpediente !== "") count++;
+    if (numeroSolicitud !== "") count++;
+    if (docPadre !== "") count++;
+    if (docHijo !== "") count++;
+    if (titulo !== "") count++;
+    if (nombre !== "") count++;
+    if (fechaFiltroInicial !== null && fechaFiltroFinal !== null) count++;
+    else if (
+      (fechaFiltroInicial !== null && fechaFiltroFinal == null) ||
+      (fechaFiltroFinal !== null && fechaFiltroInicial == null)
+    )
       count = 0;
 
     return count;
@@ -223,11 +278,12 @@ function BuscarArchivos() {
   };
 
   const handleOpcionConfidenChange = (e: any) => {
-    setOpcionSConfidencialidad(e.target.type !== "switch" ? e.target.value : e.target.checked + "",);
+    setOpcionSConfidencialidad(
+      e.target.type !== "switch" ? e.target.value : e.target.checked + ""
+    );
   };
 
   //////////////////////////////
-
 
   const handleVisor = () => {
     setDocumentoVer(undefined);
@@ -257,7 +313,7 @@ function BuscarArchivos() {
   /*const guardarInformacioArchivo = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowModal(false);
-
+ 
     setListaArchivosTabla(
       listaArchivosTabla.map((row) =>
         row.idDocumento === documentoSeleccionado?.idDocumento
@@ -272,7 +328,7 @@ function BuscarArchivos() {
           : row
       )
     );
-
+ 
     if (!documentoEditado) {
       if (documentoSeleccionado) {
         if (validarDatosCompletosArchivo(documentoSeleccionado)) {
@@ -283,9 +339,15 @@ function BuscarArchivos() {
   };*/
 
   const seleccionarDocumento = (row: Archivo) => {
-    if (listaArchivosTablaSeleccionados.some((r) => r.idDocumento === row.idDocumento)) {
+    if (
+      listaArchivosTablaSeleccionados.some(
+        (r) => r.idDocumento === row.idDocumento
+      )
+    ) {
       setListaArchivosTablaSeleccionados(
-        listaArchivosTablaSeleccionados.filter((r) => r.idDocumento !== row.idDocumento)
+        listaArchivosTablaSeleccionados.filter(
+          (r) => r.idDocumento !== row.idDocumento
+        )
       );
     } else {
       setListaArchivosTablaSeleccionados([
@@ -317,7 +379,6 @@ function BuscarArchivos() {
     setShowModal(true);
     setDocumentoEditado(editar);
   };
-
 
   return (
     <>
@@ -377,7 +438,11 @@ function BuscarArchivos() {
                 <Form.Label>Es confidencial</Form.Label>
                 <div className="w-100">
                   <BootstrapSwitchButton
-                    checked={documentoSeleccionado?.confidencialidad === "True"? true: false}
+                    checked={
+                      documentoSeleccionado?.confidencialidad === "True"
+                        ? true
+                        : false
+                    }
                     onlabel="Sí"
                     onstyle="danger"
                     offlabel="No"
@@ -387,7 +452,7 @@ function BuscarArchivos() {
                   />
                 </div>
               </Form.Group>
-            </Col>         
+            </Col>
           </Row>
           <Row>
             <Col md={6}>
@@ -479,7 +544,7 @@ function BuscarArchivos() {
             <h1 className="title">Buscar archivos</h1>
           </Col>
           <Col md={2} className="d-flex justify-content-start">
-            {(
+            {
               <Button
                 className="btn-crear"
                 variant="primary"
@@ -498,20 +563,24 @@ function BuscarArchivos() {
                   </>
                 )}
               </Button>
-
-            )}
+            }
           </Col>
         </Row>
       </div>
       <hr></hr>
       <div className="container-fluid">
-
         {mostrarBusqueda ? (
-          <div style={{ padding: '0 60px' }}>
+          <div style={{ padding: "0 60px" }}>
             <Row>
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                <Form.Group className='mb-4'>
-                  <label htmlFor="autor"><b>Autor</b></label>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
+                <Form.Group className="mb-4">
+                  <label htmlFor="autor">
+                    <b>Autor</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={autor}
@@ -520,9 +589,15 @@ function BuscarArchivos() {
                 </Form.Group>
               </Col>
 
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                <Form.Group className='mb-4'>
-                  <label htmlFor="nombre"><b>Asunto</b></label>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
+                <Form.Group className="mb-4">
+                  <label htmlFor="nombre">
+                    <b>Asunto</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={asunto}
@@ -531,9 +606,15 @@ function BuscarArchivos() {
                 </Form.Group>
               </Col>
 
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                <Form.Group className='mb-4'>
-                  <label htmlFor="departamento"><b>Departamento</b></label>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
+                <Form.Group className="mb-4">
+                  <label htmlFor="departamento">
+                    <b>Departamento</b>
+                  </label>
                   <Form.Control
                     as="select"
                     value={opcionDepartamento}
@@ -547,9 +628,15 @@ function BuscarArchivos() {
                 </Form.Group>
               </Col>
 
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                <Form.Group className='mb-4'>
-                  <label htmlFor="confidencialidad"><b>Es confidencial</b></label>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
+                <Form.Group className="mb-4">
+                  <label htmlFor="confidencialidad">
+                    <b>Es confidencial</b>
+                  </label>
 
                   <BootstrapSwitchButton
                     checked={opcionConfidencialidad === "true"}
@@ -572,10 +659,16 @@ function BuscarArchivos() {
               </Col>
             </Row>
 
-            <Row style={{ padding: '0 0 20px 0' }}>
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+            <Row style={{ padding: "0 0 20px 0" }}>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
                 <Form.Group>
-                  <label htmlFor="ContenidoRelevante"><b>Contenido relevante</b></label>
+                  <label htmlFor="ContenidoRelevante">
+                    <b>Contenido relevante</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={contenidoRelevante}
@@ -583,9 +676,15 @@ function BuscarArchivos() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
                 <Form.Group>
-                  <label htmlFor="NumeroExpediente"><b>No. Expediente</b></label>
+                  <label htmlFor="NumeroExpediente">
+                    <b>No. Expediente</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={numeroExpediente}
@@ -593,9 +692,15 @@ function BuscarArchivos() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
                 <Form.Group>
-                  <label htmlFor="NumeroSolicitud"><b>No. Solicitud</b></label>
+                  <label htmlFor="NumeroSolicitud">
+                    <b>No. Solicitud</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={numeroSolicitud}
@@ -603,9 +708,15 @@ function BuscarArchivos() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
                 <Form.Group>
-                  <label htmlFor="DocHijo"><b>Doc. Hijo</b></label>
+                  <label htmlFor="DocHijo">
+                    <b>Doc. Hijo</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={docHijo}
@@ -614,10 +725,16 @@ function BuscarArchivos() {
                 </Form.Group>
               </Col>
             </Row>
-            <Row style={{ padding: '0 0 20px 0' }}>
-              <Col md={3} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+            <Row style={{ padding: "0 0 20px 0" }}>
+              <Col
+                md={3}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
                 <Form.Group>
-                  <label htmlFor="DocPadre"><b>Doc. Padre</b></label>
+                  <label htmlFor="DocPadre">
+                    <b>Doc. Padre</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={docPadre}
@@ -625,9 +742,15 @@ function BuscarArchivos() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={5} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+              <Col
+                md={5}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
                 <Form.Group>
-                  <label htmlFor="Titulo"><b>TÍtulo</b></label>
+                  <label htmlFor="Titulo">
+                    <b>TÍtulo</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={titulo}
@@ -635,8 +758,14 @@ function BuscarArchivos() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={2} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                <label htmlFor="FechaFiltroInicial"><b>Fecha inicial</b></label>
+              <Col
+                md={2}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
+                <label htmlFor="FechaFiltroInicial">
+                  <b>Fecha inicial</b>
+                </label>
                 <Form.Group>
                   <DatePicker
                     showIcon
@@ -649,15 +778,21 @@ function BuscarArchivos() {
                 </Form.Group>
               </Col>
 
-              <Col md={2} className="d-flex flex-column" style={{ padding: '0 10px' }}>
-                <label htmlFor="FechaFiltroFinal"><b>Fecha final</b></label>
+              <Col
+                md={2}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
+                <label htmlFor="FechaFiltroFinal">
+                  <b>Fecha final</b>
+                </label>
                 <Form.Group>
                   <DatePicker
                     showIcon
                     selected={fechaFiltroFinal}
                     onChange={(date) => setFechaFiltroFinal(date)}
                     dateFormat="dd/MM/yyyy"
-                    className='form-control'
+                    className="form-control"
                     locale={es}
                   />
                 </Form.Group>
@@ -665,9 +800,15 @@ function BuscarArchivos() {
             </Row>
 
             <Row>
-              <Col md={6} className="d-flex flex-column" style={{ padding: '0 10px' }}>
+              <Col
+                md={6}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
                 <Form.Group>
-                  <label htmlFor="Nombre"><b>Nombre de archivo</b></label>
+                  <label htmlFor="Nombre">
+                    <b>Nombre de archivo</b>
+                  </label>
                   <Form.Control
                     type="text"
                     value={nombre}
@@ -675,13 +816,18 @@ function BuscarArchivos() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6} className="d-flex flex-column" style={{ padding: '3px 10px' }}>
+              <Col
+                md={6}
+                className="d-flex flex-column"
+                style={{ padding: "3px 10px" }}
+              >
                 <Button
                   className="btn-save"
                   variant="primary"
                   onClick={handleBuscarClick}
-                  style={{ marginTop: '20px' }}
-                  disabled={areInputsEmpty()} >
+                  style={{ marginTop: "20px" }}
+                  disabled={areInputsEmpty()}
+                >
                   <FaSearch className="me-2" size={24} />
                   Buscar
                 </Button>
@@ -689,7 +835,39 @@ function BuscarArchivos() {
             </Row>
           </div>
         ) : null}
-
+        {listaArchivosTabla.length > 0 && (
+          <div className="container-fluid mt-4" style={{ marginLeft: 30 }}>
+            <Row>
+              <Col
+                md={6}
+                className="d-flex flex-column"
+                style={{ padding: "0 10px" }}
+              >
+                <Form.Group>
+                  <label htmlFor="Contenido">
+                    <b>Buscar por contenido</b>
+                  </label>
+                  <Form.Control
+                    type="text"
+                    value={contenido}
+                    onChange={(e) => setContenido(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Button
+                  className="btn-save"
+                  variant="primary"
+                  onClick={handleBuscarPorContenidoClick}
+                  style={{ marginTop: "20px" }}
+                >
+                  <FaSearch className="me-2" size={24} />
+                  Buscar
+                </Button>
+              </Col>
+            </Row>
+          </div>
+        )}
         <div className="position-relative">
           {pendiente ? (
             <div style={{ height: "100vh" }}>Cargando...</div>
@@ -698,9 +876,12 @@ function BuscarArchivos() {
             <div style={{ display: "flex" }}>
               {/* Primera mitad de la pantalla */}
               <div
-                style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
+                style={{
+                  flex: 1,
+                  padding: "20px",
+                  borderRight: "1px solid #ddd",
+                }}
               >
-
                 {showAlert && (
                   <AlertDismissible
                     indicador={0}
@@ -711,8 +892,10 @@ function BuscarArchivos() {
 
                 <div>
                   <div className="content">
-                    <div className=" row justify-content-between align-items-center" style={{ marginLeft: 10 }}>
-                    </div>
+                    <div
+                      className=" row justify-content-between align-items-center"
+                      style={{ marginLeft: 10 }}
+                    ></div>
 
                     <Grid
                       gridHeading={encabezadoArchivo}
@@ -733,11 +916,9 @@ function BuscarArchivos() {
                 </div>
               )}
             </div>
-
           )}
         </div>
       </div>
-
     </>
   );
 }
