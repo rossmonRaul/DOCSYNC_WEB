@@ -106,15 +106,17 @@ const NavbarMenu: React.FC = () => {
     setMostrarEncabezado(menuEnc.length > 0);
   }
 
-  useEffect(() => {
+  useEffect(() => {  
+    const hayMenu = menuCompleto.length > 0;
+
     // Validar si rol tiene acceso a la vista
-    if(validarAcceso){
+    if(validarAcceso && hayMenu){
       if(menuCompleto.filter((x: any) => x.path === location.pathname).length < 1)
         navigate('/private/dashboard');
       setValidarAcceso(false); // Para que solo se valide una vez que se ingresa a nueva vista
     }
-
-    if(menuCompleto.length < 1) obtenerOpcionesMenu(); // Para que solo haga llamado al API una vez
+    
+    if(!hayMenu) obtenerOpcionesMenu(); // Para que solo haga llamado al API una vez
   });
 
   return (

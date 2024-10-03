@@ -17,25 +17,9 @@ import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 
-
-interface Usuario {
-  idUsuario: string;
-  correoElectronico: string;
-  identificacion: string;
-  nombreCompleto: string;
-  puesto: string;
-  rol: string;
-  usuarioCreacion:string;
-  usuarioModificacion: string;
-  fechaCreacion: string;
-  fechaModificacion: string;
-  estado: string;
-  contrasennaT: string;
-}
-
 // Componente principal
 function CatalogoPersonas() {
-  const [listaUsuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [listaUsuarios, setUsuarios] = useState<any[]>([]);
   const [correoE, setCorreoE] = useState<string>("");
   const [rol, setRol] = useState<string>("");
   const [idUsuario, setIdUsuario] = useState<string>("");
@@ -45,6 +29,7 @@ function CatalogoPersonas() {
   const [personas, setPersonas] = useState<any>([]);
   const [roles, setRoles] = useState<any>([]);
   const [estado, setEstado] = useState<boolean>(false);
+  const [verConfidencial, setVerConfidencial] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -84,7 +69,7 @@ function CatalogoPersonas() {
   }
 
   // Función para inhabilitar un usuario
-  const eliminar = async (usuario: Usuario) => {
+  const eliminar = async (usuario: any) => {
     try {
 
       const data = {
@@ -112,6 +97,7 @@ function CatalogoPersonas() {
     setIsEditing(true);
     setShowModal(true);
     setIdUsuario(usuario.idUsuario);
+    setVerConfidencial(usuario.verConfidencial);
   };
 
   // Función para manejar el cierre del modal
@@ -120,6 +106,7 @@ function CatalogoPersonas() {
     setIsEditing(false);
     setCorreoE('');
     setEstado(false);
+    setVerConfidencial(false);
     setRol('');
     setIdentificacion('')
     setPersona('');
@@ -179,7 +166,8 @@ function CatalogoPersonas() {
             idUsuario: idUsuario,
             usuarioModificacion: identificacionUsuario,
             fechaModificacion: (new Date()).toISOString(),
-            contrasenna: null
+            contrasenna: null,
+            verConfidencial: verConfidencial
           };
           
           const response = await ActualizarUsuario(usuario);         
@@ -222,7 +210,8 @@ function CatalogoPersonas() {
             idUsuario: 0,
             usuarioCreacion: identificacionUsuario,
             fechaCreacion: (new Date()).toISOString(),
-            contrasenna: ''
+            contrasenna: '',
+            verConfidencial: verConfidencial
           };
 
           const response  = await AgregarUsuario(nuevoUsuario);
@@ -244,28 +233,32 @@ function CatalogoPersonas() {
 
   // Encabezados de la tabla con acciones
   const encabezadoTabla = [
-    { id: "identificacion", name: "Identificación", selector: (row: Usuario) => row.identificacion, sortable: true,style: {
+    { id: "identificacion", name: "Identificación", selector: (row: any) => row.identificacion, sortable: true,style: {
       fontSize: "1.2em",
     }, },
-    { id: "nombreCompleto", name: "Nombre", selector: (row: Usuario) => row.nombreCompleto, sortable: true, style: {
+    { id: "nombreCompleto", name: "Nombre", selector: (row: any) => row.nombreCompleto, sortable: true, style: {
       fontSize: "1.2em",
     },},
-    { id: "rol", name: "Rol", selector: (row: Usuario) => row.rol, sortable: true,style: {
+    { id: "rol", name: "Rol", selector: (row: any) => row.rol, sortable: true,style: {
       fontSize: "1.2em",
     }, },
-    { id: "puesto", name: "Puesto", selector: (row: Usuario) => row.puesto, sortable: true,style: {
+    { id: "puesto", name: "Puesto", selector: (row: any) => row.puesto, sortable: true,style: {
       fontSize: "1.2em",
     }, },
-    { id: "correoElectronico", name: "Correo", selector: (row: Usuario) => row.correoElectronico, sortable: true,style: {
-      fontSize: "1.2em",
-    }, },
-    { id: "estado", name: "Estado", selector: (row: Usuario) => (row.estado ? 'Activo' : 'Inactivo'), sortable: true,style: {
+    { id: "verConfidencial", name: "Confidencial", sortable: true,
+      cell: (row: any) => (
+        <div style={{ fontSize: "1.2em", color: row.verConfidencial ? 'green' : 'red' }}>
+          {row.verConfidencial ? 'Sí' : 'No'}
+        </div>
+      ),
+    },
+    { id: "estado", name: "Estado", selector: (row: any) => (row.estado ? 'Activo' : 'Inactivo'), sortable: true,style: {
       fontSize: "1.2em",
     }, },
     {
       id: "acciones",
       name: "Acciones",
-      cell: (row: Usuario) => (
+      cell: (row: any) => (
         <>
         <Button
             onClick={() => editarUsuario(row)}
@@ -394,13 +387,15 @@ function CatalogoPersonas() {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+              <Col md={3}>
                 <Form.Group controlId="formEstado">
                   <div style={{
                       display: 'flex',
                       alignContent: 'start',
                       alignItems: 'start',
-                      flexDirection: 'column'
+                      flexDirection: 'column',
+                      padding: '2%',
+                      marginTop: '4%'
                     }}>
                     <Form.Label style={{marginTop: '3%'}}>Usuario activo</Form.Label>
                     <div className="w-100">
@@ -412,6 +407,31 @@ function CatalogoPersonas() {
                       offstyle="danger"
                       style="w-100 mx-3;"
                       onChange={(checked) => setEstado(checked)}
+                    />
+                    </div>
+                  </div>
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group controlId="formEstado">
+                  <div style={{
+                      display: 'flex',
+                      alignContent: 'start',
+                      alignItems: 'start',
+                      flexDirection: 'column',
+                      padding: '2%',
+                      marginTop: '4%'
+                    }}>
+                    <Form.Label style={{marginTop: '3%'}}>Accesos confidenciales</Form.Label>
+                    <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={verConfidencial === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;"
+                      onChange={(checked) => setVerConfidencial(checked)}
                     />
                     </div>
                   </div>

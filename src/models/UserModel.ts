@@ -8,4 +8,5 @@ export interface UserInfo {
     idEmpresa: number;
     idRol: number;
     estado: number;
+    verConfidencial: boolean;
 }
