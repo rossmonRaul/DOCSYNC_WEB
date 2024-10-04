@@ -217,32 +217,28 @@ function BuscarArchivos() {
       //console.log('filtro del buscar antes de ejecutar el sp')
       //console.log(filtro)
       const resultadosObtenidos = await ObtenerDocumentosPorContenido({
-        archivosBuscar: listaArchivosTabla.map((a) => a.idDocumento+""),
+        archivosBuscar: listaArchivosTabla.map((a) => a.idDocumento + ""),
         contenido,
       });
 
       if (resultadosObtenidos.indicador === 0) {
         const coincidencias = resultadosObtenidos.datos;
-        const archivosContenido = listaArchivosTabla.filter(
-          (a) =>
-            !coincidencias.some((s: any) => s.idDocumento === a.idDocumento)
+        const archivosContenido = listaArchivosTabla.filter((a) =>
+          coincidencias.some((s: any) => s.idDocumento === a.idDocumento + "")
         );
-      }
+        console.log(coincidencias);
+        setListaArchivosTabla(archivosContenido);
+        setPendiente(false);
+        setContenido("")
 
-      /*
-      setListaArchivosTabla(resultadosObtenidos);
-      setPendiente(false);
-
-      if (resultadosObtenidos.length === 0) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 2,
-          mensaje: "No se encontraron resultados.",
-        });
-      } else {
-        setMostrarBusqueda(!mostrarBusqueda);
+        if (archivosContenido.length === 0) {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "No se encontraron resultados.",
+          });
+        }
       }
-        */
     }
   };
 
