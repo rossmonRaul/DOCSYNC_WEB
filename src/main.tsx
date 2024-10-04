@@ -24,6 +24,7 @@ import AuthGuard from "./guards/AuthGuard.tsx";
 import Login from "./pages/LoginPage.tsx";
 import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
 import { WorkerProvider } from "./context/workerContext.tsx";
+import { SpinnerProvider } from "./context/spinnerContext"; 
 import CatalogoTiposDocumentos from "./pages/private/Catalogos/CatalogoTiposDocumentos.tsx";
 import CatalogoJerarquiasDocumentos from "./pages/private/Catalogos/CatalogoJerarquiasDocumentos.tsx";
 import CatalogoUsuarios from "./pages/private/Catalogos/CatalogoUsuarios.tsx";
@@ -84,7 +85,9 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Provider store={Store}>
     <WorkerProvider>
-      <RouterProvider router={router} />
+      <SpinnerProvider>
+        <RouterProvider router={router} />
+      </SpinnerProvider>
     </WorkerProvider>
   </Provider>
 );

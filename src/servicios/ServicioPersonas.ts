@@ -21,3 +21,8 @@ export const EliminarPersona = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/EliminarPersona`;
   return await ProcesarDatosApi("PUT", url, data);
 };
+
+export const ImportarPersonas = async (data: any) => {
+  const url = `${API_BASE_URL}/${controlador}/ImportarPersonas`;
+  return await ProcesarDatosApi("POST", url, data);
+};
