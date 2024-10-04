@@ -15,6 +15,10 @@ export const Grid: React.FC<any> = ({
   rowModal,
   handle,
   buttonVisible,
+  visibleButtonOpcion1,
+  nameButtonOpcion1,
+  handleButtonOpcion1,
+  iconButtonOpcion1,
 }) => {
   const [id, setId] = useState(-1);
   const [records, setRecords] = useState([]);
@@ -117,12 +121,20 @@ export const Grid: React.FC<any> = ({
           className="mb-6 mt-0 d-flex justify-content-between align-items-center"
           style={{ marginLeft: 10 }}
         >
-          {buttonVisible && (
-            <Button variant="primary" onClick={handle} className="btn-crear">
-              <FaPlus className="me-2" size={24} />
-              Agregar
-            </Button>
-          )}
+          <div>
+            {buttonVisible && (
+              <Button variant="primary" onClick={handle} className="btn-crear px-2">
+                <FaPlus className="me-2" size={24} />
+                Agregar
+              </Button>
+            )}
+            {visibleButtonOpcion1 && (
+              <Button variant="primary" onClick={handleButtonOpcion1} className=" ms-3 btn-crear" >
+                {iconButtonOpcion1}
+                {nameButtonOpcion1}
+              </Button>
+            )}
+          </div>
 
            <div className={buttonVisible ? "" : "ms-auto"}>
           <input
