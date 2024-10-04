@@ -8,14 +8,17 @@ import {
   EliminarDepartamento,
   ObtenerDepartamentos
 } from "../../../servicios/ServicioDepartamento";
-import { FaTrash ,FaPlus } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import { useSpinner } from "../../../context/spinnerContext";
 
 // Componente principal
 function CatalogoDepartamentos() {
+
+  const { setShowSpinner } = useSpinner();
   const [listaDepartamentos, setDepartamentos] = useState<any[]>([]);
   const [idDep, setIdDep] = useState<string>("");
   const [nombre, setNombre] = useState<string>("");
@@ -31,8 +34,10 @@ function CatalogoDepartamentos() {
 
   const obtenerDepartamentos = async () => {
     try {
+      setShowSpinner(true);
       const response = await ObtenerDepartamentos();
       setDepartamentos(response);
+      setShowSpinner(false);
     } catch (error) {
       console.error("Error al obtener departamentos:", error);
     }
@@ -41,7 +46,7 @@ function CatalogoDepartamentos() {
   // Función para inhabilitar un departamento
   const eliminar = async (row: any) => {
     try {
-
+      setShowSpinner(true);
       const data = {
         idDepartamento: row.idDepartamento
       }
@@ -51,7 +56,7 @@ function CatalogoDepartamentos() {
       setShowAlert(true);
       setMensajeRespuesta(response);
       obtenerDepartamentos();
-        
+      setShowSpinner(false);
     } catch (error) {
       console.error("Error al eliminar departamento:", error);
     }
@@ -78,7 +83,7 @@ function CatalogoDepartamentos() {
   // Maneja el envío del formulario para agregar o editar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setShowSpinner(true);
     if (isEditing) {
       try {
 
@@ -137,7 +142,7 @@ function CatalogoDepartamentos() {
           setShowAlert(true);
           setMensajeRespuesta(response);
         }
-
+      setShowSpinner(false);
       } catch (error) {
         console.error("Error al crear la departamento:", error);
       }
@@ -184,17 +189,15 @@ function CatalogoDepartamentos() {
         setShow={setShowAlert}
         />
       )}
-        {/* Botón para abrir el modal de agregar */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-crear">
-          <FaPlus className="me-2" size={24} />
-          Agregar
-        </Button>
-  
+        <br />
+
         {/* Tabla */}
         <Grid
+          handle={handleModal}
+          buttonVisible={true}
           gridHeading={encabezadoTabla}
           gridData={listaDepartamentos}
-          filterColumns={["identificacion", "nombreCompleto", "rol", "puesto", "correoElectronico"]}
+          filterColumns={["nombre", "estado"]}
           selectableRows={false}
         ></Grid>
       </div>

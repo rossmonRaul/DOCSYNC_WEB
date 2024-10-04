@@ -10,15 +10,18 @@ import {
   ActualizarUsuario
 } from "../../../servicios/ServicioUsuario";
 import { ObtenerPersonas } from "../../../servicios/ServicioPersonas";
-import { FaTrash ,FaPlus } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { Input } from 'reactstrap';
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import { useSpinner } from "../../../context/spinnerContext";
 
 // Componente principal
 function CatalogoPersonas() {
+
+  const { setShowSpinner } = useSpinner();
   const [listaUsuarios, setUsuarios] = useState<any[]>([]);
   const [correoE, setCorreoE] = useState<string>("");
   const [rol, setRol] = useState<string>("");
@@ -36,10 +39,16 @@ function CatalogoPersonas() {
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
-    obtenerUsuarios();
-    obtenerPersonas();
-    obtenerRoles();
+    obtenerDatos();
   }, []);
+
+  const obtenerDatos = async () =>{    
+    setShowSpinner(true);
+    await obtenerPersonas();
+    await obtenerRoles();
+    await obtenerUsuarios();
+    setShowSpinner(false);
+  }
 
   const obtenerUsuarios = async () => {
     try {
@@ -71,7 +80,7 @@ function CatalogoPersonas() {
   // Función para inhabilitar un usuario
   const eliminar = async (usuario: any) => {
     try {
-
+      setShowSpinner(true);
       const data = {
         idUsuario: usuario.idUsuario
       }
@@ -81,7 +90,7 @@ function CatalogoPersonas() {
       setShowAlert(true);
       setMensajeRespuesta(response);
       obtenerUsuarios();
-        
+      setShowSpinner(false);
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
     }
@@ -143,6 +152,7 @@ function CatalogoPersonas() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setShowSpinner(true);
     if (isEditing) {
       try {
 
@@ -229,6 +239,8 @@ function CatalogoPersonas() {
         console.error("Error al crear la usuario:", error);
       }
     }
+
+    setShowSpinner(false);
   };
 
   // Encabezados de la tabla con acciones
@@ -287,14 +299,11 @@ function CatalogoPersonas() {
         setShow={setShowAlert}
         />
       )}
-        {/* Botón para abrir el modal de agregar */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-crear">
-          <FaPlus className="me-2" size={24} />
-          Agregar
-        </Button>
-  
+        <br />
         {/* Tabla */}
-        <Grid
+        <Grid        
+          handle={handleModal}
+          buttonVisible={true}
           gridHeading={encabezadoTabla}
           gridData={listaUsuarios}
           filterColumns={["identificacion", "nombreCompleto", "rol", "puesto", "correoElectronico"]}

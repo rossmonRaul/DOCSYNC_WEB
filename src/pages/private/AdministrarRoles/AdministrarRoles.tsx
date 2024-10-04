@@ -10,17 +10,19 @@ import {
   ObtenerAccesoMenuPorRol,
   ActualizarRol
 } from "../../../servicios/ServicioUsuario";
-import { FaTrash ,FaPlus } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { RiAddLine } from "react-icons/ri";
 import { Input } from 'reactstrap';
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import { useSpinner } from "../../../context/spinnerContext";
 
 // Componente principal
 function AdministrarRoles() {
   
+  const { setShowSpinner } = useSpinner();
   const [categorias, setCategorias] = useState<any[]>([]);
   const [opciones, setOpciones] = useState<any[]>([]);
   const [opcionesRol, setOpcionesRol] = useState<any[]>([]);  
@@ -36,10 +38,16 @@ function AdministrarRoles() {
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
-    obtenerRoles();
-    obtenerCategoriaMenu();
-    obtenerOpcionesMenu();
+    obtenerDatos();
   }, []);
+
+  const obtenerDatos = async () => {
+    setShowSpinner(true);    
+    await obtenerCategoriaMenu();
+    await obtenerOpcionesMenu();
+    await obtenerRoles();
+    setShowSpinner(false);
+  }
 
   const obtenerRoles = async () => {
     try {    
@@ -181,6 +189,7 @@ function AdministrarRoles() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setShowSpinner(true);
     if (isEditing) {
       try {
         if(nombreRol === ''){
@@ -257,6 +266,8 @@ function AdministrarRoles() {
         console.error("Error al crear rol:", error);
       }
     }
+
+    setShowSpinner(false);
   };
 
   // Encabezados de la tabla con acciones
@@ -316,17 +327,14 @@ function AdministrarRoles() {
         setShow={setShowAlert}
         />
       )}
-        {/* Botón para abrir el modal de agregar */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-crear">
-          <FaPlus className="me-2" size={24} />
-          Agregar
-        </Button>
-  
+      <br />  
         {/* Tabla */}
         <Grid
-          gridHeading={encabezadoTabla}
+          gridHeading={encabezadoTabla}          
+          handle={handleModal}
+          buttonVisible={true}
           gridData={roles}
-          filterColumns={["identificacion", "nombreCompleto", "rol", "puesto", "correoElectronico"]}
+          filterColumns={["rol", "estado", "rol"]}
           selectableRows={false}
         ></Grid>
       </div>

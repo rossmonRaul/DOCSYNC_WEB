@@ -8,14 +8,17 @@ import {
   EliminarPuesto,
   ObtenerPuestos
 } from "../../../servicios/ServicioPuesto";
-import { FaTrash ,FaPlus } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
+import { useSpinner } from "../../../context/spinnerContext";
 
 // Componente principal
 function CatalogoPuestos() {
+
+  const { setShowSpinner } = useSpinner();
   const [listapuestos, setpuestos] = useState<any[]>([]);
   const [idPuesto, setIdPuesto] = useState<string>("");
   const [nombre, setNombre] = useState<string>("");
@@ -31,8 +34,10 @@ function CatalogoPuestos() {
 
   const obtenerPuestos = async () => {
     try {
+      setShowSpinner(true);
       const response = await ObtenerPuestos();
       setpuestos(response);
+      setShowSpinner(false);
     } catch (error) {
       console.error("Error al obtener puestos:", error);
     }
@@ -41,7 +46,7 @@ function CatalogoPuestos() {
   // Función para inhabilitar un puesto
   const eliminar = async (row: any) => {
     try {
-
+      setShowSpinner(true);
       const data = {
         idPuesto: row.idPuesto
       }
@@ -51,7 +56,7 @@ function CatalogoPuestos() {
       setShowAlert(true);
       setMensajeRespuesta(response);
       obtenerPuestos();
-        
+      setShowSpinner(false);
     } catch (error) {
       console.error("Error al eliminar puesto:", error);
     }
@@ -79,6 +84,7 @@ function CatalogoPuestos() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setShowSpinner(true);
     if (isEditing) {
       try {
 
@@ -142,6 +148,8 @@ function CatalogoPuestos() {
         console.error("Error al crear la puesto:", error);
       }
     }
+
+    setShowSpinner(false);
   };
 
   // Encabezados de la tabla con acciones
@@ -184,17 +192,15 @@ function CatalogoPuestos() {
         setShow={setShowAlert}
         />
       )}
-        {/* Botón para abrir el modal de agregar */}
-        <Button variant="primary" onClick={handleModal} className="mt-3 mb-0 btn-crear">
-          <FaPlus className="me-2" size={24} />
-          Agregar
-        </Button>
+        <br />
   
         {/* Tabla */}
         <Grid
+          handle={handleModal}
+          buttonVisible={true}
           gridHeading={encabezadoTabla}
           gridData={listapuestos}
-          filterColumns={["identificacion", "nombreCompleto", "rol", "puesto", "correoElectronico"]}
+          filterColumns={["nombre", "estado"]}
           selectableRows={false}
         ></Grid>
       </div>
