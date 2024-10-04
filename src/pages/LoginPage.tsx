@@ -217,11 +217,11 @@ const Login: React.FC = () => {
     const formDataLogin = {
       identificacion: formData.usuario,
       correoElectronico: formData.usuario,
-      contrasena: formData.contrasena
+      contrasenna: formData.contrasena
     };
 
     try {
-      const response = await ValidarUsuario(formDataLogin);     
+      const response = await ValidarUsuario(formDataLogin);   
       
       if(response){
         const usuario = response.usuario;
@@ -235,12 +235,13 @@ const Login: React.FC = () => {
           );
           localStorage.setItem("token", response.token);
           localStorage.setItem("idRol", response.usuario.idRol);
+          localStorage.setItem("verConfidencial", response.usuario.verConfidencial);
 
           navigate(`/${PrivateRoutes.PRIVATE}`, { replace: true });
 
           setIsLoggedIn(true);
         }
-        else if(usuario.mensaje === "2"){ // Contraseña temporal
+        else if(usuario.mensaje === "2"){
           setShowAlert(true);
           setCorreo(response.usuario.correo);
           setIdentificacion(response.usuario.identificacion);

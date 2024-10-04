@@ -1,4 +1,3 @@
-import { Roles } from ".";
 
 export interface UserInfo {
     identificacion: string;
@@ -7,6 +6,7 @@ export interface UserInfo {
     idFinca: number;
     idParcela: number;
     idEmpresa: number;
-    idRol: Roles;
+    idRol: number;
     estado: number;
+    verConfidencial: boolean;
 }

@@ -11,10 +11,8 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import Store from "./redux/Store";
-import { Roles } from "./models";
 import { PrivateRoutes, PublicRoutes } from "./models/routes";
 import { Provider } from "react-redux";
-import RolGuard from "./guards/RolGuard.tsx";
 import CargarArchivos from "./pages/private/CargarArchivos/CargarArchivos.tsx";
 import CargaScanner from "./pages/private/CargaScanner/CargaScanner.tsx";
 import BuscarArchivos from "./pages/private/BuscarArchivos/BuscarArchivos.tsx";
@@ -29,6 +27,7 @@ import CatalogoTiposDocumentos from "./pages/private/Catalogos/CatalogoTiposDocu
 import CatalogoJerarquiasDocumentos from "./pages/private/Catalogos/CatalogoJerarquiasDocumentos.tsx";
 import CatalogoUsuarios from "./pages/private/Catalogos/CatalogoUsuarios.tsx";
 import AdministrarRoles from "./pages/private/AdministrarRoles/AdministrarRoles.tsx";
+import CatalogoDepartamentos from "./pages/private/Catalogos/CatalogoDepartamentos.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -76,6 +75,10 @@ const router = createBrowserRouter(
         <Route
           path={PrivateRoutes.ADMINROLES}
           element={<AdministrarRoles />}
+        />
+        <Route
+          path={PrivateRoutes.CATALOGODEPARTAMENTOS}
+          element={<CatalogoDepartamentos />}
         />
       {/* </Route> */}
     </Route>
