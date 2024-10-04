@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import CustomModal from "../../../components/modal/CustomModal";
 
 import { Grid } from "../../../components/table/tabla";

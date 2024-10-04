@@ -3,11 +3,11 @@ import "../../../css/general.css";
 import { Button, Col, Form , Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { 
-  ActualizarDepartamento,
-  AgregarDepartamento,
-  EliminarDepartamento,
-  ObtenerDepartamentos
-} from "../../../servicios/ServicioDepartamento";
+  ActualizarPuesto,
+  AgregarPuesto,
+  EliminarPuesto,
+  ObtenerPuestos
+} from "../../../servicios/ServicioPuesto";
 import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -16,11 +16,11 @@ import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { useSpinner } from "../../../context/spinnerContext";
 
 // Componente principal
-function CatalogoDepartamentos() {
+function CatalogoPuestos() {
 
   const { setShowSpinner } = useSpinner();
-  const [listaDepartamentos, setDepartamentos] = useState<any[]>([]);
-  const [idDep, setIdDep] = useState<string>("");
+  const [listapuestos, setpuestos] = useState<any[]>([]);
+  const [idPuesto, setIdPuesto] = useState<string>("");
   const [nombre, setNombre] = useState<string>("");
   const [estado, setEstado] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
@@ -29,36 +29,36 @@ function CatalogoDepartamentos() {
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
-    obtenerDepartamentos();
+    obtenerPuestos();
   }, []);
 
-  const obtenerDepartamentos = async () => {
+  const obtenerPuestos = async () => {
     try {
       setShowSpinner(true);
-      const response = await ObtenerDepartamentos();
-      setDepartamentos(response);
+      const response = await ObtenerPuestos();
+      setpuestos(response);
       setShowSpinner(false);
     } catch (error) {
-      console.error("Error al obtener departamentos:", error);
+      console.error("Error al obtener puestos:", error);
     }
   };
 
-  // Función para inhabilitar un departamento
+  // Función para inhabilitar un puesto
   const eliminar = async (row: any) => {
     try {
       setShowSpinner(true);
       const data = {
-        idDepartamento: row.idDepartamento
+        idPuesto: row.idPuesto
       }
 
-      const response = await EliminarDepartamento(data);
+      const response = await EliminarPuesto(data);
 
       setShowAlert(true);
       setMensajeRespuesta(response);
-      obtenerDepartamentos();
+      obtenerPuestos();
       setShowSpinner(false);
     } catch (error) {
-      console.error("Error al eliminar departamento:", error);
+      console.error("Error al eliminar puesto:", error);
     }
   };
 
@@ -66,7 +66,7 @@ function CatalogoDepartamentos() {
   const editar = (row: any) => {
     setNombre(row.nombre);
     setEstado(row.estado);
-    setIdDep(row.idDepartamento);
+    setIdPuesto(row.idPuesto);
     setIsEditing(true);
     setShowModal(true);
   };
@@ -77,36 +77,37 @@ function CatalogoDepartamentos() {
     setIsEditing(false);
     setNombre('');
     setEstado(false);
-    setIdDep('');
+    setIdPuesto('');
   };
 
   // Maneja el envío del formulario para agregar o editar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setShowSpinner(true);
     if (isEditing) {
       try {
 
         if(nombre === ''){
           setShowAlert(true);
-          setMensajeRespuesta({indicador: 1, mensaje: "Ingrese el nombre del departamento"});
+          setMensajeRespuesta({indicador: 1, mensaje: "Ingrese el nombre del puesto"});
         }
         else{
           const identificacionUsuario = localStorage.getItem('identificacionUsuario');
 
           const obj = {
-            idDepartamento: idDep,
+            idPuesto: idPuesto,
             nombre: nombre,
             estado: estado,
             usuarioModificacion: identificacionUsuario,
             fechaModificacion: (new Date()).toISOString()
           };
           
-          const response = await ActualizarDepartamento(obj);         
+          const response = await ActualizarPuesto(obj);         
 
           if(response.indicador === 0){
             handleModal();
-            obtenerDepartamentos();
+            obtenerPuestos();
           }              
 
           setShowAlert(true);
@@ -114,7 +115,7 @@ function CatalogoDepartamentos() {
         }
 
       } catch (error) {
-        console.error("Error al actualizar departamento:", error);
+        console.error("Error al actualizar puesto:", error);
       }
     } else {
       try {      
@@ -122,7 +123,7 @@ function CatalogoDepartamentos() {
         
         if(nombre === ''){
           setShowAlert(true);
-          setMensajeRespuesta({indicador: 1, mensaje: "Ingrese el nombre del departamento"});
+          setMensajeRespuesta({indicador: 1, mensaje: "Ingrese el nombre del puesto"});
         }
         else{
           const obj = {
@@ -132,21 +133,23 @@ function CatalogoDepartamentos() {
             fechaCreacion: (new Date()).toISOString()
           };
 
-          const response  = await AgregarDepartamento(obj);
+          const response  = await AgregarPuesto(obj);
 
           if(response.indicador === 0){           
             handleModal(); // Cierra el modal 
-            obtenerDepartamentos();
+            obtenerPuestos();
           }
 
           setShowAlert(true);
           setMensajeRespuesta(response);
         }
-      setShowSpinner(false);
+
       } catch (error) {
-        console.error("Error al crear la departamento:", error);
+        console.error("Error al crear la puesto:", error);
       }
     }
+
+    setShowSpinner(false);
   };
 
   // Encabezados de la tabla con acciones
@@ -181,7 +184,7 @@ function CatalogoDepartamentos() {
 
   return (
     <>
-      <h1 className="title">Catálogo de departamentos</h1>
+      <h1 className="title">Catálogo de puestos</h1>
       <div style={{ paddingLeft: "2.6rem", paddingRight: "2.6rem" }}>
       {showAlert && (
         <AlertDismissible
@@ -190,13 +193,13 @@ function CatalogoDepartamentos() {
         />
       )}
         <br />
-
+  
         {/* Tabla */}
         <Grid
           handle={handleModal}
           buttonVisible={true}
           gridHeading={encabezadoTabla}
-          gridData={listaDepartamentos}
+          gridData={listapuestos}
           filterColumns={["nombre", "estado"]}
           selectableRows={false}
         ></Grid>
@@ -206,7 +209,7 @@ function CatalogoDepartamentos() {
         <CustomModal
           show={showModal}
           onHide={handleModal}
-          title={isEditing ? "Editar departamento" : "Agregar departamento"}
+          title={isEditing ? "Editar puesto" : "Agregar puesto"}
           showSubmitButton={true}
           submitButtonLabel={isEditing ? "Actualizar" : "Guardar"}
           formId="formDep"
@@ -215,7 +218,7 @@ function CatalogoDepartamentos() {
             <Row>
               <Col md={6}>
                 <Form.Group controlId="formNombre">
-                  <Form.Label>Nombre del departamento</Form.Label>
+                  <Form.Label>Nombre del puesto</Form.Label>
                   <Form.Control
                     type="text"
                     name="nombre"
@@ -234,7 +237,7 @@ function CatalogoDepartamentos() {
                       alignItems: 'start',
                       flexDirection: 'column'
                     }}>
-                    <Form.Label style={{marginTop: '3%'}}>Departamento activo</Form.Label>
+                    <Form.Label style={{marginTop: '3%'}}>Puesto activo</Form.Label>
                     <div className="w-100">
                     <BootstrapSwitchButton
                       checked={estado === true}
@@ -256,4 +259,4 @@ function CatalogoDepartamentos() {
   );
 }
 
-export default CatalogoDepartamentos;
+export default CatalogoPuestos;

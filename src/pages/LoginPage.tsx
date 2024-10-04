@@ -16,6 +16,7 @@ import { IoLogIn } from "react-icons/io5";
 import icono from "../assets/iconoLogin.png"
 import CustomModal from "../components/modal/CustomModal.tsx";
 import { AlertDismissible } from "../components/alert/alert";
+import { useSpinner } from "../context/spinnerContext";
 
 /**
  * Interfaz para el estado del formulario de inicio de sesión.
@@ -121,7 +122,8 @@ const Login: React.FC = () => {
     contrasena: "",
     mostrarCrearCuenta: false,
   });
-
+  
+  const { setShowSpinner } = useSpinner();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [contrasena1, setContrasenna1] = useState("");
@@ -221,6 +223,7 @@ const Login: React.FC = () => {
     };
 
     try {
+      setShowSpinner(true);
       const response = await ValidarUsuario(formDataLogin);   
       
       if(response){
@@ -289,6 +292,8 @@ const Login: React.FC = () => {
         setShowAlert(true);
         setMensajeRespuesta({indicador: 1, mensaje: "Ocurrió un error al contactar con el servicio"});
       }
+
+      setShowSpinner(false);
     } catch (error) {
       console.log(error);
     }
@@ -307,7 +312,7 @@ const Login: React.FC = () => {
         correoElectronico: correo,
         contrasennaTemporal: contrasena1
       }
-
+      setShowSpinner(true);
       const response = await CambiarContrasennaTemporal(data);
 
       setShowAlert(true);
@@ -318,6 +323,8 @@ const Login: React.FC = () => {
         localStorage.setItem("token", '');
         handleModal();
       }
+
+      setShowSpinner(false);
     }
   }
 

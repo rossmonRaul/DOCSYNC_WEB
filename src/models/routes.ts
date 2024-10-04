@@ -18,4 +18,5 @@ export const PrivateRoutes = {
     CATALOGOUSUARIOS: 'catalogo-usuarios',
     ADMINROLES: 'admin-roles',
     CATALOGODEPARTAMENTOS: 'catalogo-departamentos',
+    CATALOGODEPUESTOS: 'catalogo-puestos',
 };

@@ -30,7 +30,7 @@ interface Archivo {
   archivo: File;
   tamanioArchivo: number;
   usuarioCreacion: string;
-  fechaCreacion:string;
+  fechaCreacion: string;
 }
 
 // Componente funcional que representa la página de carga de archivos
@@ -208,7 +208,7 @@ function CargarArchivos() {
                 numeroSolicitud: "",
                 titulo: "",
                 usuarioCreacion: identificacionUsuario!!,
-                fechaCreacion:(new Date()).toISOString(),
+                fechaCreacion: new Date().toISOString(),
               };
               archivosAux.push(file);
               consecutivo = consecutivo++;
@@ -517,6 +517,7 @@ function CargarArchivos() {
                   </Form.Label>
                   <Form.Control
                     multiple
+                    accept=".pdf,.doc,.html,.dot,.dotx,.htm,.odt,.ods,.odp,.sql,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.csv,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
                     type="file"
                     onChange={handleFileChange}
                   />
