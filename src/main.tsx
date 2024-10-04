@@ -28,6 +28,7 @@ import CatalogoJerarquiasDocumentos from "./pages/private/Catalogos/CatalogoJera
 import CatalogoUsuarios from "./pages/private/Catalogos/CatalogoUsuarios.tsx";
 import AdministrarRoles from "./pages/private/AdministrarRoles/AdministrarRoles.tsx";
 import CatalogoDepartamentos from "./pages/private/Catalogos/CatalogoDepartamentos.tsx";
+import CatalogoPuestos from "./pages/private/Catalogos/CatalogoPuestos.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -79,6 +80,10 @@ const router = createBrowserRouter(
         <Route
           path={PrivateRoutes.CATALOGODEPARTAMENTOS}
           element={<CatalogoDepartamentos />}
+        />
+        <Route
+          path={PrivateRoutes.CATALOGODEPUESTOS}
+          element={<CatalogoPuestos />}
         />
       {/* </Route> */}
     </Route>

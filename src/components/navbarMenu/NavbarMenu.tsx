@@ -7,7 +7,7 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
 import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
-import { FaRegBell, FaBook, FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog, FaUpload, FaBuilding } from "react-icons/fa";
+import { FaRegBell, FaBook, FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog, FaUpload, FaBuilding, FaUserTie } from "react-icons/fa";
 import { IconType } from 'react-icons/lib';
 import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
@@ -67,7 +67,8 @@ const NavbarMenu: React.FC = () => {
     FaBook: FaBook,
     FaUpload: FaUpload,
     AiOutlineFileSearch: AiOutlineFileSearch,
-    FaBuilding: FaBuilding
+    FaBuilding: FaBuilding,
+    FaUserTie: FaUserTie
   };
 
   const obtenerOpcionesMenu = async () => {
