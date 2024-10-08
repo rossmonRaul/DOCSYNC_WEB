@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, FormEvent, lazy, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
@@ -16,6 +16,8 @@ import {
 import axios from "axios";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { format } from "date-fns";
+import { LuSearchX } from "react-icons/lu";
+import { AiOutlineFileSearch } from "react-icons/ai";
 
 interface Archivo {
   idDocumento: Number;
@@ -78,7 +80,7 @@ function BuscarArchivos() {
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -375,7 +377,12 @@ function BuscarArchivos() {
     setShowModal(true);
     setDocumentoEditado(editar);
   };
+  const [mostrarDiv, setMostrarDiv] = useState(true);
 
+  const toggleDiv = () => {
+    setMostrarDiv(prev => !prev); // Alterna el estado
+    setMostrarBusqueda(prev => !prev);
+  }
   return (
     <>
       <CustomModal
@@ -537,15 +544,19 @@ function BuscarArchivos() {
       <div className="container-fluid">
         <Row>
           <Col md={10} className="d-flex justify-content-start">
-            <h1 className="title">Buscar archivos</h1>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <AiOutlineFileSearch size={34} style={{ marginTop: "10px" }} />
+              <h1 className="title">Buscar archivos</h1>
+            </div>
           </Col>
           <Col md={2} className="d-flex justify-content-start">
             {
+
               <Button
                 className="btn-crear"
                 variant="primary"
                 type="submit"
-                onClick={() => setMostrarBusqueda(!mostrarBusqueda)}
+                onClick={toggleDiv}
               >
                 {mostrarBusqueda ? (
                   <>
@@ -560,317 +571,276 @@ function BuscarArchivos() {
                 )}
               </Button>
             }
+            {/* <button onClick={toggleDiv}>
+                {mostrarDiv ? 'Ocultar' : 'Mostrar'} Div
+              </button> */}
           </Col>
         </Row>
       </div>
       <hr></hr>
       <div className="container-fluid">
-        {mostrarBusqueda ? (
-          <div style={{ padding: "0 60px" }}>
-            <Row>
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group className="mb-4">
-                  <label htmlFor="autor">
-                    <b>Autor</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={autor}
-                    onChange={(e) => setAutor(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group className="mb-4">
-                  <label htmlFor="nombre">
-                    <b>Asunto</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={asunto}
-                    onChange={(e) => setAsunto(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group className="mb-4">
-                  <label htmlFor="departamento">
-                    <b>Departamento</b>
-                  </label>
-                  <Form.Control
-                    as="select"
-                    value={opcionDepartamento}
-                    onChange={handleOpcionDepartamentoChange}
-                  >
-                    <option value="">-- Selecciona una opción --</option>
-                    <option value="opcion1">Opción 1</option>
-                    <option value="opcion2">Opción 2</option>
-                    <option value="opcion3">Opción 3</option>
-                  </Form.Control>
-                </Form.Group>
-              </Col>
-
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group className="mb-4">
-                  <label htmlFor="confidencialidad">
-                    <b>Es confidencial</b>
-                  </label>
-
-                  <BootstrapSwitchButton
-                    checked={opcionConfidencialidad === "true"}
-                    onlabel="Sí"
-                    onstyle="danger"
-                    offlabel="No"
-                    offstyle="success"
-                    style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
-                    onChange={(checked: boolean) =>
-                      handleOpcionConfidenChange({
-                        target: {
-                          type: "switch",
-                          name: "confidencialidad",
-                          checked,
-                        },
-                      })
-                    }
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row style={{ padding: "0 0 20px 0" }}>
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="ContenidoRelevante">
-                    <b>Contenido relevante</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={contenidoRelevante}
-                    onChange={(e) => setContenidoRelevante(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="NumeroExpediente">
-                    <b>No. Expediente</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={numeroExpediente}
-                    onChange={(e) => setNumeroExpediente(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="NumeroSolicitud">
-                    <b>No. Solicitud</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={numeroSolicitud}
-                    onChange={(e) => setNumeroSolicitud(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="DocHijo">
-                    <b>Doc. Hijo</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={docHijo}
-                    onChange={(e) => setDocHijo(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row style={{ padding: "0 0 20px 0" }}>
-              <Col
-                md={3}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="DocPadre">
-                    <b>Doc. Padre</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={docPadre}
-                    onChange={(e) => setDocPadre(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col
-                md={5}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="Titulo">
-                    <b>TÍtulo</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={titulo}
-                    onChange={(e) => setTitulo(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col
-                md={2}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <label htmlFor="FechaFiltroInicial">
-                  <b>Fecha inicial</b>
-                </label>
-                <Form.Group>
-                  <DatePicker
-                    showIcon
-                    selected={fechaFiltroInicial}
-                    onChange={(date) => setFechaFiltroInicial(date)}
-                    dateFormat="dd/MM/yyyy"
-                    className="form-control"
-                    locale={es}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col
-                md={2}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <label htmlFor="FechaFiltroFinal">
-                  <b>Fecha final</b>
-                </label>
-                <Form.Group>
-                  <DatePicker
-                    showIcon
-                    selected={fechaFiltroFinal}
-                    onChange={(date) => setFechaFiltroFinal(date)}
-                    dateFormat="dd/MM/yyyy"
-                    className="form-control"
-                    locale={es}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Row>
-              <Col
-                md={6}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="Nombre">
-                    <b>Nombre de archivo</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col
-                md={6}
-                className="d-flex flex-column"
-                style={{ padding: "3px 10px" }}
-              >
-                <Button
-                  className="btn-save"
-                  variant="primary"
-                  onClick={handleBuscarClick}
-                  style={{ marginTop: "20px" }}
-                  disabled={areInputsEmpty()}
-                >
-                  <FaSearch className="me-2" size={24} />
-                  Buscar
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        ) : null}
-        {listaArchivosTabla.length > 0 && (
-          <div className="container-fluid mt-4" style={{ marginLeft: 30 }}>
-            <Row>
-              <Col
-                md={6}
-                className="d-flex flex-column"
-                style={{ padding: "0 10px" }}
-              >
-                <Form.Group>
-                  <label htmlFor="Contenido">
-                    <b>Buscar por contenido</b>
-                  </label>
-                  <Form.Control
-                    type="text"
-                    value={contenido}
-                    onChange={(e) => setContenido(e.target.value)}
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Button
-                  className="btn-save"
-                  variant="primary"
-                  onClick={handleBuscarPorContenidoClick}
-                  style={{ marginTop: "20px" }}
-                >
-                  <FaSearch className="me-2" size={24} />
-                  Buscar
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        )}
         <div className="position-relative">
           {pendiente ? (
             <div style={{ height: "100vh" }}>Cargando...</div>
           ) : (
             /*tabla donde se muestran los datos*/
             <div style={{ display: "flex" }}>
-              {/* Primera mitad de la pantalla */}
+              <div className={`contenedorFiltro ${mostrarDiv ? 'mostrar' : ''}`}>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <h4 className="h4Estilo">
+                    Filtro de búsqueda
+                  </h4>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group>
+                    <label htmlFor="Nombre">
+                      <b>Nombre de archivo</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group className="mb-4">
+                    <label htmlFor="autor">
+                      <b>Autor</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={autor}
+                      onChange={(e) => setAutor(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group className="mb-4">
+                    <label htmlFor="nombre">
+                      <b>Asunto</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={asunto}
+                      onChange={(e) => setAsunto(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group className="mb-4">
+                    <label htmlFor="departamento">
+                      <b>Departamento</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      as="select"
+                      value={opcionDepartamento}
+                      onChange={handleOpcionDepartamentoChange}
+                    >
+                      <option value="">-- Selecciona una opción --</option>
+                      <option value="opcion1">Opción 1</option>
+                      <option value="opcion2">Opción 2</option>
+                      <option value="opcion3">Opción 3</option>
+                    </Form.Control>
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group className="mb-4">
+                    <label htmlFor="confidencialidad">
+                      <b>Es confidencial</b>
+                    </label>
+
+                    <BootstrapSwitchButton
+                      checked={opcionConfidencialidad === "true"}
+                      onlabel="Sí"
+                      onstyle="danger"
+                      offlabel="No"
+                      offstyle="success"
+                      style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
+                      onChange={(checked: boolean) =>
+                        handleOpcionConfidenChange({
+                          target: {
+                            type: "switch",
+                            name: "confidencialidad",
+                            checked,
+                          },
+                        })
+                      }
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group>
+                    <label htmlFor="ContenidoRelevante">
+                      <b>Contenido relevante</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={contenidoRelevante}
+                      onChange={(e) => setContenidoRelevante(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group>
+                    <label htmlFor="NumeroExpediente">
+                      <b>No. Expediente</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={numeroExpediente}
+                      onChange={(e) => setNumeroExpediente(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group>
+                    <label htmlFor="NumeroSolicitud">
+                      <b>No. Solicitud</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={numeroSolicitud}
+                      onChange={(e) => setNumeroSolicitud(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group>
+                    <label htmlFor="DocHijo">
+                      <b>Doc. Hijo</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={docHijo}
+                      onChange={(e) => setDocHijo(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group>
+                    <label htmlFor="DocPadre">
+                      <b>Doc. Padre</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={docPadre}
+                      onChange={(e) => setDocPadre(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group>
+                    <label htmlFor="Titulo">
+                      <b>TÍtulo</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={titulo}
+                      onChange={(e) => setTitulo(e.target.value)}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <label htmlFor="FechaFiltroInicial">
+                    <b>Fecha inicial</b>
+                  </label>
+                  <Form.Group>
+                    <DatePicker
+                      showIcon
+                      selected={fechaFiltroInicial}
+                      onChange={(date) => setFechaFiltroInicial(date)}
+                      dateFormat="dd/MM/yyyy"
+                      className="form-control"
+                      locale={es}
+                    />
+                  </Form.Group>
+                </div>
+
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <label htmlFor="FechaFiltroFinal">
+                    <b>Fecha final</b>
+                  </label>
+                  <Form.Group>
+                    <DatePicker
+                      showIcon
+                      selected={fechaFiltroFinal}
+                      onChange={(date) => setFechaFiltroFinal(date)}
+                      dateFormat="dd/MM/yyyy"
+                      className="form-control"
+                      locale={es}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column mt-auto p-3"
+                  style={{ padding: "3px 10px", alignSelf: 'flex-end' }}
+                >
+                  <Button
+                    className="btn-save"
+                    variant="primary"
+                    onClick={handleBuscarClick}
+                    style={{ marginTop: "20px" }}
+                    disabled={areInputsEmpty()}
+                  >
+                    <FaSearch className="me-2" size={24} />
+                    Buscar
+                  </Button>
+                </div>
+
+              </div>
               <div
                 style={{
                   flex: 1,
@@ -885,21 +855,51 @@ function BuscarArchivos() {
                     setShow={setShowAlert}
                   />
                 )}
-
                 <div>
-                  <div className="content">
-                    <div
-                      className=" row justify-content-between align-items-center"
-                      style={{ marginLeft: 10 }}
-                    ></div>
-
-                    <Grid
-                      gridHeading={encabezadoArchivo}
-                      gridData={listaArchivosTabla}
-                      selectableRows={false}
-                      filterColumns={["nombre"]}
-                    ></Grid>
-                  </div>
+                  {!mostrarDiv && listaArchivosTabla.length > 0 && (
+                    <div className="content" >
+                      <Card className="mb-4">
+                        <Card.Body>
+                          <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                            <Form.Group style={{ flex: 1, marginBottom: '0' }}>
+                              <label htmlFor="Contenido">
+                                <b>Busqueda avanzada por contenido</b>
+                              </label>
+                              <Form.Control
+                                type="text"
+                                value={contenido}
+                                onChange={(e) => setContenido(e.target.value)}
+                              />
+                            </Form.Group>
+                            <Button
+                              className="btn-save"
+                              variant="primary"
+                              onClick={handleBuscarPorContenidoClick}
+                              style={{ marginLeft: '10px', marginTop: "20px" }} // Espacio entre el campo y el botón
+                            >
+                              <FaSearch className="me-2" size={24} />
+                              Buscar
+                            </Button>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </div>
+                  )}
+                  {listaArchivosTabla.length > 0 ? (
+                    <div className="content">
+                      <Grid
+                        gridHeading={encabezadoArchivo}
+                        gridData={listaArchivosTabla}
+                        selectableRows={false}
+                        filterColumns={["nombre"]}
+                      ></Grid>
+                    </div>
+                  ) : (
+                    <div className="content row justify-content-center align-items-center" style={{ marginLeft: 10, textAlign: 'center', width: '100%' }}>
+                      <p>Sin resultados que mostrar</p>
+                      <br />
+                      <LuSearchX className="me-2" size={50} />
+                    </div>)}
                 </div>
               </div>
               {documentoVer?.archivo && (
@@ -912,8 +912,11 @@ function BuscarArchivos() {
                 </div>
               )}
             </div>
+            /* fin contenedor */
           )}
         </div>
+
+
       </div>
     </>
   );
