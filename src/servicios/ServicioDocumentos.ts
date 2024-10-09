@@ -14,6 +14,11 @@ export const ObtenerArchivoDocumento = async (data: any) => {
   return await ProcesarDatosApi("POST", url, data, true);
 };
 
+export const ObtenerDocumentoConvertidoPDF = async (data: any) => {
+  const url = `${API_BASE_URL_DESCARGA}/${controlador}/ObtenerDocumentoConvertidoPDF`;
+  return await ProcesarDatosApi("POST", url, data, true,true);
+};
+
 export const ObtenerDocumento = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/ObtenerDocumento`;
   return await ProcesarDatosApi("POST", url, data);

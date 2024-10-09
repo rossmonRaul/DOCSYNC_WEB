@@ -2,7 +2,8 @@ export const ProcesarDatosApi = async (
   method: string,
   url: string,
   data: any,
-  esArchivo: Boolean = false
+  esArchivo: Boolean = false,
+  esFormulario = false
 ) => {
   const storedToken = localStorage.getItem("token");
 
@@ -14,6 +15,12 @@ export const ProcesarDatosApi = async (
     "Content-type": "application/json;charset=UTF-8",
     Accept: "application/json",
   };
+
+  if (esFormulario) {
+    headers = {
+      Accept: "application/json",
+    };
+  }
   // Agregar token al encabezado de autorización si está presente
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -27,7 +34,7 @@ export const ProcesarDatosApi = async (
   };
 
   if (method !== "GET" && data !== undefined) {
-    myInit.body = JSON.stringify(data);
+    myInit.body = esFormulario ? data : JSON.stringify(data);
   }
 
   const myRequest = new Request(url, myInit);

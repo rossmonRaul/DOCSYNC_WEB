@@ -497,7 +497,7 @@ function CargarArchivos() {
         </Form>
       </CustomModal>
       <h1 className="title">Cargar archivos</h1>
-      <div style={{ display: "flex", height: "80vh" }}>
+      <div style={{ display: "flex", maxHeight: "100vh", overflow:"auto" }}>
         {/* Primera mitad de la pantalla */}
         <div
           style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
@@ -553,7 +553,7 @@ function CargarArchivos() {
           </div>
         </div>
         {documentoVer?.archivo && (
-          <div style={{ flex: 1, padding: "20px" }}>
+          <div style={{ flex: 1, padding: "20px", overflowY: "hidden" }}>
             <VisorArchivos
               key={documentoVer}
               documento={documentoVer.archivo}

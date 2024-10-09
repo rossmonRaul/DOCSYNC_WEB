@@ -3,7 +3,10 @@ import { Button } from "react-bootstrap";
 import FileViewer from "react-file-viewer";
 import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
 import { AiOutlineClose } from "react-icons/ai";
-import { ObtenerArchivoDocumento } from "../../servicios/ServicioDocumentos";
+import {
+  ObtenerArchivoDocumento,
+  ObtenerDocumentoConvertidoPDF,
+} from "../../servicios/ServicioDocumentos";
 import { useSpinner } from "../../context/spinnerContext";
 
 export const VisorArchivos: React.FC<any> = ({
@@ -36,7 +39,7 @@ export const VisorArchivos: React.FC<any> = ({
     setShowSpinner(false);
     setFileURL(url);
     let extensionArchivo = documentoDescarga.nombre.split(".").pop();
-    if (extensionArchivo === "doc") {
+    if (extensionArchivo === "doc" || extensionArchivo === "rtf") {
       extensionArchivo = "pdf";
     }
     setFileExtension(extensionArchivo);
@@ -56,17 +59,38 @@ export const VisorArchivos: React.FC<any> = ({
     };
   }, [documentoDescarga]);
 
+  const obtenerDocConvertidoPDF = async () => {
+    const form = new FormData();
+    form.append("archivo", documento);
+    setShowSpinner(true)
+    const doc = await ObtenerDocumentoConvertidoPDF(form);
+    setShowSpinner(false)
+    setFileURL("");
+    setFileExtension("");
+
+    setTimeout(() => {
+      const url = URL.createObjectURL(doc);
+      const extension = "pdf";
+      setFileURL(url);
+      setFileExtension(extension);
+    }, 5); // Un retraso mínimo de 5ms para forzar el refresco
+  };
+
   useEffect(() => {
     if (documento) {
-      setFileURL("");
-      setFileExtension("");
+      if (documento.type === "application/msword") {
+        obtenerDocConvertidoPDF();
+      } else {
+        setFileURL("");
+        setFileExtension("");
 
-      setTimeout(() => {
-        const url = URL.createObjectURL(documento);
-        const extension = documento.name.split(".").pop();
-        setFileURL(url);
-        setFileExtension(extension);
-      }, 5); // Un retraso mínimo de 5ms para forzar el refresco
+        setTimeout(() => {
+          const url = URL.createObjectURL(documento);
+          const extension = documento.name.split(".").pop();
+          setFileURL(url);
+          setFileExtension(extension);
+        }, 5); // Un retraso mínimo de 5ms para forzar el refresco
+      }
     }
     // Función de limpieza para liberar la memoria cuando el componente se desmonta
     return () => {
@@ -81,7 +105,7 @@ export const VisorArchivos: React.FC<any> = ({
     return (
       <>
         {fileURL && (
-          <div style={{display:"block",maxHeight:"200px"}}>
+          <div>
             <div className="mb-2 d-flex justify-content-between align-items-center">
               <h4 className="mb-0">
                 {documento?.name || documentoDescarga?.nombre}
@@ -93,13 +117,16 @@ export const VisorArchivos: React.FC<any> = ({
 
             {error && <p>No se ha podido mostrar el archivo</p>}
 
-            <FileViewer
-              key={documento?.id || documentoDescarga?.idDocumento}
-              fileType={fileExtension}
-              filePath={fileURL}
-              errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
-              onError={() => setError("error")}
-            />
+            <div style={{ maxHeight: "100vh", overflow: "auto" }}>
+              <FileViewer
+                style={{ overflowY: "hidden" }}
+                key={documento?.id || documentoDescarga?.idDocumento}
+                fileType={fileExtension}
+                filePath={fileURL}
+                errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
+                onError={() => setError("error")}
+              />
+            </div>
           </div>
         )}
       </>
