@@ -82,6 +82,8 @@
   position: relative;
   left: -300px; /* Posición inicial fuera de la pantalla */
   transition: left 1s ease; /* Transición de la propiedad left más lenta */
+  height: 400px;
+  overflow: auto;
 }
 
 .contenedorFiltro.mostrar {
@@ -100,4 +102,8 @@
     margin-bottom: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 8px; /* Bordes redondeados */
+}
+
+.react-datepicker-wrapper{
+  display: inline !important;
 }
