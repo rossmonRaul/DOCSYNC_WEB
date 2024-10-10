@@ -39,7 +39,6 @@ function Historial() {
   const [showModal, setShowModal] = useState(false);
   const [listaHistorialTabla, setListaHistorialTabla] = useState<Historial[]>([]);
   const [historialSeleccionado, setHistorialSeleccionado] = useState<Historial>();
-  const nombreUsuarioSession = sessionStorage.getItem("nombre");
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
@@ -86,6 +85,17 @@ function Historial() {
   //Encabezado tabla
   const encabezadoHistorial = [
     {
+      id: "documento",
+      name: "Documento",
+      selector: (row: Historial) => row.nombreDocumento,
+      head: "Documento",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+      grow: 2, 
+    },
+    {
       id: "accion",
       name: "Acción",
       selector: (row: Historial) => row.descripcionAccion,
@@ -127,7 +137,7 @@ function Historial() {
       style: {
         fontSize: "1.5em",
       },
-      grow: 2, 
+      grow: 1, 
     },
     {
       id: "Fecha",
@@ -305,46 +315,19 @@ function Historial() {
       >
         <Form>
           <Row>
-            <Col md={3}>
-            <Form.Group controlId="formEformAccionstado" style={{marginTop: '3%'}}>
-                <Form.Label>Acción</Form.Label>
+          <Col md={8}>
+          <Form.Group controlId="formEformDocumento">
+                <Form.Label>Nombre Documento</Form.Label>
                 <Form.Control
                   type="text"
-                  name="accion"
-                  value={historialSeleccionado?.descripcionAccion}
-                  disabled={true}
-                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                  name="documento"
+                  value={historialSeleccionado?.nombreDocumento}
+                  disabled={true}        
                 />
               </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group controlId="formEstado" style={{marginTop: '3%'}}>
-                <Form.Label>Estado</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="estado"
-                  value={historialSeleccionado?.estado}
-                  onChange={handleInputChange}
-                  disabled={true}
-                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                />
-              </Form.Group>
-            </Col>           
-            <Col md={3}>
-              <Form.Group controlId="formUsuario" style={{marginTop: '3%'}}>
-                <Form.Label>Usuario</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="usuario"
-                  value={historialSeleccionado?.usuario}
-                  onChange={handleInputChange}
-                  disabled={true}
-                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group controlId="formFecha" style={{marginTop: '3%'}}>
+          </Col>
+          <Col md={4}>
+              <Form.Group controlId="formFecha">
                 <Form.Label>Fecha</Form.Label>
                 <DatePicker
                   selected={historialSeleccionado?.fecha ? new Date(historialSeleccionado.fecha) : null}
@@ -352,15 +335,54 @@ function Historial() {
                   dateFormat="dd/MM/yyyy" 
                   showTimeSelect  
                   className="form-control" 
-                  disabled={true}
-                  style={{fontSize: '5px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                  disabled={true}            
                 />
               </Form.Group>
             </Col>
           </Row>
-          <Row>
+          <Row  style={{marginTop: '3%'}}>
+            <Col md={4}>
+            <Form.Group controlId="formEformAccion">
+                <Form.Label>Acción</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="accion"
+                  value={historialSeleccionado?.descripcionAccion}
+                  disabled={true}
+                 
+                />
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group controlId="formEstado">
+                <Form.Label>Estado</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="estado"
+                  value={historialSeleccionado?.estado}
+                  onChange={handleInputChange}
+                  disabled={true}
+                 
+                />
+              </Form.Group>
+            </Col>           
+            <Col md={4}>
+              <Form.Group controlId="formUsuario">
+                <Form.Label>Usuario</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="usuario"
+                  value={historialSeleccionado?.usuario}
+                  onChange={handleInputChange}
+                  disabled={true}
+                 
+                />
+              </Form.Group>
+            </Col>          
+          </Row>
+          <Row  style={{marginTop: '3%'}}>
             <Col md={12}>
-              <Form.Group controlId="formDescripcion" style={{marginTop: '3%'}}>
+              <Form.Group controlId="formDescripcion">
                 <Form.Label>Descripción</Form.Label>
                 <Form.Control
                   type="text"
@@ -368,16 +390,16 @@ function Historial() {
                   value={historialSeleccionado?.descripcion}
                   onChange={handleInputChange}
                   disabled={true}
-                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                  
                 />
               </Form.Group>
             </Col>
             <Col md={0}>
             </Col>
           </Row>
-          <Row>
+          <Row  style={{marginTop: '3%'}}>
           <Col md={12}>
-            <Form.Group controlId="formDetalleError" style={{marginTop: '3%'}}>
+            <Form.Group controlId="formDetalleError">
               <Form.Label>Detalle de error</Form.Label>
               <Form.Control
                 as="textarea"   
@@ -385,7 +407,6 @@ function Historial() {
                 value={historialSeleccionado?.detalleError}
                 disabled={true}
                 rows={3}
-                style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}       
               />
             </Form.Group>
           </Col>
