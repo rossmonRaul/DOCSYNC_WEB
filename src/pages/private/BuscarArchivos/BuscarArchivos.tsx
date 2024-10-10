@@ -80,7 +80,7 @@ function BuscarArchivos() {
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
-  useEffect(() => { }, []);
+  useEffect(() => {}, []);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -231,7 +231,7 @@ function BuscarArchivos() {
         console.log(coincidencias);
         setListaArchivosTabla(archivosContenido);
         setPendiente(false);
-        setContenido("")
+        setContenido("");
 
         if (archivosContenido.length === 0) {
           setShowAlert(true);
@@ -380,9 +380,9 @@ function BuscarArchivos() {
   const [mostrarDiv, setMostrarDiv] = useState(true);
 
   const toggleDiv = () => {
-    setMostrarDiv(prev => !prev); // Alterna el estado
-    setMostrarBusqueda(prev => !prev);
-  }
+    setMostrarDiv((prev) => !prev); // Alterna el estado
+    setMostrarBusqueda((prev) => !prev);
+  };
   return (
     <>
       <CustomModal
@@ -551,7 +551,6 @@ function BuscarArchivos() {
           </Col>
           <Col md={2} className="d-flex justify-content-start">
             {
-
               <Button
                 className="btn-crear"
                 variant="primary"
@@ -585,14 +584,14 @@ function BuscarArchivos() {
           ) : (
             /*tabla donde se muestran los datos*/
             <div style={{ display: "flex" }}>
-              <div className={`contenedorFiltro ${mostrarDiv ? 'mostrar' : ''}`}>
+              <div
+                className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}
+              >
                 <div
                   className="d-flex flex-column"
                   style={{ padding: "0 10px" }}
                 >
-                  <h4 className="h4Estilo">
-                    Filtro de búsqueda
-                  </h4>
+                  <h4 className="h4Estilo">Filtro de búsqueda</h4>
                 </div>
                 <div
                   className="d-flex flex-column"
@@ -826,7 +825,7 @@ function BuscarArchivos() {
                 </div>
                 <div
                   className="d-flex flex-column mt-auto p-3"
-                  style={{ padding: "3px 10px", alignSelf: 'flex-end' }}
+                  style={{ padding: "3px 10px", alignSelf: "flex-end" }}
                 >
                   <Button
                     className="btn-save"
@@ -839,12 +838,12 @@ function BuscarArchivos() {
                     Buscar
                   </Button>
                 </div>
-
               </div>
               <div
                 style={{
                   flex: 1,
                   padding: "20px",
+                  maxWidth: documentoVer ? (mostrarDiv ? "40%" : "50%") : "",
                   borderRight: "1px solid #ddd",
                 }}
               >
@@ -857,11 +856,17 @@ function BuscarArchivos() {
                 )}
                 <div>
                   {!mostrarDiv && listaArchivosTabla.length > 0 && (
-                    <div className="content" >
+                    <div className="content">
                       <Card className="mb-4">
                         <Card.Body>
-                          <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-                            <Form.Group style={{ flex: 1, marginBottom: '0' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              width: "100%",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Form.Group style={{ flex: 1, marginBottom: "0" }}>
                               <label htmlFor="Contenido">
                                 <b>Busqueda avanzada por contenido</b>
                               </label>
@@ -875,7 +880,7 @@ function BuscarArchivos() {
                               className="btn-save"
                               variant="primary"
                               onClick={handleBuscarPorContenidoClick}
-                              style={{ marginLeft: '10px', marginTop: "20px" }} // Espacio entre el campo y el botón
+                              style={{ marginLeft: "10px", marginTop: "20px" }} // Espacio entre el campo y el botón
                             >
                               <FaSearch className="me-2" size={24} />
                               Buscar
@@ -895,18 +900,26 @@ function BuscarArchivos() {
                       ></Grid>
                     </div>
                   ) : (
-                    <div className="content row justify-content-center align-items-center" style={{ marginLeft: 10, textAlign: 'center', width: '100%' }}>
+                    <div
+                      className="content row justify-content-center align-items-center"
+                      style={{
+                        marginLeft: 10,
+                        textAlign: "center",
+                        width: "100%",
+                      }}
+                    >
                       <p>Sin resultados que mostrar</p>
                       <br />
                       <LuSearchX className="me-2" size={50} />
-                    </div>)}
+                    </div>
+                  )}
                 </div>
               </div>
-              {documentoVer?.archivo && (
+              {documentoVer && (
                 <div style={{ flex: 1, padding: "20px" }}>
                   <VisorArchivos
                     key={documentoVer}
-                    documento={documentoVer.archivo}
+                    documentoDescarga={documentoVer}
                     cerrar={handleVisor}
                   />
                 </div>
@@ -915,8 +928,6 @@ function BuscarArchivos() {
             /* fin contenedor */
           )}
         </div>
-
-
       </div>
     </>
   );
