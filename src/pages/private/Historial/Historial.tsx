@@ -1,126 +1,168 @@
 import { useState, ChangeEvent, FormEvent, lazy, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Button, Col, Form, Placeholder, Row, Tooltip } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaClipboardList, FaSearch, FaEyeSlash, FaEye } from "react-icons/fa";
+import { FaClipboardList, FaSearch, FaEyeSlash, FaEye,FaFileDownload } from "react-icons/fa";
+import { LuSearchX } from "react-icons/lu";
+import Select from "react-select"
 import CustomModal from "../../../components/modal/CustomModal";
 import { ObtenerHistorial } from "../../../servicios/ServiceHistorial";
+import { ObtenerUsuarios } from "../../../servicios/ServicioUsuario";
+import { useSpinner } from "../../../context/spinnerContext";
+import * as XLSX from 'xlsx';
+
 //import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { format } from "date-fns";
 
 interface Historial {
-    idHistorial: Number;
-    descripcion: string;
-    idDocumento: Number;
-    nombreDocumento: string;
-    idAccion: string;
-    estado: string;
-    detalleError: string;
-    fecha: Date;
-    usuario: string;
+  idHistorial: Number;
+  descripcion: string;
+  idDocumento: Number;
+  nombreDocumento: string;
+  idAccion: string;
+  descripcionAccion :string;
+  estado: string;
+  detalleError: string;
+  fecha: Date;
+  usuario: string;
 }
 
 function Historial() {
-    const [showAlert, setShowAlert] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [listaHistorialTabla, setListaHistorialTabla] = useState<Historial[]>([]);
-    const [historialSeleccionado, setHistorialSeleccionado] = useState<Historial>();
-    const identificacionUsuario = sessionStorage.getItem("nombre");
+  const { setShowSpinner } = useSpinner();
+  const [listaUsuarios, setUsuarios] = useState<any[]>([]);
 
-    const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
-    const [pendiente, setPendiente] = useState(false);
-    const [mensajeRespuesta, setMensajeRespuesta] = useState({
-        indicador: 0,
-        mensaje: "",
-    });
+  const [showAlert, setShowAlert] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [listaHistorialTabla, setListaHistorialTabla] = useState<Historial[]>([]);
+  const [historialSeleccionado, setHistorialSeleccionado] = useState<Historial>();
+  const nombreUsuarioSession = sessionStorage.getItem("nombre");
 
-    //filtro:
-    //const [idAccion, setIdAccion] = useState(null);
-    const [opcionAccion, setOpcionAccion] = useState(""); //
-    //const [estado, setEstado] = useState("");
-    const [opcionEstado, setOpcionEstado] = useState("");
-    const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>( null);
-    const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
-    const [usuario, setUsuario] = useState("");
-    //
+  const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
+  const [pendiente, setPendiente] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({
+    indicador: 0,
+    mensaje: "",
+  });
 
-    
-    useEffect(() => { }, []);
+  //filtro:
+  //const [idAccion, setIdAccion] = useState(null);
+  const [opcionAccion, setOpcionAccion] = useState(""); //
+  //const [estado, setEstado] = useState("");
+  const [opcionEstado, setOpcionEstado] = useState("");
+  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(null);
+  const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
+  const [usuario, setUsuario] = useState("");
+  //
+  const [mostrarDiv, setMostrarDiv] = useState(true);
 
- //Encabezado tabla
- const encabezadoHistorial = [
+  const toggleDiv = () => {
+    setMostrarDiv(prev => !prev); // Alterna el estado
+    setMostrarBusqueda(prev => !prev);
+  }
+
+  useEffect(() => {
+    obtenerDatos();
+  }, []);
+
+  const obtenerDatos = async () =>{    
+    setShowSpinner(true);
+    await obtenerUsuarios();
+    setShowSpinner(false);
+  }
+
+  const obtenerUsuarios = async () => {
+    try {
+      const response = await ObtenerUsuarios();
+      setUsuarios(response.filter((x:any) => x.estado === true));
+    } catch (error) {
+      console.error("Error al obtener usuarios:", error);
+    }
+  };
+
+  //Encabezado tabla
+  const encabezadoHistorial = [
     {
       id: "accion",
       name: "Acción",
-      selector: (row: Historial) => {
-        return row.idAccion;
-      },
+      selector: (row: Historial) => row.descripcionAccion,
       head: "Accion",
       sortable: true,
       style: {
         fontSize: "1.5em",
       },
+      grow: 1, 
     },
     {
-        id: "estado",
-        name: "Estado",
-        selector: (row: Historial) => {
-          return row.estado;
-        },
-        head: "Estado",
-        sortable: true,
-        style: {
-          fontSize: "1.5em",
-        },
-      },
-      {
-        id: "descripcion",
-        name: "Descripción",
-        selector: (row: Historial) => {
-          return row.descripcion;
-        },
-        head: "Descripcion",
-        sortable: true,
-        style: {
-          fontSize: "1.5em",
-        },
-      },
-    {
-      id: "Fecha",
-      name: "Fecha",
-      selector: (row: Historial) => {
-        return row.fecha ? format(row.fecha, "dd/MM/yyyy") : "";
-      },
+      id: "estado",
+      name: "Estado",
+      selector: (row: Historial) => row.estado,
+      head: "Estado",
       sortable: true,
       style: {
         fontSize: "1.5em",
       },
+      grow: 1,
     },
     {
-        id: "Acciones",
-        name: "Acciones",
-        selector: (row: Historial) => (
-          <div style={{ paddingTop: "5px", paddingBottom: "5px" }}>
-            <Button
-              onClick={() => abrirInformacionHistorial(row)}
-              size="sm"
-              className="bg-secondary me-2"
-            >
-              <FaClipboardList />
-            </Button>      
-          </div>
-        ),
-        head: "Seleccionar",
-        sortable: false,
-        width: "150px",
+      id: "descripcion",
+      name: "Descripción",
+      selector: (row: Historial) => row.descripcion,
+      head: "Descripcion",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
       },
+      grow: 3, 
+    },
+    {
+      id: "usuario",
+      name: "Usuario",
+      selector: (row: Historial) => row.usuario,
+      head: "Usuario",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+      grow: 2, 
+    },
+    {
+      id: "Fecha",
+      name: "Fecha",
+      selector: (row: Historial) => row.fecha ? format(row.fecha, "dd/MM/yyyy") : "",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+      grow: 1, 
+    },
+    {
+      id: "Acciones",
+      name: "Acciones",
+      selector: (row: Historial) => (
+        <div style={{ paddingTop: "5px", paddingBottom: "5px", textAlign: "center" }}>
+          <Button
+            onClick={() => abrirInformacionHistorial(row)}
+            size="sm"
+            className="bg-secondary me-2"
+          >
+            <FaClipboardList />
+          </Button>
+        </div>
+      ),
+      head: "Seleccionar",
+      sortable: false,
+      grow: 1,
+      center:'true'
+    },
   ];
+  
 
   const handleBuscarClick = async () => {
+    setShowSpinner(true);
     setPendiente(true);
     setListaHistorialTabla([]);
 
@@ -150,22 +192,21 @@ function Historial() {
     };
 
     // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
-    console.log('filtro del buscar antes de ejecutar el sp')
-    console.log(filtro)
     const resultadosObtenidos = await ObtenerHistorial(filtro);
-    console.log('resultadosObtenidos:')
-    console.log(resultadosObtenidos)
 
     setListaHistorialTabla(resultadosObtenidos);
     setPendiente(false);
 
     if (resultadosObtenidos.length === 0) {
+      setShowSpinner(false);
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 2,
         mensaje: "No se encontraron resultados.",
       });
     } else {
+      setShowSpinner(false);
+      toggleDiv();
       setMostrarBusqueda(!mostrarBusqueda);
     }
   };
@@ -176,7 +217,7 @@ function Historial() {
     if (usuario !== "") count++;
     if (opcionAccion !== "") count++;
     if (opcionEstado !== "") count++;
-   // if (estado !== "") count++;
+    // if (estado !== "") count++;
     if (fechaFiltroInicial !== null && fechaFiltroFinal !== null) count++;
     else if (
       (fechaFiltroInicial !== null && fechaFiltroFinal == null) ||
@@ -195,7 +236,11 @@ function Historial() {
     setOpcionAccion(e.target.value);
   };
 
-  
+  const handleOpcionUsuarioChange = (selectedOption: any) => {
+    setUsuario(selectedOption); 
+  };
+
+
   const handleOpcionEstado = (e: any) => {
     setOpcionEstado(e.target.value);
   };
@@ -209,293 +254,358 @@ function Historial() {
     }
   };
 
-    // Función para manejar el cierre del modal
-    const handleModal = () => {
-        setShowModal(!showModal);
-      };
+  // Función para manejar el cierre del modal
+  const handleModal = () => {
+    setShowModal(!showModal);
+  };
 
-      const abrirInformacionHistorial = (row: Historial) => {
-        setHistorialSeleccionado(row);
-        setShowModal(true);
-      };
+  const abrirInformacionHistorial = (row: Historial) => {
+    setHistorialSeleccionado(row);
+    setShowModal(true);
+  };
 
-      return (
-        <>
-          <CustomModal
-            showSubmitButton={false}
-            show={showModal}
-            onHide={handleModal}
-            title={"Historial"}
-          >
-            <Form>
-              <Row>
-                <Col md={4}>
-                  <Form.Group controlId="formUsuario">
-                    <Form.Label>Usuario</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="usuario"
-                      value={historialSeleccionado?.usuario}
-                      onChange={handleInputChange}
-                      disabled={true}
+  const generarArchivoExcel = () => {
+    setShowSpinner(true);
+    //Si  listaHistorialTabla esta vacio significa que existe informacion o no se ha consultado
+    if (listaHistorialTabla.length === 0 || listaHistorialTabla === null) {   
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 0,
+        mensaje: "No hay datos para descargar.",
+      });
+    } else {
+        const listaFormateadaXLSX = listaHistorialTabla.map(
+          historial => ({
+              Acción: historial.descripcionAccion,
+              Estado: historial.estado,
+              Descripción: historial.descripcion,
+              Usuario: historial.usuario,
+              Fecha: format(historial.fecha, "dd/MM/yyyy") ,   
+            })
+        );
+        //const sinHeaders = XLSX.utils.json_to_sheet(listaFormateada, { skipHeader: true });
+        const conHeaders = XLSX.utils.json_to_sheet(listaFormateadaXLSX);
+
+        // Crear un libro de Excel y agregar la hoja de cálculo, para guardar como XLSX
+        const nuevoLibro = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(nuevoLibro, conHeaders, 'Hoja1');
+        const nombreArchivoCSV = `Historial_${usuario}_${format(new Date(), "dd-MM-yyyy")}.xlsx`;
+        XLSX.writeFile(nuevoLibro, nombreArchivoCSV);
+      }
+      setShowSpinner(false);
+};
+
+  return (
+    <>
+      <CustomModal
+        showSubmitButton={false}
+        show={showModal}
+        onHide={handleModal}
+        title={"Historial"}
+      >
+        <Form>
+          <Row>
+            <Col md={3}>
+            <Form.Group controlId="formEformAccionstado" style={{marginTop: '3%'}}>
+                <Form.Label>Acción</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="accion"
+                  value={historialSeleccionado?.descripcionAccion}
+                  disabled={true}
+                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group controlId="formEstado" style={{marginTop: '3%'}}>
+                <Form.Label>Estado</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="estado"
+                  value={historialSeleccionado?.estado}
+                  onChange={handleInputChange}
+                  disabled={true}
+                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                />
+              </Form.Group>
+            </Col>           
+            <Col md={3}>
+              <Form.Group controlId="formUsuario" style={{marginTop: '3%'}}>
+                <Form.Label>Usuario</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="usuario"
+                  value={historialSeleccionado?.usuario}
+                  onChange={handleInputChange}
+                  disabled={true}
+                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group controlId="formFecha" style={{marginTop: '3%'}}>
+                <Form.Label>Fecha</Form.Label>
+                <DatePicker
+                  selected={historialSeleccionado?.fecha ? new Date(historialSeleccionado.fecha) : null}
+                  onChange={handleInputChange}
+                  dateFormat="dd/MM/yyyy" 
+                  showTimeSelect  
+                  className="form-control" 
+                  disabled={true}
+                  style={{fontSize: '5px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={12}>
+              <Form.Group controlId="formDescripcion" style={{marginTop: '3%'}}>
+                <Form.Label>Descripción</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="descripcion"
+                  value={historialSeleccionado?.descripcion}
+                  onChange={handleInputChange}
+                  disabled={true}
+                  style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={0}>
+            </Col>
+          </Row>
+          <Row>
+          <Col md={12}>
+            <Form.Group controlId="formDetalleError" style={{marginTop: '3%'}}>
+              <Form.Label>Detalle de error</Form.Label>
+              <Form.Control
+                as="textarea"   
+                name="detalleError"
+                value={historialSeleccionado?.detalleError}
+                disabled={true}
+                rows={3}
+                style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}       
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        </Form>
+      </CustomModal>
+
+      <div className="container-fluid">
+        <Row>
+          <Col md={10} className="d-flex justify-content-start">
+            <h1 className="title">Historial</h1>
+          </Col>
+          <Col md={2} className="d-flex justify-content-start">
+            {
+              <Button
+                className="btn-crear"
+                variant="primary"
+                type="submit"
+                onClick={toggleDiv}
+              >
+                {mostrarBusqueda ? (
+                  <>
+                    <FaEyeSlash className="me-2" size={24} color="#9E0000" />
+                    Filtros de búsqueda
+                  </>
+                ) : (
+                  <>
+                    <FaEye className="me-2" size={24} />
+                    Filtros de búsqueda
+                  </>
+                )}
+              </Button>
+            }
+          </Col>
+        </Row>
+      </div>
+      <hr></hr>
+      <div className="container-fluid">
+        <div className="position-relative">
+          {pendiente ? (
+            <div >Cargando...</div>
+          ) : (
+            /*tabla donde se muestran los datos*/
+            <div style={{ display: "flex" }}>
+              <div className={`contenedorFiltro ${mostrarDiv ? 'mostrar' : ''}`}>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <h4 className="h4Estilo">
+                    Filtro de búsqueda
+                  </h4>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group className="mb-4" >
+                    <label htmlFor="usuario">
+                      <b>Usuario</b>
+                    </label>
+                    <Select
+                      id="usuario"
+                      className="GrupoFiltro"
+                      onChange={(selectedOption: any) => handleOpcionUsuarioChange(selectedOption ? selectedOption.value : '')}
+                      options={listaUsuarios.map((usuario: any) => ({
+                        value: usuario.nombreCompleto,
+                        label: usuario.nombreCompleto,
+                      }))}
+                      placeholder="Seleccione"
+                      //classNamePrefix="custom-select"
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          fontSize: '16px',
+                        }),
+                      }}
                     />
+
                   </Form.Group>
-                </Col>
-                <Col md={4}>
-                <Form.Group controlId="formAccion">
-                    <Form.Label>Acción</Form.Label>
-                    <Form.Select
-                      name="accion"
-                      value={historialSeleccionado?.idAccion}
-                      disabled={true}
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group className="mb-4">
+                    <label htmlFor="accion">
+                      <b>Acción</b>
+                    </label>
+                    <Form.Control
+                      className="GrupoFiltro"
+                      as="select"
+                      value={opcionAccion}
+                      onChange={handleOpcionAccionChange}
+                      placeholder="Seleccione"
                     >
-                      <option value="">-- Selecciona una opción --</option>
+                      <option value="">Seleccione</option>
                       <option value="4">Carga</option>
                       <option value="5">Descarga</option>
-                    </Form.Select>
+                    </Form.Control>
                   </Form.Group>
-                </Col>
-                <Col md={4}>
-                 <Form.Group controlId="formEstado">
-                    <Form.Label>Estado</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="estado"
-                      value={historialSeleccionado?.estado}
-                      onChange={handleInputChange}
-                      disabled={true}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={6}>
-                <Form.Group controlId="formDescripcion">
-                    <Form.Label>Descripción</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="descripcion"
-                      value={historialSeleccionado?.descripcion}
-                      onChange={handleInputChange}
-                      disabled={true}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                </Col>
-              </Row>
-              <Row>
-                <Col md={12}>
-                  <Form.Group controlId="formDetalleError">
-                    <Form.Label>Contenido relevante</Form.Label>
-                    <Form.Control
-                      type="textArea"
-                      name="detalleError"
-                      value={historialSeleccionado?.detalleError}
-                      disabled={true}
-                    />
-                  </Form.Group>
-                </Col>           
-              </Row>         
-            </Form>
-          </CustomModal>
-    
-          <div className="container-fluid">
-            <Row>
-              <Col md={10} className="d-flex justify-content-start">
-                <h1 className="title">Historial</h1>
-              </Col>
-              <Col md={2} className="d-flex justify-content-start">
-                {
-                  <Button
-                    className="btn-crear"
-                    variant="primary"
-                    type="submit"
-                    onClick={() => setMostrarBusqueda(!mostrarBusqueda)}
-                  >
-                    {mostrarBusqueda ? (
-                      <>
-                        <FaEyeSlash className="me-2" size={24} color="#9E0000" />
-                        Filtros de búsqueda
-                      </>
-                    ) : (
-                      <>
-                        <FaEye className="me-2" size={24} />
-                        Filtros de búsqueda
-                      </>
-                    )}
-                  </Button>
-                }
-              </Col>
-            </Row>
-          </div>
-          <hr></hr>
-          <div className="container-fluid">
-            {mostrarBusqueda ? (
-              <div style={{ padding: "0 60px" }}>
-                <Row>
-                  <Col
-                    md={4}
-                    className="d-flex flex-column"
-                    style={{ padding: "0 10px" }}
-                  >
-                    <Form.Group className="mb-4">
-                      <label htmlFor="autor">
-                        <b>Usuario</b>
-                      </label>
-                      <Form.Control
-                        type="text"
-                        value={usuario}
-                        onChange={(e) => setUsuario(e.target.value)}
-                      />
-                    </Form.Group>
-                  </Col>
-    
-                  <Col
-                    md={4}
-                    className="d-flex flex-column"
-                    style={{ padding: "0 10px" }}
-                  >
-                    <Form.Group className="mb-4">
-                      <label htmlFor="accion">
-                        <b>Acción</b>
-                      </label>
-                      <Form.Control
-                        as="select"
-                        value={opcionAccion}
-                        onChange={handleOpcionAccionChange}
-                      >
-                        <option value="">-- Selecciona una opción --</option>
-                        <option value="4">Carga</option>
-                        <option value="5">Descarga</option>
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-    
-                  <Col
-                    md={4}
-                    className="d-flex flex-column"
-                    style={{ padding: "0 10px" }}
-                  >
-                    <Form.Group className="mb-4">
-                      <label htmlFor="estado">
-                        <b>Estado</b>
-                      </label>
-                      <Form.Control
-                        as="select"
-                        value={opcionEstado}
-                        onChange={handleOpcionEstado}
-                      >
-                        <option value="">-- Selecciona una opción --</option>
-                        <option value="error">Error</option>
-                        <option value="exitoso">Exitoso</option>
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row style={{ padding: "0 0 20px 0" }}>             
-                  <Col
-                    md={4}
-                    className="d-flex flex-column"
-                    style={{ padding: "0 10px" }}
-                  >
-                    <label htmlFor="FechaFiltroInicial">
-                      <b>Fecha inicial</b>
+                </div>
+
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Form.Group className="mb-4">
+                    <label htmlFor="estado">
+                      <b>Estado</b>
                     </label>
-                    <Form.Group>
-                      <DatePicker
-                        showIcon
-                        selected={fechaFiltroInicial}
-                        onChange={(date) => setFechaFiltroInicial(date)}
-                        dateFormat="dd/MM/yyyy"
-                        className="form-control"
-                        locale={es}
-                      />
-                    </Form.Group>
-                  </Col>
-    
-                  <Col
-                    md={4}
-                    className="d-flex flex-column"
-                    style={{ padding: "0 10px" }}
-                  >
-                    <label htmlFor="FechaFiltroFinal">
-                      <b>Fecha final</b>
-                    </label>
-                    <Form.Group>
-                      <DatePicker
-                        showIcon
-                        selected={fechaFiltroFinal}
-                        onChange={(date) => setFechaFiltroFinal(date)}
-                        dateFormat="dd/MM/yyyy"
-                        className="form-control"
-                        locale={es}
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col
-                    md={4}
-                    className="d-flex flex-column"
-                    style={{ padding: "3px 10px" }}
-                  >
-                    <Button
-                      className="btn-save"
-                      variant="primary"
-                      onClick={handleBuscarClick}
-                      style={{ marginTop: "20px" }}
-                      disabled={areInputsEmpty()}
+                    <Form.Control
+                      className="GrupoFiltro"
+                      as="select"
+                      value={opcionEstado}
+                      onChange={handleOpcionEstado}
                     >
-                      <FaSearch className="me-2" size={24} />
-                      Buscar
-                    </Button>
-                  </Col>
-                </Row>
-              </div>
-            ) : null}
-            <div className="position-relative">
-              {pendiente ? (
-                <div style={{ height: "100vh" }}>Cargando...</div>
-              ) : (
-                /*tabla donde se muestran los datos*/
-                <div style={{ display: "flex" }}>
-                  {/* grid */}
-                  <div
-                    style={{
-                      flex: 1,
-                      padding: "20px",
-                      borderRight: "1px solid #ddd",
-                    }}
+                      <option value="">Seleccione</option>
+                      <option value="error">Error</option>
+                      <option value="exitoso">Exitoso</option>
+                    </Form.Control>
+                  </Form.Group>
+                </div>
+
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <label htmlFor="FechaFiltroInicial">
+                    <b>Fecha inicial</b>
+                  </label>
+                  <Form.Group>
+                    <DatePicker
+                      showIcon
+                      selected={fechaFiltroInicial}
+                      onChange={(date) => setFechaFiltroInicial(date)}
+                      dateFormat="dd/MM/yyyy"
+                      className="form-control GrupoFiltro"
+                      locale={es}
+                    />
+                  </Form.Group>
+                </div>
+
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <label htmlFor="FechaFiltroFinal">
+                    <b>Fecha final</b>
+                  </label>
+                  <Form.Group>
+                    <DatePicker
+                      showIcon
+                      selected={fechaFiltroFinal}
+                      onChange={(date) => setFechaFiltroFinal(date)}
+                      dateFormat="dd/MM/yyyy"
+                      className="form-control GrupoFiltro"
+                      locale={es}
+                    />
+                  </Form.Group>
+                </div>
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <Button
+                    className="btn-save"
+                    variant="primary"
+                    onClick={handleBuscarClick}
+                    style={{ marginTop: "20px" }}
+                    disabled={areInputsEmpty()}
                   >
-                    {showAlert && (
-                      <AlertDismissible
-                        indicador={0}
-                        mensaje={mensajeRespuesta}
-                        setShow={setShowAlert}
-                      />
-                    )}
-    
-                    <div>
+                    <FaSearch className="me-2" size={24} />
+                    Buscar
+                  </Button>
+                </div>
+              </div>
+              {/* grid */}
+              <div
+                style={{
+                  flex: 1,
+                  padding: "20px",             
+                }}
+              >
+                {showAlert && (
+                  <AlertDismissible
+                    indicador={0}
+                    mensaje={mensajeRespuesta}
+                    setShow={setShowAlert}
+                  />
+                )}
+
+                <div>
+                    {listaHistorialTabla.length > 0 ? (
                       <div className="content">
-                        <div
-                          className=" row justify-content-between align-items-center"
-                          style={{ marginLeft: 10 }}
-                        ></div>
-    
                         <Grid
                           gridHeading={encabezadoHistorial}
                           gridData={listaHistorialTabla}
                           selectableRows={false}
-                          filterColumns={["usuario","accion","estado","descripcion","fecha"]}
+                          filterColumns={["usuario", "accion", "estado", "descripcion", "fecha"]}
+                          nameButtonOpcion1= {"Descargar"}
+                          visibleButtonOpcion1 = {true}
+                          handleButtonOpcion1 = {generarArchivoExcel}
+                          iconButtonOpcion1={<FaFileDownload className="me-2" size={24} />}
                         ></Grid>
                       </div>
-                    </div>
-                  </div>
+                    ) : (
+                      <div className="content row justify-content-center align-items-center" style={{ marginLeft: 10, textAlign: 'center', width: '100%' }}>
+                        <p>Sin resultados que mostrar</p>
+                        <br />
+                        <LuSearchX className="me-2" size={50} />
+                      </div>)}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </>
-      );
+          )}
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default Historial;
