@@ -968,22 +968,16 @@ function BuscarArchivos() {
                           </div>
                         </Card.Body>
                       </Card>
-                      {listaArchivosTablaSeleccionados.length > 0 && (
-                        <Button
-                          className="btn-save"
-                          variant="primary"
-                          onClick={handleDescargarArchivos}
-                          style={{ marginLeft: "10px", marginTop: "20px" }} // Espacio entre el campo y el botón
-                        >
-                          <FaDownload className="me-2" size={24} />
-                          Descargar seleccionados
-                        </Button>
-                      )}
+                     
                     </div>
                   )}
                   {listaArchivosTabla.length > 0 ? (
                     <div className="content">
                       <Grid
+                        visibleButtonOpcion1= {listaArchivosTablaSeleccionados.length > 0}
+                        nameButtonOpcion1 = {"Descargar seleccionados"}
+                        iconButtonOpcion1= {<FaDownload className="me-2" size={24} />}
+                        handleButtonOpcion1 = {handleDescargarArchivos}
                         gridHeading={encabezadoArchivo}
                         gridData={listaArchivosTabla}
                         selectableRows={false}
