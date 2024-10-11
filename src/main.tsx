@@ -29,6 +29,7 @@ import CatalogoUsuarios from "./pages/private/Catalogos/CatalogoUsuarios.tsx";
 import AdministrarRoles from "./pages/private/AdministrarRoles/AdministrarRoles.tsx";
 import CatalogoDepartamentos from "./pages/private/Catalogos/CatalogoDepartamentos.tsx";
 import CatalogoPuestos from "./pages/private/Catalogos/CatalogoPuestos.tsx";
+import Historial from "./pages/private/Historial/Historial.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -52,6 +53,10 @@ const router = createBrowserRouter(
         <Route
           path={PrivateRoutes.BUSCARARCHIVOS}
           element={<BuscarArchivos />}
+        />
+         <Route
+          path={PrivateRoutes.HISTORIALARCHIVOS}
+          element={<Historial />}
         />
         <Route
           path={PrivateRoutes.CATALOGOPERSONAS}
