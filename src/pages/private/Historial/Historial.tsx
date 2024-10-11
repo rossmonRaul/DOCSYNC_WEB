@@ -117,7 +117,7 @@ function Historial() {
       },
       grow: 1,
     },
-    {
+    /*{
       id: "descripcion",
       name: "Descripción",
       selector: (row: Historial) => row.descripcion,
@@ -127,7 +127,7 @@ function Historial() {
         fontSize: "1.5em",
       },
       grow: 3, 
-    },
+    }, */
     {
       id: "usuario",
       name: "Usuario",
@@ -275,35 +275,64 @@ function Historial() {
   };
 
   const generarArchivoExcel = () => {
-    setShowSpinner(true);
-    //Si  listaHistorialTabla esta vacio significa que existe informacion o no se ha consultado
-    if (listaHistorialTabla.length === 0 || listaHistorialTabla === null) {   
-      setShowAlert(true);
-      setMensajeRespuesta({
-        indicador: 0,
-        mensaje: "No hay datos para descargar.",
-      });
-    } else {
-        const listaFormateadaXLSX = listaHistorialTabla.map(
-          historial => ({
-              Acción: historial.descripcionAccion,
-              Estado: historial.estado,
-              Descripción: historial.descripcion,
-              Usuario: historial.usuario,
-              Fecha: format(historial.fecha, "dd/MM/yyyy") ,   
-            })
-        );
-        //const sinHeaders = XLSX.utils.json_to_sheet(listaFormateada, { skipHeader: true });
-        const conHeaders = XLSX.utils.json_to_sheet(listaFormateadaXLSX);
+      setShowSpinner(true);
+      
+      if (listaHistorialTabla.length === 0 || listaHistorialTabla === null) {   
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 0,
+          mensaje: "No hay datos para descargar.",
+        });
+      } else {
+          const listaFormateadaXLSX = listaHistorialTabla.map(
+            historial => ({
+                Documento: historial.nombreDocumento,
+                Acción: historial.descripcionAccion,
+                Estado: historial.estado,
+                Descripción: historial.descripcion,
+                Usuario: historial.usuario,
+                Fecha: format(historial.fecha, "dd/MM/yyyy") ,   
+              })
+          );
 
-        // Crear un libro de Excel y agregar la hoja de cálculo, para guardar como XLSX
-        const nuevoLibro = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(nuevoLibro, conHeaders, 'Hoja1');
-        const nombreArchivoCSV = `Historial_${usuario}_${format(new Date(), "dd-MM-yyyy")}.xlsx`;
-        XLSX.writeFile(nuevoLibro, nombreArchivoCSV);
-      }
-      setShowSpinner(false);
-};
+          //carga o descarga
+          let cargaDescagar = 'Carga y Descarga';      
+          if(opcionAccion == '4'){ cargaDescagar='Carga'}
+          else if(opcionAccion == '5'){ cargaDescagar='Descarga'}
+          //
+          
+          const dynamicHeaders = [];
+          if (usuario) {
+              dynamicHeaders.push(["Usuario: " + usuario]);
+          }
+          if (opcionAccion) {
+            dynamicHeaders.push(["Accion: " + cargaDescagar]);
+          }
+          if (opcionEstado) {
+            dynamicHeaders.push(["Estado: " + opcionEstado]);
+          }
+          if (fechaFiltroInicial) {
+              dynamicHeaders.push(['Fecha inicial: ' + new Date(fechaFiltroInicial).toLocaleDateString('es-ES')]);
+          }
+          if (fechaFiltroFinal) {
+              dynamicHeaders.push(['Fecha final: ' + new Date(fechaFiltroFinal).toLocaleDateString('es-ES')]);
+          }
+
+          const dataStartRow = dynamicHeaders.length + 2;  
+          const headers = XLSX.utils.aoa_to_sheet(dynamicHeaders);
+          XLSX.utils.sheet_add_json(headers, listaFormateadaXLSX, { origin: `A${dataStartRow}` });
+
+          const nuevoLibro = XLSX.utils.book_new();
+          
+          XLSX.utils.book_append_sheet(nuevoLibro, headers, 'Historial de '+ cargaDescagar);
+          const nombreArchivoCSV = `Historial_${usuario}_${format(new Date(), "dd-MM-yyyy")}.xlsx`;
+
+          XLSX.writeFile(nuevoLibro, nombreArchivoCSV);
+        }
+        setShowSpinner(false);
+  };
+
+
 
   return (
     <>
@@ -525,8 +554,8 @@ function Historial() {
                       onChange={handleOpcionEstado}
                     >
                       <option value="">Seleccione</option>
-                      <option value="error">Error</option>
-                      <option value="exitoso">Exitoso</option>
+                      <option value="Error">Error</option>
+                      <option value="Exitoso">Exitoso</option>
                     </Form.Control>
                   </Form.Group>
                 </div>

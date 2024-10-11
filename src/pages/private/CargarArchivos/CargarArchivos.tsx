@@ -291,6 +291,8 @@ function CargarArchivos() {
 
     const urlMetadata = `${API_BASE_URL_BD}/Documento/CrearDocumento`;
     const urlReversion = `${API_BASE_URL_BD}/Documento/ReversarDocumento`;
+    const urlHistorial = `${API_BASE_URL_BD}/Historial/InsertarRegistrosHistorial`;
+
 
     startWorker(cargarDocumentosWorker, {
       docs: listaArchivosTablaSeleccionados,
@@ -298,6 +300,7 @@ function CargarArchivos() {
       urlCarga,
       urlReversion,
       storedToken,
+      urlHistorial,
     });
 
     const archivosNoCargados = listaArchivosTabla.filter(
