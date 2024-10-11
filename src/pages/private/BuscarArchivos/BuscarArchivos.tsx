@@ -16,11 +16,11 @@ import {
 } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
-import {
-  ObtenerDocumento,
-  ObtenerDocumentosDescarga,
+import {ObtenerDocumento,ObtenerDocumentosDescarga,
   ObtenerDocumentosPorContenido,
 } from "../../../servicios/ServicioDocumentos";
+import { InsertarRegistrosHistorial} from "../../../servicios/ServiceHistorial";
+
 import axios from "axios";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { format } from "date-fns";
@@ -91,7 +91,7 @@ function BuscarArchivos() {
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -242,7 +242,7 @@ function BuscarArchivos() {
         console.log(coincidencias);
         setListaArchivosTabla(archivosContenido);
         setPendiente(false);
-        setContenido("");
+        setContenido("")
 
         if (archivosContenido.length === 0) {
           setShowAlert(true);
@@ -266,10 +266,16 @@ function BuscarArchivos() {
   };
 
   const handleDescargarArchivos = async () => {
+    const historialData = []; //hisorial
+    let descripcionError = '';
+    let detalleError = '';
+    let estado = 'Exitoso';
+
     const idDocumentosDescargar = listaArchivosTablaSeleccionados.map(
       (a) => a.idDocumento
     );
     setShowSpinner(true);
+    try{
     const response = await ObtenerDocumentosDescarga(idDocumentosDescargar);
     setShowSpinner(false);
     if (response.indicador === 1) {
@@ -277,6 +283,11 @@ function BuscarArchivos() {
         indicador: response.indicador,
         mensaje: response.mensaje,
       });
+
+    descripcionError = 'Error al descargar archivo';
+    detalleError = response.mensaje;
+    estado = 'Error';
+
     } else {
       if (response.datos.length > 0) {
         try {
@@ -303,9 +314,20 @@ function BuscarArchivos() {
             mensaje: "Documentos descargados correctamente.",
           });
         } catch (error) {
+          
+          descripcionError = 'Error al descargar archivo';
+          if (error instanceof Error) {
+            detalleError = error.message; // Usamos el mensaje del error
+          };
+          estado = 'Error';
+
           console.error("Error al descargar los archivos:", error);
         }
       } else {
+        descripcionError = 'Error al descargar archivo';  
+        detalleError = "No se ha encontrado el archivo a descargar.";    
+        estado = 'Error';
+
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: response.indicador,
@@ -313,6 +335,39 @@ function BuscarArchivos() {
         });
       }
     }
+  }catch(error){
+    descripcionError = 'Error al descargar archivo';
+    if (error instanceof Error) {
+      detalleError = "No se ha podido establecer conexión con el servidor de descarga."; 
+    };
+    estado = 'Error';
+    console.error("Error al descargar los archivos:", error);
+    setShowAlert(true);
+
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Error. No se ha podido establecer conexión con el servidor de descarga.",
+        });
+  }
+ // Registrar en historial exito o error
+    for (const archivo of listaArchivosTablaSeleccionados) {
+      historialData.push({
+        IdDocumento: archivo.idDocumento,
+        NombreDocumento: archivo.nombre,
+        IdAccion: 5,
+        Descripcion: descripcionError !== ''? descripcionError : 'El documento se descargó correctamente.',
+        DetalleError: detalleError,
+        Fecha: new Date(),
+        Usuario: archivo.usuarioCreacion,
+        Estado: estado,
+      })};
+
+      try {
+        await InsertarRegistrosHistorial( historialData );
+      }catch (error) {
+        console.log(error);
+      }
+
   };
 
   const descargarArchivosZip = (archivos: any) => {
@@ -460,9 +515,9 @@ function BuscarArchivos() {
   const [mostrarDiv, setMostrarDiv] = useState(true);
 
   const toggleDiv = () => {
-    setMostrarDiv((prev) => !prev); // Alterna el estado
-    setMostrarBusqueda((prev) => !prev);
-  };
+    setMostrarDiv(prev => !prev); // Alterna el estado
+    setMostrarBusqueda(prev => !prev);
+  }
   return (
     <>
       <CustomModal
@@ -631,6 +686,7 @@ function BuscarArchivos() {
           </Col>
           <Col md={2} className="d-flex justify-content-start">
             {
+
               <Button
                 className="btn-crear"
                 variant="primary"
@@ -664,14 +720,14 @@ function BuscarArchivos() {
           ) : (
             /*tabla donde se muestran los datos*/
             <div style={{ display: "flex" }}>
-              <div
-                className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}
-              >
+              <div className={`contenedorFiltro ${mostrarDiv ? 'mostrar' : ''}`}>
                 <div
                   className="d-flex flex-column"
                   style={{ padding: "0 10px" }}
                 >
-                  <h4 className="h4Estilo">Filtro de búsqueda</h4>
+                  <h4 className="h4Estilo">
+                    Filtro de búsqueda
+                  </h4>
                 </div>
                 <div
                   className="d-flex flex-column"
@@ -905,7 +961,7 @@ function BuscarArchivos() {
                 </div>
                 <div
                   className="d-flex flex-column mt-auto p-3"
-                  style={{ padding: "3px 10px", alignSelf: "flex-end" }}
+                  style={{ padding: "3px 10px", alignSelf: 'flex-end' }}
                 >
                   <Button
                     className="btn-save"
@@ -918,12 +974,12 @@ function BuscarArchivos() {
                     Buscar
                   </Button>
                 </div>
+
               </div>
               <div
                 style={{
                   flex: 1,
                   padding: "20px",
-                  maxWidth: documentoVer ? (mostrarDiv ? "40%" : "50%") : "",
                   borderRight: "1px solid #ddd",
                 }}
               >
@@ -936,17 +992,11 @@ function BuscarArchivos() {
                 )}
                 <div>
                   {!mostrarDiv && listaArchivosTabla.length > 0 && (
-                    <div className="content">
+                    <div className="content" >
                       <Card className="mb-4">
                         <Card.Body>
-                          <div
-                            style={{
-                              display: "flex",
-                              width: "100%",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Form.Group style={{ flex: 1, marginBottom: "0" }}>
+                          <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                            <Form.Group style={{ flex: 1, marginBottom: '0' }}>
                               <label htmlFor="Contenido">
                                 <b>Busqueda avanzada por contenido</b>
                               </label>
@@ -960,7 +1010,7 @@ function BuscarArchivos() {
                               className="btn-save"
                               variant="primary"
                               onClick={handleBuscarPorContenidoClick}
-                              style={{ marginLeft: "10px", marginTop: "20px" }} // Espacio entre el campo y el botón
+                              style={{ marginLeft: '10px', marginTop: "20px" }} // Espacio entre el campo y el botón
                             >
                               <FaSearch className="me-2" size={24} />
                               Buscar
@@ -991,26 +1041,18 @@ function BuscarArchivos() {
                       ></Grid>
                     </div>
                   ) : (
-                    <div
-                      className="content row justify-content-center align-items-center"
-                      style={{
-                        marginLeft: 10,
-                        textAlign: "center",
-                        width: "100%",
-                      }}
-                    >
+                    <div className="content row justify-content-center align-items-center" style={{ marginLeft: 10, textAlign: 'center', width: '100%' }}>
                       <p>Sin resultados que mostrar</p>
                       <br />
                       <LuSearchX className="me-2" size={50} />
-                    </div>
-                  )}
+                    </div>)}
                 </div>
               </div>
-              {documentoVer && (
+              {documentoVer?.archivo && (
                 <div style={{ flex: 1, padding: "20px" }}>
                   <VisorArchivos
                     key={documentoVer}
-                    documentoDescarga={documentoVer}
+                    documento={documentoVer.archivo}
                     cerrar={handleVisor}
                   />
                 </div>
@@ -1019,6 +1061,8 @@ function BuscarArchivos() {
             /* fin contenedor */
           )}
         </div>
+
+
       </div>
     </>
   );
