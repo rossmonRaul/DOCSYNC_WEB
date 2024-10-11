@@ -6,11 +6,19 @@ import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaClipboardList, FaSearch, FaEyeSlash, FaEye } from "react-icons/fa";
+import JSZip from "jszip";
+import {
+  FaClipboardList,
+  FaSearch,
+  FaEyeSlash,
+  FaEye,
+  FaDownload,
+} from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
 import {
   ObtenerDocumento,
+  ObtenerDocumentosDescarga,
   ObtenerDocumentosPorContenido,
 } from "../../../servicios/ServicioDocumentos";
 import axios from "axios";
@@ -18,6 +26,8 @@ import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { format } from "date-fns";
 import { LuSearchX } from "react-icons/lu";
 import { AiOutlineFileSearch } from "react-icons/ai";
+import { recortarTexto } from "../../../utils/utils";
+import { useSpinner } from "../../../context/spinnerContext";
 
 interface Archivo {
   idDocumento: Number;
@@ -65,6 +75,7 @@ function BuscarArchivos() {
   const [docPadre, setDocPadre] = useState("");
   const [docHijo, setDocHijo] = useState("");
   const [titulo, setTitulo] = useState("");
+  const { setShowSpinner } = useSpinner();
   const [nombre, setNombre] = useState("");
   const [opcionDepartamento, setOpcionDepartamento] = useState(""); //
   const [opcionConfidencialidad, setOpcionSConfidencialidad] =
@@ -244,6 +255,90 @@ function BuscarArchivos() {
     }
   };
 
+  const base64ToUint8Array = (base64: string) => {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  };
+
+  const handleDescargarArchivos = async () => {
+    const idDocumentosDescargar = listaArchivosTablaSeleccionados.map(
+      (a) => a.idDocumento
+    );
+    console.log(idDocumentosDescargar);
+    const response = await ObtenerDocumentosDescarga(idDocumentosDescargar);
+    if (response.indicador === 1) {
+      setMensajeRespuesta({
+        indicador: response.indicador,
+        mensaje: response.mensaje,
+      });
+    } else {
+      if (response.datos.length > 0) {
+        try {
+          const archivos = response.datos;
+          if (archivos.length > 1) {
+            descargarArchivosZip(archivos);
+          } else {
+            const archivo = archivos[0];
+            const byteArray = base64ToUint8Array(archivo.bytesArchivo);
+            console.log(archivo);
+            const blob = new Blob([byteArray], { type: archivo.formato });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", archivo.nombre);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+          }
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 0,
+            mensaje: "Documentos descargados correctamente.",
+          });
+        } catch (error) {
+          console.error("Error al descargar los archivos:", error);
+        }
+      } else {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: response.indicador,
+          mensaje: "No se ha encontrado el archivo a descargar.",
+        });
+      }
+    }
+  };
+
+  const descargarArchivosZip = (archivos: any) => {
+    setShowSpinner(true);
+    const zip = new JSZip();
+
+    archivos.forEach((archivo: any) => {
+      const byteArray = base64ToUint8Array(archivo.bytesArchivo);
+      zip.file(archivo.nombre, byteArray, { binary: true });
+    });
+
+    zip
+      .generateAsync({ type: "blob" })
+      .then((content: any) => {
+        const url = window.URL.createObjectURL(content);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "documentos.zip"); // Nombre del archivo ZIP
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+      })
+      .catch((error: any) => {
+        throw error;
+      });
+    setShowSpinner(false);
+  };
+
   const countEmptyFields = () => {
     let count = 0;
     // Cuenta los campos que no están vacíos
@@ -301,11 +396,7 @@ function BuscarArchivos() {
   };
 
   const handleFilaSeleccionada = (row: Archivo) => {
-    if (validarDatosCompletosArchivo(row)) {
-      seleccionarDocumento(row);
-    } else {
-      abrirInformacionArchivo(row);
-    }
+    seleccionarDocumento(row);
   };
 
   /*const guardarInformacioArchivo = async (e: React.FormEvent) => {
@@ -359,19 +450,6 @@ function BuscarArchivos() {
   const handleModal = () => {
     setShowModal(!showModal);
   };
-
-  const validarDatosCompletosArchivo = (archivo: Archivo): boolean => {
-    //return true;
-    const valores = Object.values(archivo);
-
-    for (const valor of valores) {
-      if (valor === undefined || valor === "") {
-        return false;
-      }
-    }
-    return true;
-  };
-
   const abrirInformacionArchivo = (row: Archivo, editar = false) => {
     setDocumentoSeleccionado(row);
     setShowModal(true);
@@ -389,7 +467,7 @@ function BuscarArchivos() {
         showSubmitButton={false}
         show={showModal}
         onHide={handleModal}
-        title={"Información del archivo"}
+        title={recortarTexto(documentoSeleccionado?.nombre, 50)}
         formId="formCargaArchivos"
       >
         <Form id="formCargaArchivos">
@@ -888,6 +966,17 @@ function BuscarArchivos() {
                           </div>
                         </Card.Body>
                       </Card>
+                      {listaArchivosTablaSeleccionados.length > 0 && (
+                        <Button
+                          className="btn-save"
+                          variant="primary"
+                          onClick={handleDescargarArchivos}
+                          style={{ marginLeft: "10px", marginTop: "20px" }} // Espacio entre el campo y el botón
+                        >
+                          <FaDownload className="me-2" size={24} />
+                          Descargar seleccionados
+                        </Button>
+                      )}
                     </div>
                   )}
                   {listaArchivosTabla.length > 0 ? (

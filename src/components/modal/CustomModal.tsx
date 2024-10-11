@@ -6,7 +6,7 @@ import { RiSaveFill } from "react-icons/ri";
 interface CustomModalProps {
   show: boolean;
   onHide: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   size?: "sm" | "lg" | "xl"; // Tamaños opcionales del Modal
   showSubmitButton?: boolean;
