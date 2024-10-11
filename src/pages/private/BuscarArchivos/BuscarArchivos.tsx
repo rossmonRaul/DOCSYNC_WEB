@@ -168,7 +168,7 @@ function BuscarArchivos() {
   const handleBuscarClick = async () => {
     setPendiente(true);
     setListaArchivosTabla([]);
-
+    setListaArchivosTablaSeleccionados([])
     // Convertir fechas vacías a null
     const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
     const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
@@ -269,8 +269,9 @@ function BuscarArchivos() {
     const idDocumentosDescargar = listaArchivosTablaSeleccionados.map(
       (a) => a.idDocumento
     );
-    console.log(idDocumentosDescargar);
+    setShowSpinner(true);
     const response = await ObtenerDocumentosDescarga(idDocumentosDescargar);
+    setShowSpinner(false);
     if (response.indicador === 1) {
       setMensajeRespuesta({
         indicador: response.indicador,
@@ -294,6 +295,7 @@ function BuscarArchivos() {
             document.body.appendChild(link);
             link.click();
             link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
           }
           setShowAlert(true);
           setMensajeRespuesta({
