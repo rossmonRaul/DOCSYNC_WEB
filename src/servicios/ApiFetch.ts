@@ -40,7 +40,6 @@ export const ProcesarDatosApi = async (
   const myRequest = new Request(url, myInit);
   try {
     const response = await fetch(myRequest);
-    console.log(response);
     if (response.ok) {
       if (esArchivo) {
         return await response.blob();
