@@ -13,6 +13,7 @@ import {
   FaEyeSlash,
   FaEye,
   FaDownload,
+  FaTrash,
 } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
@@ -1026,10 +1027,20 @@ function BuscarArchivos() {
                   {listaArchivosTabla.length > 0 ? (
                     <div className="content">
                       <Grid
-                        visibleButtonOpcion1= {listaArchivosTablaSeleccionados.length > 0}
-                        nameButtonOpcion1 = {"Descargar seleccionados"}
-                        iconButtonOpcion1= {<FaDownload className="me-2" size={24} />}
-                        handleButtonOpcion1 = {handleDescargarArchivos}
+                        botonesAccion = {[
+                          {
+                            condicion: listaArchivosTablaSeleccionados.length > 0,
+                            accion: handleDescargarArchivos,
+                            icono: <FaDownload className="me-2" size={24} />,
+                            texto: "Descargar seleccionados"
+                          },
+                          {
+                            condicion: listaArchivosTablaSeleccionados.length > 0,
+                            accion: handleDescargarArchivos,
+                            icono: <FaTrash className="me-2" size={24} />,
+                            texto: "Eliminar seleccionados"
+                          },
+                        ]}
                         gridHeading={encabezadoArchivo}
                         gridData={listaArchivosTabla}
                         selectableRows={false}
