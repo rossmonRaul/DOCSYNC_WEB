@@ -6,17 +6,23 @@ import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaClipboardList, FaSearch, FaEyeSlash, FaEye,FaFileDownload } from "react-icons/fa";
+import { FaClipboardList, FaSearch, FaEyeSlash, FaEye, FaFileDownload } from "react-icons/fa";
 import { LuSearchX } from "react-icons/lu";
-import Select from "react-select"
+import Select, { SingleValue } from "react-select"
 import CustomModal from "../../../components/modal/CustomModal";
 import { ObtenerHistorial } from "../../../servicios/ServiceHistorial";
 import { ObtenerUsuarios } from "../../../servicios/ServicioUsuario";
 import { useSpinner } from "../../../context/spinnerContext";
-import * as XLSX from 'xlsx';
+import { exportToExcel } from '../../../utilities/exportReportToExcel';
+
 
 //import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { format } from "date-fns";
+
+interface UsuarioOption {
+  value: string;
+  label: string;
+}
 
 interface Historial {
   idHistorial: Number;
@@ -24,7 +30,7 @@ interface Historial {
   idDocumento: Number;
   nombreDocumento: string;
   idAccion: string;
-  descripcionAccion :string;
+  descripcionAccion: string;
   estado: string;
   detalleError: string;
   fecha: Date;
@@ -58,6 +64,9 @@ function Historial() {
   //
   const [mostrarDiv, setMostrarDiv] = useState(true);
 
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<SingleValue<UsuarioOption>>(null);
+
+
   const toggleDiv = () => {
     setMostrarDiv(prev => !prev); // Alterna el estado
     setMostrarBusqueda(prev => !prev);
@@ -67,7 +76,7 @@ function Historial() {
     obtenerDatos();
   }, []);
 
-  const obtenerDatos = async () =>{    
+  const obtenerDatos = async () => {
     setShowSpinner(true);
     await obtenerUsuarios();
     setShowSpinner(false);
@@ -76,7 +85,7 @@ function Historial() {
   const obtenerUsuarios = async () => {
     try {
       const response = await ObtenerUsuarios();
-      setUsuarios(response.filter((x:any) => x.estado === true));
+      setUsuarios(response.filter((x: any) => x.estado === true));
     } catch (error) {
       console.error("Error al obtener usuarios:", error);
     }
@@ -93,7 +102,7 @@ function Historial() {
       style: {
         fontSize: "1.5em",
       },
-      grow: 2, 
+      grow: 2,
     },
     {
       id: "accion",
@@ -104,7 +113,7 @@ function Historial() {
       style: {
         fontSize: "1.5em",
       },
-      grow: 1, 
+      grow: 1,
     },
     {
       id: "estado",
@@ -137,7 +146,7 @@ function Historial() {
       style: {
         fontSize: "1.5em",
       },
-      grow: 1, 
+      grow: 1,
     },
     {
       id: "Fecha",
@@ -147,7 +156,7 @@ function Historial() {
       style: {
         fontSize: "1.5em",
       },
-      grow: 1, 
+      grow: 1,
     },
     {
       id: "Acciones",
@@ -166,10 +175,10 @@ function Historial() {
       head: "Seleccionar",
       sortable: false,
       grow: 1,
-      center:'true'
+      center: 'true'
     },
   ];
-  
+
 
   const handleBuscarClick = async () => {
     setShowSpinner(true);
@@ -247,7 +256,8 @@ function Historial() {
   };
 
   const handleOpcionUsuarioChange = (selectedOption: any) => {
-    setUsuario(selectedOption); 
+    selectedOption?setUsuario(selectedOption.value):setUsuarioSeleccionado(selectedOption);
+    setUsuarioSeleccionado(selectedOption);
   };
 
 
@@ -274,63 +284,78 @@ function Historial() {
     setShowModal(true);
   };
 
+
   const generarArchivoExcel = () => {
-      setShowSpinner(true);
-      
-      if (listaHistorialTabla.length === 0 || listaHistorialTabla === null) {   
+    setShowSpinner(true);
+
+    if (listaHistorialTabla.length === 0 || listaHistorialTabla === null) {
         setShowAlert(true);
         setMensajeRespuesta({
-          indicador: 0,
-          mensaje: "No hay datos para descargar.",
+            indicador: 0,
+            mensaje: "No hay datos para descargar.",
         });
-      } else {
-          const listaFormateadaXLSX = listaHistorialTabla.map(
-            historial => ({
-                Documento: historial.nombreDocumento,
-                Acción: historial.descripcionAccion,
-                Estado: historial.estado,
-                Descripción: historial.descripcion,
-                Usuario: historial.usuario,
-                Fecha: format(historial.fecha, "dd/MM/yyyy") ,   
-              })
-          );
+    } else {
+        // datos para Excel
+        const listaFormateadaXLSX = listaHistorialTabla.map(historial => ({
+            Documento: historial.nombreDocumento,
+            Acción: historial.descripcionAccion,
+            Estado: historial.estado,
+            Descripción: historial.descripcion,
+            Error: historial.detalleError,
+            Usuario: historial.usuario,
+            Fecha: format(historial.fecha, "dd/MM/yyyy"),
+        }));
 
-          //carga o descarga
-          let cargaDescagar = 'Carga y Descarga';      
-          if(opcionAccion == '4'){ cargaDescagar='Carga'}
-          else if(opcionAccion == '5'){ cargaDescagar='Descarga'}
-          //
-          
-          const dynamicHeaders = [];
-          if (usuario) {
-              dynamicHeaders.push(["Usuario: " + usuario]);
-          }
-          if (opcionAccion) {
-            dynamicHeaders.push(["Accion: " + cargaDescagar]);
-          }
-          if (opcionEstado) {
-            dynamicHeaders.push(["Estado: " + opcionEstado]);
-          }
-          if (fechaFiltroInicial) {
-              dynamicHeaders.push(['Fecha inicial: ' + new Date(fechaFiltroInicial).toLocaleDateString('es-ES')]);
-          }
-          if (fechaFiltroFinal) {
-              dynamicHeaders.push(['Fecha final: ' + new Date(fechaFiltroFinal).toLocaleDateString('es-ES')]);
-          }
-
-          const dataStartRow = dynamicHeaders.length + 2;  
-          const headers = XLSX.utils.aoa_to_sheet(dynamicHeaders);
-          XLSX.utils.sheet_add_json(headers, listaFormateadaXLSX, { origin: `A${dataStartRow}` });
-
-          const nuevoLibro = XLSX.utils.book_new();
-          
-          XLSX.utils.book_append_sheet(nuevoLibro, headers, 'Historial de '+ cargaDescagar);
-          const nombreArchivoCSV = `Historial_${usuario}_${format(new Date(), "dd-MM-yyyy")}.xlsx`;
-
-          XLSX.writeFile(nuevoLibro, nombreArchivoCSV);
+        //  acción
+        let cargaDescargar = 'Carga y Descarga';
+        if (opcionAccion == '4') {
+            cargaDescargar = 'Carga';
+        } else if (opcionAccion == '5') {
+            cargaDescargar = 'Descarga';
         }
-        setShowSpinner(false);
-  };
+
+        //  filtros seleccionados
+        const dynamicHeaders: string[][] = [];
+        if (usuario) {
+            dynamicHeaders.push(["Usuario: " + usuario]);
+        }
+        if (opcionAccion) {
+            dynamicHeaders.push(["Acción: " + cargaDescargar]);
+        }
+        if (opcionEstado) {
+            dynamicHeaders.push(["Estado: " + opcionEstado]);
+        }
+        if (fechaFiltroInicial) {
+            dynamicHeaders.push(['Fecha inicial: ' + new Date(fechaFiltroInicial).toLocaleDateString('es-ES')]);
+        }
+        if (fechaFiltroFinal) {
+            dynamicHeaders.push(['Fecha final: ' + new Date(fechaFiltroFinal).toLocaleDateString('es-ES')]);
+        }
+
+        // columnas del reporte
+        const columnas = [
+            { key: 'Documento', header: 'Documento', width: 35 },
+            { key: 'Acción', header: 'Acción', width: 10 },
+            { key: 'Estado', header: 'Estado', width: 10 },
+            { key: 'Descripción', header: 'Descripción', width: 45 },
+            { key: 'Error', header: 'Error', width: 55 },
+            { key: 'Usuario', header: 'Usuario', width: 20 },
+            { key: 'Fecha', header: 'Fecha', width: 12 },
+        ];
+
+        //  función exportToExcel 
+        exportToExcel({
+            reportName: `Historial de ${cargaDescargar}`,
+            data: listaFormateadaXLSX,
+            columns: columnas,
+            userName: usuario || 'Desconocido',
+            dynamicHeaders, 
+        });
+    }
+
+    setShowSpinner(false);
+};
+
 
 
 
@@ -344,41 +369,40 @@ function Historial() {
       >
         <Form>
           <Row>
-          <Col md={8}>
-          <Form.Group controlId="formEformDocumento">
+            <Col md={8}>
+              <Form.Group controlId="formEformDocumento">
                 <Form.Label>Nombre Documento</Form.Label>
                 <Form.Control
                   type="text"
                   name="documento"
                   value={historialSeleccionado?.nombreDocumento}
-                  disabled={true}        
+                  disabled={true}
                 />
               </Form.Group>
-          </Col>
-          <Col md={4}>
+            </Col>
+            <Col md={4}>
               <Form.Group controlId="formFecha">
                 <Form.Label>Fecha</Form.Label>
                 <DatePicker
                   selected={historialSeleccionado?.fecha ? new Date(historialSeleccionado.fecha) : null}
                   onChange={handleInputChange}
-                  dateFormat="dd/MM/yyyy" 
-                  showTimeSelect  
-                  className="form-control" 
-                  disabled={true}            
+                  dateFormat="dd/MM/yyyy"
+                  showTimeSelect
+                  className="form-control"
+                  disabled={true}
                 />
               </Form.Group>
             </Col>
           </Row>
-          <Row  style={{marginTop: '3%'}}>
+          <Row style={{ marginTop: "3%" }}>
             <Col md={4}>
-            <Form.Group controlId="formEformAccion">
+              <Form.Group controlId="formEformAccion">
                 <Form.Label>Acción</Form.Label>
                 <Form.Control
                   type="text"
                   name="accion"
                   value={historialSeleccionado?.descripcionAccion}
                   disabled={true}
-                 
                 />
               </Form.Group>
             </Col>
@@ -391,10 +415,9 @@ function Historial() {
                   value={historialSeleccionado?.estado}
                   onChange={handleInputChange}
                   disabled={true}
-                 
                 />
               </Form.Group>
-            </Col>           
+            </Col>
             <Col md={4}>
               <Form.Group controlId="formUsuario">
                 <Form.Label>Usuario</Form.Label>
@@ -404,12 +427,11 @@ function Historial() {
                   value={historialSeleccionado?.usuario}
                   onChange={handleInputChange}
                   disabled={true}
-                 
                 />
               </Form.Group>
-            </Col>          
+            </Col>
           </Row>
-          <Row  style={{marginTop: '3%'}}>
+          <Row style={{ marginTop: "3%" }}>
             <Col md={12}>
               <Form.Group controlId="formDescripcion">
                 <Form.Label>Descripción</Form.Label>
@@ -419,108 +441,92 @@ function Historial() {
                   value={historialSeleccionado?.descripcion}
                   onChange={handleInputChange}
                   disabled={true}
-                  
                 />
               </Form.Group>
             </Col>
-            <Col md={0}>
+          </Row>
+          <Row style={{ marginTop: "3%" }}>
+            <Col md={12}>
+              <Form.Group controlId="formDetalleError">
+                <Form.Label>Detalle de error</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="detalleError"
+                  value={historialSeleccionado?.detalleError}
+                  disabled={true}
+                  rows={3}
+                />
+              </Form.Group>
             </Col>
           </Row>
-          <Row  style={{marginTop: '3%'}}>
-          <Col md={12}>
-            <Form.Group controlId="formDetalleError">
-              <Form.Label>Detalle de error</Form.Label>
-              <Form.Control
-                as="textarea"   
-                name="detalleError"
-                value={historialSeleccionado?.detalleError}
-                disabled={true}
-                rows={3}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
         </Form>
       </CustomModal>
-
+  
       <div className="container-fluid">
         <Row>
           <Col md={10} className="d-flex justify-content-start">
             <h1 className="title">Historial</h1>
           </Col>
           <Col md={2} className="d-flex justify-content-start">
-            {
-              <Button
-                className="btn-crear"
-                variant="primary"
-                type="submit"
-                onClick={toggleDiv}
-              >
-                {mostrarBusqueda ? (
-                  <>
-                    <FaEyeSlash className="me-2" size={24} color="#9E0000" />
-                    Filtros de búsqueda
-                  </>
-                ) : (
-                  <>
-                    <FaEye className="me-2" size={24} />
-                    Filtros de búsqueda
-                  </>
-                )}
-              </Button>
-            }
+            <Button
+              className="btn-crear"
+              variant="primary"
+              type="submit"
+              onClick={toggleDiv}
+            >
+              {mostrarBusqueda ? (
+                <>
+                  <FaEyeSlash className="me-2" size={24} color="#9E0000" />
+                  Filtros de búsqueda
+                </>
+              ) : (
+                <>
+                  <FaEye className="me-2" size={24} />
+                  Filtros de búsqueda
+                </>
+              )}
+            </Button>
           </Col>
         </Row>
       </div>
-      <hr></hr>
+  
+      <hr />
+  
       <div className="container-fluid">
-        <div className="position-relative">
           {pendiente ? (
-            <div >Cargando...</div>
+            <div>Cargando...</div>
           ) : (
-            /*tabla donde se muestran los datos*/
-            <div style={{ display: "flex" }}>
-              <div className={`contenedorFiltro ${mostrarDiv ? 'mostrar' : ''}`}>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <h4 className="h4Estilo">
-                    Filtro de búsqueda
-                  </h4>
+            <div style={{ display: "flex"}}>
+              <div className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}>
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                  <h4 className="h4Estilo">Filtro de búsqueda</h4>
                 </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group className="mb-4" >
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                  <Form.Group className="mb-4">
                     <label htmlFor="usuario">
                       <b>Usuario</b>
                     </label>
                     <Select
                       id="usuario"
                       className="GrupoFiltro"
-                      onChange={(selectedOption: any) => handleOpcionUsuarioChange(selectedOption ? selectedOption.value : '')}
+                      value={usuarioSeleccionado}
+                      onChange={handleOpcionUsuarioChange}
                       options={listaUsuarios.map((usuario: any) => ({
                         value: usuario.nombreCompleto,
                         label: usuario.nombreCompleto,
                       }))}
                       placeholder="Seleccione"
-                      //classNamePrefix="custom-select"
                       styles={{
                         control: (provided) => ({
                           ...provided,
-                          fontSize: '16px',
+                          fontSize: "16px",
                         }),
                       }}
                     />
-
                   </Form.Group>
                 </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
+  
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
                   <Form.Group className="mb-4">
                     <label htmlFor="accion">
                       <b>Acción</b>
@@ -530,7 +536,6 @@ function Historial() {
                       as="select"
                       value={opcionAccion}
                       onChange={handleOpcionAccionChange}
-                      placeholder="Seleccione"
                     >
                       <option value="">Seleccione</option>
                       <option value="4">Carga</option>
@@ -538,11 +543,8 @@ function Historial() {
                     </Form.Control>
                   </Form.Group>
                 </div>
-
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
+  
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
                   <Form.Group className="mb-4">
                     <label htmlFor="estado">
                       <b>Estado</b>
@@ -559,17 +561,13 @@ function Historial() {
                     </Form.Control>
                   </Form.Group>
                 </div>
-
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
+  
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
                   <label htmlFor="FechaFiltroInicial">
                     <b>Fecha inicial</b>
                   </label>
                   <Form.Group>
                     <DatePicker
-                      showIcon
                       selected={fechaFiltroInicial}
                       onChange={(date) => setFechaFiltroInicial(date)}
                       dateFormat="dd/MM/yyyy"
@@ -578,17 +576,13 @@ function Historial() {
                     />
                   </Form.Group>
                 </div>
-
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
+  
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
                   <label htmlFor="FechaFiltroFinal">
                     <b>Fecha final</b>
                   </label>
                   <Form.Group>
                     <DatePicker
-                      showIcon
                       selected={fechaFiltroFinal}
                       onChange={(date) => setFechaFiltroFinal(date)}
                       dateFormat="dd/MM/yyyy"
@@ -597,10 +591,8 @@ function Historial() {
                     />
                   </Form.Group>
                 </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
+  
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
                   <Button
                     className="btn-save"
                     variant="primary"
@@ -613,13 +605,8 @@ function Historial() {
                   </Button>
                 </div>
               </div>
-              {/* grid */}
-              <div
-                style={{
-                  flex: 1,
-                  padding: "20px",             
-                }}
-              >
+  
+              <div style={{ flex: 1, padding: "20px" }}>
                 {showAlert && (
                   <AlertDismissible
                     indicador={0}
@@ -627,35 +614,35 @@ function Historial() {
                     setShow={setShowAlert}
                   />
                 )}
-
-                <div>
-                    {listaHistorialTabla.length > 0 ? (
-                      <div className="content">
-                        <Grid
-                          gridHeading={encabezadoHistorial}
-                          gridData={listaHistorialTabla}
-                          selectableRows={false}
-                          filterColumns={["usuario", "accion", "estado", "descripcion", "fecha"]}
-                          nameButtonOpcion1= {"Descargar"}
-                          visibleButtonOpcion1 = {true}
-                          handleButtonOpcion1 = {generarArchivoExcel}
-                          iconButtonOpcion1={<FaFileDownload className="me-2" size={24} />}
-                        ></Grid>
-                      </div>
-                    ) : (
-                      <div className="content row justify-content-center align-items-center" style={{ marginLeft: 10, textAlign: 'center', width: '100%' }}>
-                        <p>Sin resultados que mostrar</p>
-                        <br />
-                        <LuSearchX className="me-2" size={50} />
-                      </div>)}
-                </div>
+               
+                  {listaHistorialTabla.length > 0 ? (             
+                      <Grid
+                        gridHeading={encabezadoHistorial}
+                        gridData={listaHistorialTabla}
+                        selectableRows={false}
+                        filterColumns={["usuario", "accion", "estado", "descripcion", "fecha"]}
+                        nameButtonOpcion1={"Descargar"}
+                        visibleButtonOpcion1={true}
+                        handleButtonOpcion1={generarArchivoExcel}
+                        iconButtonOpcion1={<FaFileDownload className="me-2" size={24} />}
+                      />                   
+                  ) : (
+                    <div
+                      className="content row justify-content-center align-items-center"
+                      style={{ marginLeft: 10, textAlign: "center", width: "100%" }}
+                    >
+                      <p>Sin resultados que mostrar</p>
+                      <br />
+                      <LuSearchX className="me-2" size={50} />
+                    </div>
+                  )}
               </div>
             </div>
           )}
-        </div>
       </div>
     </>
   );
+  
 }
 
 export default Historial;
