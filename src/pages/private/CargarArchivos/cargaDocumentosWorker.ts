@@ -38,7 +38,7 @@ export const cargarDocumentosWorker = () => {
   };
 
   onmessage = async (e) => {
-    const { docs, urlCarga, urlMetadata, urlReversion, storedToken } = e.data;
+    const { docs, urlCarga, urlMetadata, urlReversion, storedToken, urlHistorial} = e.data;
     const metadatosDocsEnviar = docs.map((a: any) => ({
       ...a,
       archivo: null,
@@ -102,6 +102,17 @@ export const cargarDocumentosWorker = () => {
           );
           console.log(responseRollback);
 
+          //Guarda en historial de errores (no se hace mediante el rollback para guardar la excepcion)
+           const responseHistorial = await procesarArchivosYEnviarHistorial(
+            docsInsertados,
+            urlHistorial,
+            storedToken,
+            "Error al carga archivo.",
+            "No se ha podido establecer conexión con el servidor de carga."// dataArchivos.detalleExcepcion
+          );
+          console.log(responseHistorial.mensaje);
+           //
+
           postMessage({
             type: "Error",
             result:
@@ -124,6 +135,7 @@ export const cargarDocumentosWorker = () => {
                 Accept: "application/json",
               }
             );
+          
             console.log(responseRollback);
             postMessage({ type: "Error", result: dataArchivos.mensaje });
           } else {
@@ -146,4 +158,36 @@ export const cargarDocumentosWorker = () => {
       console.error(error);
     }
   };
+
+
+  // Función para mapear los archivos y hacer la petición
+  async function procesarArchivosYEnviarHistorial(
+    archivos:any,
+    url="",
+    storedToken="",
+    mensajeError = "",
+    detalleExcepcion = ""
+  ) {
+    // Mapear los archivos al formato EntityHistorial
+    const historialData = archivos.map((archivo:any) => ({
+      IdDocumento: archivo.idDocumento,
+      NombreDocumento: archivo.nombre,
+      IdAccion: 4, 
+      Descripcion: archivo.descripcionError ? archivo.descripcionError : mensajeError, // Mensaje de error
+      DetalleError: detalleExcepcion ? detalleExcepcion : '', // Detalle de la excepción
+      Fecha: new Date(), 
+      Usuario: archivo.usuarioCreacion, 
+      Estado: "Error", 
+    }));
+
+    // Enviar la petición con los datos mapeados
+    const response = await enviarPeticion(url, storedToken, historialData, {
+      "Content-type": "application/json;charset=UTF-8",
+      Accept: "application/json",
+    });
+
+    return response;
+  }
+
+
 };

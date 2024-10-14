@@ -12,3 +12,8 @@ export const ObtenerHistorial= async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ObtenerHistorial`;
     return await ProcesarDatosApi('POST', url, data);
 }
+
+export const InsertarRegistrosHistorial = async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/InsertarRegistrosHistorial`;
+    return await ProcesarDatosApi('POST', url, data);
+}
