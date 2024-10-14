@@ -210,6 +210,7 @@ function BuscarArchivos() {
 
     setListaArchivosTabla(resultadosObtenidos);
     setPendiente(false);
+    setContenido("")
 
     if (resultadosObtenidos.length === 0) {
       setShowAlert(true);
@@ -242,7 +243,8 @@ function BuscarArchivos() {
         console.log(coincidencias);
         setListaArchivosTabla(archivosContenido);
         setPendiente(false);
-        setContenido("");
+        setListaArchivosTablaSeleccionados([])
+        //setContenido("");
 
         if (archivosContenido.length === 0) {
           setShowAlert(true);
