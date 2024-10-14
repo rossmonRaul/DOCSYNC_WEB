@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
 import { AiOutlineClose } from "react-icons/ai";
-import { RiSaveFill } from "react-icons/ri";
+import { RiRestartLine, RiSaveFill } from "react-icons/ri";
 
 interface CustomModalProps {
   show: boolean;
@@ -10,13 +10,15 @@ interface CustomModalProps {
   children: React.ReactNode;
   size?: "sm" | "lg" | "xl"; // Tamaños opcionales del Modal
   showSubmitButton?: boolean;
+  isPassReset?: boolean;						
   submitButtonLabel?: string;
   formId?: string;
 }
 
 const CustomModal: React.FC<CustomModalProps> = ({ show, onHide, title, children, size = "lg", 
   showSubmitButton = false, formId = "customFormId",
-  submitButtonLabel = "Guardar",}) => {
+  submitButtonLabel = "Guardar",
+  isPassReset = false}) => {
   return (
     <Modal show={show} onHide={onHide} size={size}>
       <Modal.Header closeButton={false} className="d-flex align-items-center">
@@ -36,7 +38,8 @@ const CustomModal: React.FC<CustomModalProps> = ({ show, onHide, title, children
               alignItems: 'center'
             }}
            >
-            <RiSaveFill className="me-2" size={24} /> 
+            {isPassReset ? <RiRestartLine className="me-2" size={24} /> :  <RiSaveFill className="me-2" size={24} />}
+			
            {submitButtonLabel}
          </Button>
         )}

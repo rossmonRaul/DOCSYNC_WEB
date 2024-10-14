@@ -13,11 +13,11 @@ import {
 import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { RiAddLine } from "react-icons/ri";
-import { Input } from 'reactstrap';
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { useSpinner } from "../../../context/spinnerContext";
+import Select from "react-select"
 
 // Componente principal
 function AdministrarRoles() {
@@ -29,7 +29,6 @@ function AdministrarRoles() {
   const [roles, setRoles] = useState<any[]>([]);
   const [rol, setRol] = useState<string>("");
   const [nombreRol, setNombreRol] = useState<string>("");
-  const [categoriaSelected, setCategoriaSelected] = useState<string>("");
   const [opcionSelected, setOpcionSelected] = useState<string>("");
   const [estado, setEstado] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
@@ -122,13 +121,10 @@ function AdministrarRoles() {
   // Maneja los cambios en el formulario del modal
   const handleCategoriaChange = (e: any) => {
 
-    if(e.target.value !== '')
-      obtenerOpcionesMenu(e.target.value);
+    if(e !== '')
+      obtenerOpcionesMenu(e.value);
     else
-      obtenerOpcionesMenu();
-
-    setCategoriaSelected(e.target.value);
- 
+      obtenerOpcionesMenu(); 
   }
 
   const agregaOpcion = () => {
@@ -151,10 +147,6 @@ function AdministrarRoles() {
 
         setShowAlert(true);
         setMensajeRespuesta({indicador: 0, mensaje: "Opción agregada para el rol"});
-
-        setOpcionSelected('');
-        setCategoriaSelected('');
-        obtenerOpcionesMenu();
       }
     }
     else{
@@ -371,7 +363,7 @@ function AdministrarRoles() {
                       alignItems: 'start',
                       flexDirection: 'column'
                     }}>
-                    <Form.Label>Rol activo</Form.Label>
+                    <Form.Label style={{marginBottom: '3.5%'}}>Rol activo</Form.Label>
                     <div className="w-100">
                     <BootstrapSwitchButton
                       checked={estado === true}
@@ -389,38 +381,42 @@ function AdministrarRoles() {
               <Col md={12}><br /></Col>
               <Col md={4}>
                 <Form.Group controlId="formPermAgregar">
-                    <Form.Label style={{marginTop: '5%'}}>Categoria</Form.Label>
-                    <Input
-                          type="select"
-                          id="rol"
-                          value={categoriaSelected}
-                          onChange={handleCategoriaChange}
-                          className="custom-select"
-                          style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                      >
-                          <option value="">Seleccione</option>
-                          {categorias.map((cat: any) => (
-                              <option key={cat.idCategoria} value={cat.idCategoria}>{cat.descripcion}</option>
-                          ))}
-                      </Input>
+                    <Form.Label style={{marginTop: '5%'}}>Categoría</Form.Label>
+                    <Select
+                      onChange={(e: any) => handleCategoriaChange(e)}
+                      className="GrupoFiltro"
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'
+                        }),
+                      }}
+                      placeholder="Seleccione"
+                      options={categorias.map((cat: any) => ({
+                        value: cat.idCategoria,
+                        label: cat.descripcion,
+                      }))}      
+                    /> 
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group controlId="formPermAgregar">
                     <Form.Label style={{marginTop: '5%'}}>Opción</Form.Label>
-                    <Input
-                          type="select"
-                          id="rol"
-                          value={opcionSelected}
-                          onChange={(e: any) => setOpcionSelected(e.target.value)}
-                          className="custom-select"
-                          style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                      >
-                          <option value="">Seleccione</option>
-                          {opciones.map((op: any) => (
-                              <option key={op.idOpcion} value={op.idOpcion}>{op.descripcion}</option>
-                          ))}
-                      </Input>
+                    <Select
+                      onChange={(e: any) => setOpcionSelected(e.value)}
+                      className="GrupoFiltro"
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'
+                        }),
+                      }}
+                      placeholder="Seleccione"
+                      options={opciones.map((cat: any) => ({
+                        value: cat.idOpcion,
+                        label: cat.descripcion,
+                      }))}      
+                    /> 
                 </Form.Group>
               </Col>
               <Col md={4} style={{marginTop: '3.8%', paddingRight: '0px', marginRight: '0px'}}>              

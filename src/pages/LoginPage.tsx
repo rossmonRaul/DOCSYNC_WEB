@@ -1,12 +1,11 @@
 /**
  * Página de inicio de sesión que permite a los usuarios autenticarse en la aplicación.
- * Proporciona un formulario para ingresar credenciales de usuario y permite alternar entre el inicio de sesión y la creación de una cuenta.
  */
 import React, { useEffect, useState } from "react";
 import { FormGroup, Label, Input, Button, Col, FormFeedback } from "reactstrap";
 import { Form, Row } from "react-bootstrap";
 import "../css/LoginPage.css";
-import { CambiarContrasennaTemporal, ValidarUsuario } from "../servicios/ServicioUsuario.ts";
+import { CambiarContrasennaTemporal, RecuperarContrasenna, ValidarUsuario } from "../servicios/ServicioUsuario.ts";
 import { useDispatch } from "react-redux";
 import { UserKey, createUser, resetUser } from "../redux/state/User.ts";
 import { useNavigate } from "react-router-dom";
@@ -22,9 +21,8 @@ import { useSpinner } from "../context/spinnerContext";
  * Interfaz para el estado del formulario de inicio de sesión.
  */
 interface FormData {
-  usuario: string;
-  contrasena: string;
-  mostrarCrearCuenta: boolean;
+  usuario: any;
+  contrasena: any;
 }
 
 /**
@@ -32,7 +30,6 @@ interface FormData {
  */
 const FormularioInicioSesion: React.FC<{
   onSubmit: (formData: FormData) => void;
-  toggleForm: () => void;
   formData: FormData;
   handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleInputBlur: (fieldName: string) => void;
@@ -42,22 +39,59 @@ const FormularioInicioSesion: React.FC<{
   formData,
   handleInputChange,
   handleInputBlur,
-  errors,
+  errors
 }) => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     onSubmit(formData);
   };  
+  
+  const [showModal, setShowModal] = useState(false);
+  const [user, setUser] = useState("");  
+  const { setShowSpinner } = useSpinner();
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
+
+  const handleModalRecupera = () => {
+    setShowModal(!showModal);
+    setUser("");
+  };
+
+  const handleRecuperaContrasenna = () => {
+    handleModalRecupera();
+  }
+
+  const handleSubmitRecuperaContrasenna = async (e: any) => {
+    e.preventDefault();
+    
+    setShowSpinner(true);
+
+    const response = await RecuperarContrasenna({
+      identificacion: user
+    }); 
+
+    setShowAlert(true);
+    setMensajeRespuesta(response);
+
+    setShowSpinner(false);
+
+    handleModalRecupera();
+  }
 
   return (
     <>
-      <div className="form-header" style={{alignItems: 'center'}}>
+      {showAlert && (
+          <AlertDismissible
+          mensaje={mensajeRespuesta}
+          setShow={setShowAlert}
+          />
+        )}
+      <div className="form-header" style={{alignItems: 'center'}}>      
         <div className="brand-content">
           <img width={150} height={100} src={icono}></img>
           <span style={{color: 'black'}}>DocSync <br /> Inicio de sesión</span>
         </div>
         <br />
-        {/* <h2>Iniciar sesión</h2> */}
       </div>
       <form onSubmit={handleSubmit}>
         <FormGroup row className="input">
@@ -97,8 +131,7 @@ const FormularioInicioSesion: React.FC<{
                 errors.contrasena ? "input-styled input-error" : "input-styled"
               }
             />
-          </Col>
-          <FormFeedback>{errors.contrasena}</FormFeedback>
+          </Col>          
         </FormGroup>
         <FormGroup>
           <div>
@@ -108,7 +141,51 @@ const FormularioInicioSesion: React.FC<{
             </Button>
           </div>  
         </FormGroup>
-      </form>      
+      </form>    
+      
+      <FormGroup>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'center',
+            alignItems: 'center',
+            cursor: 'pointer',
+            color: "#9e0000"
+          }}
+          onClick={handleRecuperaContrasenna}>
+              Olvidé mi contraseña
+          </div>
+        </FormGroup>  
+
+         {/* Modal para recuperar contraseña */}
+         <CustomModal
+          show={showModal}
+          onHide={handleModalRecupera}
+          title={"Recuperar contraseña"}
+          showSubmitButton={true}
+          isPassReset={true}
+          submitButtonLabel={"Recuperar"}
+          formId="formRecuperaPass"          
+          >
+            <Form id="formRecuperaPass" onSubmit={handleSubmitRecuperaContrasenna}>
+              <Row>
+                <Col md={12}>
+                  <Form.Group controlId="formContrasenna">
+                    <Form.Label>Identificación o correo</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="usuario"
+                      value={user}
+                      placeholder="Identificación o correo"
+                      onChange={(e: any) => setUser(e.target.value)}
+                      required
+                      maxLength={50}
+                    />
+                  </Form.Group>
+                </Col>
+                </Row>
+            </Form>
+          </CustomModal>
     </>
   );
 };
@@ -119,8 +196,7 @@ const FormularioInicioSesion: React.FC<{
 const Login: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     usuario: "",
-    contrasena: "",
-    mostrarCrearCuenta: false,
+    contrasena: ""
   });
   
   const { setShowSpinner } = useSpinner();
@@ -137,6 +213,7 @@ const Login: React.FC = () => {
     setShowModal(!showModal);
     setContrasenna1("");
     setContrasenna2("");
+    setFormData({usuario: "", contrasena: ""});
   };
 
   useEffect(() => {          
@@ -147,16 +224,6 @@ const Login: React.FC = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  /**
-   * Alternar entre mostrar el formulario de inicio de sesión y el formulario de creación de cuenta.
-   */
-  const toggleForm = () => {
-    setFormData((prevState) => ({
-      ...prevState,
-      mostrarCrearCuenta: !prevState.mostrarCrearCuenta,
-    }));
-  };
 
   /**
    * Manejar cambios en los campos de entrada del formulario.
@@ -176,32 +243,13 @@ const Login: React.FC = () => {
   });
 
   // Manejar la validación del formulario de inicio de sesión.
-
   const handleSubmitConValidacion = () => {
-    // Validar campos antes de enviar los datos al servidor
-    const newErrors: Record<string, string> = {};
-
-    // Validar selección de usuario
-    if (!formData.usuario.trim()) {
-      newErrors.usuario = "El usuario es requerido";
-    } else {
-      newErrors.usuario = "";
+    if(formData.usuario.trim() === '' || formData.contrasena.trim() === ''){
+      setShowAlert(true);
+      setMensajeRespuesta({indicador: 1, mensaje: "Debe ingresar sus credenciales para iniciar sesión"});
     }
-
-    // Validar selección de contraseña
-    if (!formData.contrasena.trim()) {
-      newErrors.contrasena = "Debe ingresar la contraseña";
-    } else {
-      newErrors.contrasena = "";
-    }
-
-    // Actualizar los errores
-    setErrors(newErrors);
-
-    // Si no hay errores, enviar los datos al servidor
-    if (Object.values(newErrors).every((error) => error === "")) {
+    else
       handleLoginSubmit();
-    }
   };
 
   const handleInputBlur = (fieldName: string) => {
@@ -254,7 +302,6 @@ const Login: React.FC = () => {
             mensaje: "La contraseña ingresada es temporal, por favor cree una"
           });
 
-          
           localStorage.setItem("token", response.token);
 
           handleModal();
@@ -313,7 +360,8 @@ const Login: React.FC = () => {
         contrasennaTemporal: contrasena1
       }
       setShowSpinner(true);
-      const response = await CambiarContrasennaTemporal(data);
+      
+      const response = await CambiarContrasennaTemporal(data);      
 
       setShowAlert(true);
       setMensajeRespuesta(response);
@@ -340,12 +388,12 @@ const Login: React.FC = () => {
         <div className="form-container">          
           <FormularioInicioSesion
             onSubmit={handleSubmitConValidacion}
-            toggleForm={toggleForm}
             formData={formData}
             handleInputChange={handleInputChange}
             handleInputBlur={handleInputBlur}
             errors={errors}
           />
+          {/* Modal para cambiar contraseña */}
           <CustomModal
           show={showModal}
           onHide={handleModal}
@@ -383,7 +431,7 @@ const Login: React.FC = () => {
                   </Col>
                 </Row>
             </Form>
-          </CustomModal>
+          </CustomModal>          
         </div>
       </div>
     </div>    

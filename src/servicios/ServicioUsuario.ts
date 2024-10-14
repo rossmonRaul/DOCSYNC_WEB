@@ -86,3 +86,8 @@ export const CambiarContrasennaTemporal = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/CambiarContrasennaTemporal`;
     return await ProcesarDatosApi('POST', url, data);
 }
+
+export const RecuperarContrasenna = async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/RecuperarContrasenna`;
+    return await ProcesarDatosApi('POST', url, data);
+}

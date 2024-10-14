@@ -12,11 +12,11 @@ import {
 import { ObtenerPersonas } from "../../../servicios/ServicioPersonas";
 import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
-import { Input } from 'reactstrap';
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { useSpinner } from "../../../context/spinnerContext";
+import Select from "react-select"
 
 // Componente principal
 function CatalogoPersonas() {
@@ -25,6 +25,8 @@ function CatalogoPersonas() {
   const [listaUsuarios, setUsuarios] = useState<any[]>([]);
   const [correoE, setCorreoE] = useState<string>("");
   const [rol, setRol] = useState<string>("");
+  const [rolTexto, setRolTexto] = useState<string>("");
+  const [nombrePersona, setNombrePersona] = useState<string>("");
   const [idUsuario, setIdUsuario] = useState<string>("");
   const [identificacion, setIdentificacion] = useState<string>("");
   const [contrasennaT, setContrasennaT] = useState<string>("");
@@ -107,6 +109,8 @@ function CatalogoPersonas() {
     setShowModal(true);
     setIdUsuario(usuario.idUsuario);
     setVerConfidencial(usuario.verConfidencial);
+    setNombrePersona(usuario.nombreCompleto);
+    setRolTexto(usuario.rol);
   };
 
   // Función para manejar el cierre del modal
@@ -118,13 +122,15 @@ function CatalogoPersonas() {
     setVerConfidencial(false);
     setRol('');
     setIdentificacion('')
-    setPersona('');
+    setPersona('');    
+    setNombrePersona('');
+    setRolTexto('');
   };
 
   // Maneja los cambios en el formulario del modal
   const handlePersonaChange = (e: any) => {
-    if(e.target.value !== ''){
-      const idPersona = e.target.value
+    if(e.value !== ''){
+      const idPersona = e.value
 
       const correoE = personas.filter((x: any) => x.idPersona == idPersona)[0].email;
       const identificacion = personas.filter((x: any) => x.idPersona == idPersona)[0].identificacion;
@@ -141,7 +147,7 @@ function CatalogoPersonas() {
   }
 
   const handleRolChange = (e: any) => {
-      setRol(e.target.value);
+      setRol(e.value);
   }
 
   const handlePassChange = (e: any) => {
@@ -325,24 +331,62 @@ function CatalogoPersonas() {
               <Col md={6}>
                 <Form.Group controlId="formPersona">
                   <Form.Label>Persona</Form.Label>
-                  <Input
-                        type="select"
-                        id="opcion"
-                        onChange={handlePersonaChange}
-                        value={persona}
-                        className="custom-select"
-                        style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                    >
-                        <option value="">Seleccione</option>
-                        {personas.map((persona: any) => (
-                            <option key={persona.idPersona} value={persona.idPersona}>{persona.nombreCompleto}</option>
-                        ))}
-                    </Input>
+                  <Select                   
+                    value={
+                      persona !== '' ?
+                        ({ 
+                          value: persona,
+                          label: nombrePersona
+                        })
+                      : null
+                    }
+                    onChange={(e: any) => handlePersonaChange(e)}
+                    className="GrupoFiltro"
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'
+                      }),
+                    }}
+                    placeholder="Seleccione"
+                    options={personas.map((cat: any) => ({
+                      value: cat.idPersona,
+                      label: cat.nombreCompleto,
+                    }))}      
+                  /> 
                 </Form.Group>
-              </Col>
+              </Col>              
+              <Col md={6}>
+                <Form.Group controlId="formRol">
+                  <Form.Label>Rol</Form.Label>
+                  <Select
+                    value={
+                      rol !== '' ?
+                        ({ 
+                          value: rol,
+                          label: rolTexto ?? ""
+                        })
+                      : null
+                    }
+                    onChange={(e: any) => handleRolChange(e)}
+                    className="GrupoFiltro"
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'
+                      }),
+                    }}
+                    placeholder="Seleccione"
+                    options={roles.map((cat: any) => ({
+                      value: cat.idRol,
+                      label: cat.rol,
+                    }))}      
+                  /> 
+                </Form.Group>
+              </Col>        
               <Col md={6}>
                 <Form.Group controlId="formIdentificacion">
-                  <Form.Label>Identificación</Form.Label>
+                  <Form.Label style={{marginTop: '3%'}}>Identificación</Form.Label>
                   <Form.Control
                     type="text"
                     name="identificacion"
@@ -352,25 +396,7 @@ function CatalogoPersonas() {
                     style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
                   />
                 </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group controlId="formRol">
-                  <Form.Label style={{marginTop: '3%'}}>Rol</Form.Label>
-                  <Input
-                        type="select"
-                        id="rol"
-                        value={rol}
-                        onChange={handleRolChange}
-                        className="custom-select"
-                        style={{fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'}}
-                    >
-                        <option value="">Seleccione</option>
-                        {roles.map((rol: any) => (
-                            <option key={rol.idRol} value={rol.idRol}>{rol.rol}</option>
-                        ))}
-                    </Input>
-                </Form.Group>
-              </Col>              
+              </Col>      
               <Col md={6}>
                 <Form.Group controlId="formCorreoE">
                   <Form.Label style={{marginTop: '3%'}}>Correo electrónico</Form.Label>
