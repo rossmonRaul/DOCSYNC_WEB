@@ -15,7 +15,7 @@ export const Grid: React.FC<any> = ({
   rowModal,
   handle,
   buttonVisible,
-  visibleButtonOpcion1,
+  botonesAccion,
   nameButtonOpcion1,
   handleButtonOpcion1,
   iconButtonOpcion1,
@@ -32,6 +32,7 @@ export const Grid: React.FC<any> = ({
 
   useEffect(() => {
     setRecords(gridData);
+    console.log(botonesAccion);
   }, [gridData]);
 
   const onRowSelected = (row: any) => {
@@ -123,27 +124,44 @@ export const Grid: React.FC<any> = ({
         >
           <div>
             {buttonVisible && (
-              <Button variant="primary" onClick={handle} className="btn-crear px-2">
+              <Button
+                variant="primary"
+                onClick={handle}
+                className="btn-crear px-2"
+              >
                 <FaPlus className="me-2" size={24} />
                 Agregar
               </Button>
             )}
-            {visibleButtonOpcion1 && (
-              <Button variant="primary" onClick={handleButtonOpcion1} className=" ms-3 btn-crear" >
-                {iconButtonOpcion1}
-                {nameButtonOpcion1}
-              </Button>
-            )}
+            {botonesAccion &&
+              botonesAccion.map(
+                (accionBotones: any, index: number) =>
+                  accionBotones?.condicion && (
+                    <Button
+                      key={index}
+                      variant="primary"
+                      onClick={accionBotones?.accion}
+                      className={
+                        accionBotones?.clase
+                          ? accionBotones?.clase
+                          : "ms-3 btn-crear"
+                      }
+                    >
+                      {accionBotones?.icono}
+                      {accionBotones?.texto}
+                    </Button>
+                  )
+              )}
           </div>
 
-           <div className={buttonVisible ? "" : "ms-auto"}>
-          <input
-            className="form-control"
-            type="search"
-            placeholder="Buscar"
-            onChange={handleFilter}
-          />
-        </div>
+          <div className={buttonVisible ? "" : "ms-auto"}>
+            <input
+              className="form-control"
+              type="search"
+              placeholder="Buscar"
+              onChange={handleFilter}
+            />
+          </div>
         </div>
       )}
 
