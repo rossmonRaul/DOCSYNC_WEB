@@ -48,7 +48,6 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   //
-  const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const [showModalImportar, setShowModalImportar] = useState(false);
   const [listaTiposDocImportar, setListaTiposDocImportar] = useState<TipoDocumento[]>([]);
   const [showImportButton, setShowImportButton] = useState(false);
@@ -76,11 +75,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
   const eliminarTipoDocumento = async (tipoDocumento: TipoDocumento) => {
     try {
       setShowSpinner(true);
-      const tipoDocumentoEliminar = {
-        ...tipoDocumento,  
-        usuarioModificacion: identificacionUsuario,
-        fechaModificacion: new Date().toISOString()}
-      const response = await EliminarTipoDocumento(tipoDocumentoEliminar);
+      const response = await EliminarTipoDocumento(tipoDocumento);
 
       if(response){
         setShowAlert(true);
@@ -130,15 +125,13 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
   // Maneja el envío del formulario para agregar o editar un tipo de dotcumento 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const identificacionUsuario = localStorage.getItem('identificacionUsuario');
   
     if (isEditing) {
       // Editar tipo de dotcumento 
       try {
         setShowSpinner(true);
-        const tipoDocumentoActualizar = { 
-          ...nuevoTipoDocumento, 
-          usuarioModificacion: identificacionUsuario,
-          fechaModificacion: new Date().toISOString() };
+        const tipoDocumentoActualizar = { ...nuevoTipoDocumento, usuarioModificacion: identificacionUsuario };
         const response = await ActualizarTipoDocumento(tipoDocumentoActualizar);
   
         if(response){
@@ -270,8 +263,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
             obj.idTipoDocumento = "0" as string;
             if (property === 'Código') obj.codigo = value as string;
             if (property === 'Número de Caracteres') obj.numCaracteres = value as number;
-            if (property === 'Descripción') obj.descripcion = value as string;    
-            obj.usuarioCreacion = identificacionUsuario ? identificacionUsuario:"";
+            if (property === 'Descripción') obj.descripcion = value as string;          
             obj.usuarioModificacion = '';
           });
           return obj as TipoDocumento; //  convertimos a un objeto de TipoDocumento
