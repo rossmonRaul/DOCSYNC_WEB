@@ -482,6 +482,7 @@ function BuscarArchivos() {
 
   const handleVerArchivo = (archivo: Archivo) => {
     setDocumentoVer(archivo);
+    console.log(archivo)
   };
 
   const handleInputChange = (e: any) => {
@@ -1138,11 +1139,11 @@ function BuscarArchivos() {
                   )}
                 </div>
               </div>
-              {documentoVer?.archivo && (
+              {documentoVer && (
                 <div style={{ flex: 1, padding: "20px" }}>
                   <VisorArchivos
                     key={documentoVer}
-                    documento={documentoVer.archivo}
+                    documentoDescarga={documentoVer}
                     cerrar={handleVisor}
                   />
                 </div>

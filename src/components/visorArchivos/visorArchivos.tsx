@@ -48,7 +48,7 @@ export const VisorArchivos: React.FC<any> = ({
   useEffect(() => {
     if (documentoDescarga) {
       setTimeout(() => {
-        obtenerArchivo([documentoDescarga.idDocumento]);
+        obtenerArchivo([documentoDescarga.idDocumento+""]);
       }, 5);
     }
     return () => {

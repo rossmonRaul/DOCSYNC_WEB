@@ -43,6 +43,8 @@ function CargarArchivos() {
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
+  const [tipoDocumentoSeleccionado, setTipoDocumentoSeleccionado] = useState<string>();
+  const [tipoDocumento, setTipoDocumento] = useState<any>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
   const { startWorker, setTaskTitle } = useWorker();
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
@@ -514,6 +516,19 @@ function CargarArchivos() {
           <div>
             <div className="content">
               <Form onSubmit={cargarArchivos}>
+              <Form.Group style={{marginBottom:"20px"}}>
+                <Form.Label>Tipo de documento</Form.Label>
+                <Form.Select
+                  name="tipoDocumento"
+                  value={tipoDocumentoSeleccionado}
+                  onChange={(e)=>setTipoDocumentoSeleccionado(e.target.value)}
+                >
+                  <option value="">-- Selecciona una opción --</option>
+                  {
+
+                  }
+                </Form.Select>
+              </Form.Group>
                 <Form.Group>
                   <Form.Label>
                     Selecciona un archivo (peso máximo {FILE_MAX_SIZE_MB} MB)
