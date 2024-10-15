@@ -17,10 +17,13 @@ import {
 } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
-import {ObtenerDocumento,ObtenerDocumentosDescarga,
+import {
+  EliminarDocumento,
+  ObtenerDocumento,
+  ObtenerDocumentosDescarga,
   ObtenerDocumentosPorContenido,
 } from "../../../servicios/ServicioDocumentos";
-import { InsertarRegistrosHistorial} from "../../../servicios/ServiceHistorial";
+import { InsertarRegistrosHistorial } from "../../../servicios/ServiceHistorial";
 
 import axios from "axios";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
@@ -53,6 +56,8 @@ interface Archivo {
 function BuscarArchivos() {
   const [showAlert, setShowAlert] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showObservacionesEliminar, setShowObservacionesEliminar] =
+    useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
@@ -68,6 +73,7 @@ function BuscarArchivos() {
 
   const [autor, setAutor] = useState("");
   const [asunto, setAsunto] = useState("");
+  const [observacionEliminacion, setObservacionEliminacion] = useState("");
   //const [departamento, setDepartamento] = useState("");
   //const [confidencialidad, setConfidencialidad] = useState("");
   const [contenidoRelevante, setContenidoRelevante] = useState("");
@@ -92,7 +98,7 @@ function BuscarArchivos() {
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
-  useEffect(() => { }, []);
+  useEffect(() => {}, []);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -169,7 +175,7 @@ function BuscarArchivos() {
   const handleBuscarClick = async () => {
     setPendiente(true);
     setListaArchivosTabla([]);
-    setListaArchivosTablaSeleccionados([])
+    setListaArchivosTablaSeleccionados([]);
     // Convertir fechas vacías a null
     const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
     const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
@@ -211,7 +217,7 @@ function BuscarArchivos() {
 
     setListaArchivosTabla(resultadosObtenidos);
     setPendiente(false);
-    setContenido("")
+    setContenido("");
 
     if (resultadosObtenidos.length === 0) {
       setShowAlert(true);
@@ -244,7 +250,7 @@ function BuscarArchivos() {
         console.log(coincidencias);
         setListaArchivosTabla(archivosContenido);
         setPendiente(false);
-        setListaArchivosTablaSeleccionados([])
+        setListaArchivosTablaSeleccionados([]);
         //setContenido("");
 
         if (archivosContenido.length === 0) {
@@ -267,110 +273,142 @@ function BuscarArchivos() {
     }
     return bytes;
   };
+  //handleEliminarArchivos
+  const handleEliminarArchivos = async (e: any) => {
+    e.preventDefault();
 
+    setShowSpinner(true);
+    const response = await EliminarDocumento({
+      observaciones: observacionEliminacion,
+      docs: listaArchivosTablaSeleccionados,
+      usuario: identificacionUsuario,
+    });
+    setShowSpinner(false);
+    setShowAlert(true);
+    console.log(response);
+    if (response) {
+      setMensajeRespuesta({
+        indicador: response.indicador,
+        mensaje: response.mensaje,
+      });
+      setObservacionEliminacion("");
+      setShowObservacionesEliminar(false);
+      handleBuscarClick()
+    } else {
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ha ocurrido un error inesperado al eliminar.",
+      });
+    }
+
+    console.log("hola");
+  };
   const handleDescargarArchivos = async () => {
     const historialData = []; //hisorial
-    let descripcionError = '';
-    let detalleError = '';
-    let estado = 'Exitoso';
+    let descripcionError = "";
+    let detalleError = "";
+    let estado = "Exitoso";
 
     const idDocumentosDescargar = listaArchivosTablaSeleccionados.map(
       (a) => a.idDocumento
     );
     setShowSpinner(true);
-    try{
-    const response = await ObtenerDocumentosDescarga(idDocumentosDescargar);
-    setShowSpinner(false);
-    if (response.indicador === 1) {
-      setMensajeRespuesta({
-        indicador: response.indicador,
-        mensaje: response.mensaje,
-      });
-
-    descripcionError = 'Error al descargar archivo';
-    detalleError = response.mensaje;
-    estado = 'Error';
-
-    } else {
-      if (response.datos.length > 0) {
-        try {
-          const archivos = response.datos;
-          if (archivos.length > 1) {
-            descargarArchivosZip(archivos);
-          } else {
-            const archivo = archivos[0];
-            const byteArray = base64ToUint8Array(archivo.bytesArchivo);
-            console.log(archivo);
-            const blob = new Blob([byteArray], { type: archivo.formato });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", archivo.nombre);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode?.removeChild(link);
-            window.URL.revokeObjectURL(url);
-          }
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 0,
-            mensaje: "Documentos descargados correctamente.",
-          });
-        } catch (error) {
-          
-          descripcionError = 'Error al descargar archivo';
-          if (error instanceof Error) {
-            detalleError = error.message; // Usamos el mensaje del error
-          };
-          estado = 'Error';
-
-          console.error("Error al descargar los archivos:", error);
-        }
-      } else {
-        descripcionError = 'Error al descargar archivo';  
-        detalleError = "No se ha encontrado el archivo a descargar.";    
-        estado = 'Error';
-
-        setShowAlert(true);
+    try {
+      const response = await ObtenerDocumentosDescarga(idDocumentosDescargar);
+      setShowSpinner(false);
+      if (response.indicador === 1) {
         setMensajeRespuesta({
           indicador: response.indicador,
-          mensaje: "No se ha encontrado el archivo a descargar.",
+          mensaje: response.mensaje,
         });
-      }
-    }
-  }catch(error){
-    descripcionError = 'Error al descargar archivo';
-    if (error instanceof Error) {
-      detalleError = "No se ha podido establecer conexión con el servidor de descarga."; 
-    };
-    estado = 'Error';
-    console.error("Error al descargar los archivos:", error);
-    setShowAlert(true);
 
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Error. No se ha podido establecer conexión con el servidor de descarga.",
-        });
-  }
- // Registrar en historial exito o error
+        descripcionError = "Error al descargar archivo";
+        detalleError = response.mensaje;
+        estado = "Error";
+      } else {
+        if (response.datos.length > 0) {
+          try {
+            const archivos = response.datos;
+            if (archivos.length > 1) {
+              descargarArchivosZip(archivos);
+            } else {
+              const archivo = archivos[0];
+              const byteArray = base64ToUint8Array(archivo.bytesArchivo);
+              console.log(archivo);
+              const blob = new Blob([byteArray], { type: archivo.formato });
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.setAttribute("download", archivo.nombre);
+              document.body.appendChild(link);
+              link.click();
+              link.parentNode?.removeChild(link);
+              window.URL.revokeObjectURL(url);
+            }
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 0,
+              mensaje: "Documentos descargados correctamente.",
+            });
+          } catch (error) {
+            descripcionError = "Error al descargar archivo";
+            if (error instanceof Error) {
+              detalleError = error.message; // Usamos el mensaje del error
+            }
+            estado = "Error";
+
+            console.error("Error al descargar los archivos:", error);
+          }
+        } else {
+          descripcionError = "Error al descargar archivo";
+          detalleError = "No se ha encontrado el archivo a descargar.";
+          estado = "Error";
+
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: response.indicador,
+            mensaje: "No se ha encontrado el archivo a descargar.",
+          });
+        }
+      }
+    } catch (error) {
+      descripcionError = "Error al descargar archivo";
+      if (error instanceof Error) {
+        detalleError =
+          "No se ha podido establecer conexión con el servidor de descarga.";
+      }
+      estado = "Error";
+      console.error("Error al descargar los archivos:", error);
+      setShowAlert(true);
+
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje:
+          "Error. No se ha podido establecer conexión con el servidor de descarga.",
+      });
+    }
+    // Registrar en historial exito o error
     for (const archivo of listaArchivosTablaSeleccionados) {
       historialData.push({
         IdDocumento: archivo.idDocumento,
         NombreDocumento: archivo.nombre,
         IdAccion: 5,
-        Descripcion: descripcionError !== ''? descripcionError : 'El documento se descargó correctamente.',
+        Descripcion:
+          descripcionError !== ""
+            ? descripcionError
+            : "El documento se descargó correctamente.",
         DetalleError: detalleError,
         Fecha: new Date(),
         Usuario: archivo.usuarioCreacion,
         Estado: estado,
-      })};
+      });
+    }
 
-      try {
-        await InsertarRegistrosHistorial( historialData );
-      }catch (error) {
-        console.log(error);
-      }
-
+    try {
+      await InsertarRegistrosHistorial(historialData);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const descargarArchivosZip = (archivos: any) => {
@@ -510,6 +548,10 @@ function BuscarArchivos() {
   const handleModal = () => {
     setShowModal(!showModal);
   };
+
+  const handleModalEliminar = () => {
+    setShowObservacionesEliminar(!showObservacionesEliminar);
+  };
   const abrirInformacionArchivo = (row: Archivo, editar = false) => {
     setDocumentoSeleccionado(row);
     setShowModal(true);
@@ -518,9 +560,9 @@ function BuscarArchivos() {
   const [mostrarDiv, setMostrarDiv] = useState(true);
 
   const toggleDiv = () => {
-    setMostrarDiv(prev => !prev); // Alterna el estado
-    setMostrarBusqueda(prev => !prev);
-  }
+    setMostrarDiv((prev) => !prev); // Alterna el estado
+    setMostrarBusqueda((prev) => !prev);
+  };
   return (
     <>
       <CustomModal
@@ -679,6 +721,34 @@ function BuscarArchivos() {
         </Form>
       </CustomModal>
 
+      <CustomModal
+        showSubmitButton={true}
+        show={showObservacionesEliminar}
+        onHide={handleModalEliminar}
+        title={"Eliminar documentos seleccionados"}
+        formId="formObservacionEliminacion"
+        submitButtonLabel={"Confirmar"}
+      >
+        <Form id="formObservacionEliminacion" onSubmit={handleEliminarArchivos}>
+          <Row>
+            <Col md={12}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Observaciones</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="observacionEliminacion"
+                  value={observacionEliminacion}
+                  required={true}
+                  onChange={(e: any) => {
+                    setObservacionEliminacion(e.target.value);
+                  }}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        </Form>
+      </CustomModal>
+
       <div className="container-fluid">
         <Row>
           <Col md={10} className="d-flex justify-content-start">
@@ -689,7 +759,6 @@ function BuscarArchivos() {
           </Col>
           <Col md={2} className="d-flex justify-content-start">
             {
-
               <Button
                 className="btn-crear"
                 variant="primary"
@@ -723,14 +792,14 @@ function BuscarArchivos() {
           ) : (
             /*tabla donde se muestran los datos*/
             <div style={{ display: "flex" }}>
-              <div className={`contenedorFiltro ${mostrarDiv ? 'mostrar' : ''}`}>
+              <div
+                className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}
+              >
                 <div
                   className="d-flex flex-column"
                   style={{ padding: "0 10px" }}
                 >
-                  <h4 className="h4Estilo">
-                    Filtro de búsqueda
-                  </h4>
+                  <h4 className="h4Estilo">Filtro de búsqueda</h4>
                 </div>
                 <div
                   className="d-flex flex-column"
@@ -964,7 +1033,7 @@ function BuscarArchivos() {
                 </div>
                 <div
                   className="d-flex flex-column mt-auto p-3"
-                  style={{ padding: "3px 10px", alignSelf: 'flex-end' }}
+                  style={{ padding: "3px 10px", alignSelf: "flex-end" }}
                 >
                   <Button
                     className="btn-save"
@@ -977,7 +1046,6 @@ function BuscarArchivos() {
                     Buscar
                   </Button>
                 </div>
-
               </div>
               <div
                 style={{
@@ -995,11 +1063,17 @@ function BuscarArchivos() {
                 )}
                 <div>
                   {!mostrarDiv && listaArchivosTabla.length > 0 && (
-                    <div className="content" >
+                    <div className="content">
                       <Card className="mb-4">
                         <Card.Body>
-                          <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-                            <Form.Group style={{ flex: 1, marginBottom: '0' }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              width: "100%",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Form.Group style={{ flex: 1, marginBottom: "0" }}>
                               <label htmlFor="Contenido">
                                 <b>Busqueda avanzada por contenido</b>
                               </label>
@@ -1013,7 +1087,7 @@ function BuscarArchivos() {
                               className="btn-save"
                               variant="primary"
                               onClick={handleBuscarPorContenidoClick}
-                              style={{ marginLeft: '10px', marginTop: "20px" }} // Espacio entre el campo y el botón
+                              style={{ marginLeft: "10px", marginTop: "20px" }} // Espacio entre el campo y el botón
                             >
                               <FaSearch className="me-2" size={24} />
                               Buscar
@@ -1021,24 +1095,25 @@ function BuscarArchivos() {
                           </div>
                         </Card.Body>
                       </Card>
-                     
                     </div>
                   )}
                   {listaArchivosTabla.length > 0 ? (
                     <div className="content">
                       <Grid
-                        botonesAccion = {[
+                        botonesAccion={[
                           {
-                            condicion: listaArchivosTablaSeleccionados.length > 0,
+                            condicion:
+                              listaArchivosTablaSeleccionados.length > 0,
                             accion: handleDescargarArchivos,
                             icono: <FaDownload className="me-2" size={24} />,
-                            texto: "Descargar seleccionados"
+                            texto: "Descargar seleccionados",
                           },
                           {
-                            condicion: listaArchivosTablaSeleccionados.length > 0,
-                            accion: handleDescargarArchivos,
+                            condicion:
+                              listaArchivosTablaSeleccionados.length > 0,
+                            accion: () => setShowObservacionesEliminar(true),
                             icono: <FaTrash className="me-2" size={24} />,
-                            texto: "Eliminar seleccionados"
+                            texto: "Eliminar seleccionados",
                           },
                         ]}
                         gridHeading={encabezadoArchivo}
@@ -1048,11 +1123,19 @@ function BuscarArchivos() {
                       ></Grid>
                     </div>
                   ) : (
-                    <div className="content row justify-content-center align-items-center" style={{ marginLeft: 10, textAlign: 'center', width: '100%' }}>
+                    <div
+                      className="content row justify-content-center align-items-center"
+                      style={{
+                        marginLeft: 10,
+                        textAlign: "center",
+                        width: "100%",
+                      }}
+                    >
                       <p>Sin resultados que mostrar</p>
                       <br />
                       <LuSearchX className="me-2" size={50} />
-                    </div>)}
+                    </div>
+                  )}
                 </div>
               </div>
               {documentoVer?.archivo && (
@@ -1068,8 +1151,6 @@ function BuscarArchivos() {
             /* fin contenedor */
           )}
         </div>
-
-
       </div>
     </>
   );
