@@ -13,20 +13,20 @@ import { cargarDocumentosWorker } from "./cargaDocumentosWorker";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { FaCheckCircle } from "react-icons/fa";
 import { recortarTexto } from "../../../utils/utils";
+import { ObtenerTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
+import { useSpinner } from "../../../context/spinnerContext";
+
+interface TipoDocumento {
+  idTipoDocumento: string;
+  descripcion: string;
+}
 
 interface Archivo {
   id: Number;
-  autor: string;
-  asunto: string;
-  departamento: string;
-  confidencialidad: string;
-  contenidoRelevante: string;
-  numeroExpediente: string;
-  numeroSolicitud: string;
-  docPadre: string;
-  docHijo: string;
-  titulo: string;
-  nombre: string;
+  nomDocumento: string;
+  nombreGuardar: string;
+  numSolicitud: string;
+  TipoDocumento: TipoDocumento;
   archivo: File;
   tamanioArchivo: number;
   usuarioCreacion: string;
@@ -43,7 +43,8 @@ function CargarArchivos() {
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
-  const [tipoDocumentoSeleccionado, setTipoDocumentoSeleccionado] = useState<string>();
+  const [tipoDocumentoSeleccionado, setTipoDocumentoSeleccionado] =
+    useState<TipoDocumento>({ idTipoDocumento: "", descripcion: "" });
   const [tipoDocumento, setTipoDocumento] = useState<any>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
   const { startWorker, setTaskTitle } = useWorker();
@@ -54,9 +55,25 @@ function CargarArchivos() {
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
+  const { setShowSpinner } = useSpinner();
 
+  const cargarTiposDocumentos = async () => {
+    setShowSpinner(true);
+    const response = await ObtenerTiposDocumentos();
+    setShowSpinner(false);
+    if (response) {
+      setTipoDocumento(response);
+    } else {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ocurrió un error al cargar el catálogo de tipo de documento",
+      });
+    }
+  };
   useEffect(() => {
     setTaskTitle("Carga de archivos");
+    cargarTiposDocumentos();
   }, []);
 
   //Informacion general del paquete
@@ -90,21 +107,46 @@ function CargarArchivos() {
       style: {
         fontSize: "1.5em",
       },
-      width: documentoVer ? "250px" : "800px",
+      width: documentoVer ? "250px" : "400px",
     },
     {
-      id: "estado",
+      id: "tipo",
+      name: "Tipo",
       selector: (row: Archivo) => {
-        if (validarDatosCompletosArchivo(row)) {
-          return (
-            <>
-              <FaCheckCircle color="green" size={20} />
-              Listo para cargar...
-            </>
-          );
-        } else {
-          return "";
-        }
+        return (
+          <Form.Select
+            name="tipoDocumento"
+            value={row.TipoDocumento.idTipoDocumento}
+            onChange={(e) => handleTipoChange(e, row.id)}
+          >
+            {tipoDocumento &&
+              tipoDocumento?.map((t: any, index: any) => (
+                <option key={index} value={t.idTipoDocumento}>
+                  {t.descripcion}
+                </option>
+              ))}
+          </Form.Select>
+        );
+      },
+      head: "Tipo",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+      width: documentoVer ? "100px" : "400px",
+    },
+    {
+      id: "numeroSolicitud",
+      name: "No. Solicitud",
+      selector: (row: Archivo) => {
+        return (
+          <Form.Control
+            type="text"
+            name="autor"
+            value={row.numSolicitud}
+            onChange={(e) => handleNoSolicitudChange(e, row.id)}
+          />
+        );
       },
       sorteable: false,
     },
@@ -113,13 +155,6 @@ function CargarArchivos() {
       name: "Acciones",
       selector: (row: Archivo) => (
         <div style={{ paddingTop: "5px", paddingBottom: "5px" }}>
-          <Button
-            onClick={() => abrirInformacionArchivo(row, true)}
-            size="sm"
-            className="bg-secondary me-2"
-          >
-            <FaEdit />
-          </Button>
           <Button
             onClick={() => handleVerArchivo(row)}
             size="sm"
@@ -141,6 +176,38 @@ function CargarArchivos() {
       width: "150px",
     },
   ];
+
+  const handleTipoChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    rowId: any
+  ) => {
+    const selectedValue = e.target.value;
+    const selectedText = e.target.options[e.target.selectedIndex].text;
+
+    setListaArchivosTabla((prevData) =>
+      prevData.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              TipoDocumento: {
+                idTipoDocumento: selectedValue,
+                descripcion: selectedText,
+              },
+            }
+          : row
+      )
+    );
+  };
+
+  const handleNoSolicitudChange = (e: any, rowId: any) => {
+    const selectedValue = e.target.value;
+
+    setListaArchivosTabla((prevData) =>
+      prevData.map((row) =>
+        row.id === rowId ? { ...row, numeroSolicitud: selectedValue } : row
+      )
+    );
+  };
 
   const handleVisor = () => {
     setDocumentoVer(undefined);
@@ -197,18 +264,16 @@ function CargarArchivos() {
               const file: Archivo = {
                 id: consecutivo++,
                 archivo: element,
+                numSolicitud: "123",
                 tamanioArchivo: element.size,
-                autor: "",
-                asunto: "",
-                confidencialidad: "false",
-                contenidoRelevante: "",
-                departamento: "",
-                docHijo: "",
-                nombre: element.name,
-                docPadre: "",
-                numeroExpediente: "",
-                numeroSolicitud: "",
-                titulo: "",
+                TipoDocumento: tipoDocumentoSeleccionado,
+                nombreGuardar:
+                  tipoDocumentoSeleccionado.descripcion +
+                  "-" +
+                  element.name +
+                  "-" +
+                  new Date().toISOString(),
+                nomDocumento: element.name,
                 usuarioCreacion: identificacionUsuario!!,
                 fechaCreacion: new Date().toISOString(),
               };
@@ -235,7 +300,11 @@ function CargarArchivos() {
     if (validarDatosCompletosArchivo(row)) {
       seleccionarDocumento(row);
     } else {
-      abrirInformacionArchivo(row);
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Complete los campos del documento correctamente.",
+      });
     }
   };
 
@@ -295,7 +364,6 @@ function CargarArchivos() {
     const urlReversion = `${API_BASE_URL_BD}/Documento/ReversarDocumento`;
     const urlHistorial = `${API_BASE_URL_BD}/Historial/InsertarRegistrosHistorial`;
 
-
     startWorker(cargarDocumentosWorker, {
       docs: listaArchivosTablaSeleccionados,
       urlMetadata,
@@ -337,172 +405,8 @@ function CargarArchivos() {
   };
   return (
     <>
-      <CustomModal
-        showSubmitButton={true}
-        show={showModal}
-        onHide={handleModal}
-        title={
-          recortarTexto(documentoSeleccionado?.archivo.name!!, 50) ||
-          "Información del archivo"
-        }
-        formId="formCargaArchivos"
-      >
-        <Form id="formCargaArchivos" onSubmit={guardarInformacioArchivo}>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formCodigoEstado">
-                <Form.Label>Autor</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="autor"
-                  value={documentoSeleccionado?.autor}
-                  onChange={handleInputChange}
-                  required
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Asunto</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="asunto"
-                  value={documentoSeleccionado?.asunto}
-                  required
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Departamento</Form.Label>
-                <Form.Select
-                  name="departamento"
-                  value={documentoSeleccionado?.departamento}
-                  required
-                  onChange={handleInputChange}
-                >
-                  <option value="">-- Selecciona una opción --</option>
-                  <option value="opcion1">Opción 1</option>
-                  <option value="opcion2">Opción 2</option>
-                  <option value="opcion3">Opción 3</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Es confidencial</Form.Label>
-                <div className="w-100">
-                  <BootstrapSwitchButton
-                    checked={documentoSeleccionado?.confidencialidad === "true"}
-                    onlabel="Sí"
-                    onstyle="danger"
-                    offlabel="No"
-                    offstyle="success"
-                    style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
-                    onChange={(checked: boolean) =>
-                      handleInputChange({
-                        target: {
-                          type: "switch",
-                          name: "confidencialidad",
-                          checked,
-                        },
-                      })
-                    }
-                  />
-                </div>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Contenido relevante</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="contenidoRelevante"
-                  value={documentoSeleccionado?.contenidoRelevante}
-                  required
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>No. Expediente</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="numeroExpediente"
-                  value={documentoSeleccionado?.numeroExpediente}
-                  required
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>No. Solicitud</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="numeroSolicitud"
-                  value={documentoSeleccionado?.numeroSolicitud}
-                  required
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Doc. Hijo</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="docHijo"
-                  value={documentoSeleccionado?.docHijo}
-                  required
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Doc. Padre</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="docPadre"
-                  value={documentoSeleccionado?.docPadre}
-                  required
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Título</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="titulo"
-                  value={documentoSeleccionado?.titulo}
-                  required
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        </Form>
-      </CustomModal>
       <h1 className="title">Cargar archivos</h1>
-      <div style={{ display: "flex", maxHeight: "100vh", overflow:"auto" }}>
+      <div style={{ display: "flex", maxHeight: "100vh", overflow: "auto" }}>
         {/* Primera mitad de la pantalla */}
         <div
           style={{ flex: 1, padding: "20px", borderRight: "1px solid #ddd" }}
@@ -516,30 +420,43 @@ function CargarArchivos() {
           <div>
             <div className="content">
               <Form onSubmit={cargarArchivos}>
-              <Form.Group style={{marginBottom:"20px"}}>
-                <Form.Label>Tipo de documento</Form.Label>
-                <Form.Select
-                  name="tipoDocumento"
-                  value={tipoDocumentoSeleccionado}
-                  onChange={(e)=>setTipoDocumentoSeleccionado(e.target.value)}
-                >
-                  <option value="">-- Selecciona una opción --</option>
-                  {
-
-                  }
-                </Form.Select>
-              </Form.Group>
-                <Form.Group>
-                  <Form.Label>
-                    Selecciona un archivo (peso máximo {FILE_MAX_SIZE_MB} MB)
-                  </Form.Label>
-                  <Form.Control
-                    multiple
-                    accept=".pdf,.doc,.html,.dot,.dotx,.htm,.odt,.ods,.odp,.sql,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.csv,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
-                    type="file"
-                    onChange={handleFileChange}
-                  />
+                <Form.Group style={{ marginBottom: "20px" }}>
+                  <Form.Label>Tipo de documento</Form.Label>
+                  <Form.Select
+                    name="tipoDocumento"
+                    value={tipoDocumentoSeleccionado?.idTipoDocumento}
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      const selectedText =
+                        e.target.options[e.target.selectedIndex].text;
+                      setTipoDocumentoSeleccionado({
+                        idTipoDocumento: selectedValue,
+                        descripcion: selectedText,
+                      });
+                    }}
+                  >
+                    <option value="">-- Selecciona una opción --</option>
+                    {tipoDocumento &&
+                      tipoDocumento?.map((t: any, index: any) => (
+                        <option key={index} value={t.idTipoDocumento}>
+                          {t.descripcion}
+                        </option>
+                      ))}
+                  </Form.Select>
                 </Form.Group>
+                {tipoDocumentoSeleccionado?.idTipoDocumento !== "" && (
+                  <Form.Group>
+                    <Form.Label>
+                      Selecciona un archivo (peso máximo {FILE_MAX_SIZE_MB} MB)
+                    </Form.Label>
+                    <Form.Control
+                      multiple
+                      accept=".pdf,.doc,.html,.dot,.dotx,.htm,.odt,.ods,.odp,.sql,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.csv,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
+                      type="file"
+                      onChange={handleFileChange}
+                    />
+                  </Form.Group>
+                )}
                 {listaArchivosTabla.length > 0 && (
                   <>
                     <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">

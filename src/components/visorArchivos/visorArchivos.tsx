@@ -8,6 +8,7 @@ import {
   ObtenerDocumentoConvertidoPDF,
 } from "../../servicios/ServicioDocumentos";
 import { useSpinner } from "../../context/spinnerContext";
+import { AlertDismissible } from "../alert/alert";
 
 export const VisorArchivos: React.FC<any> = ({
   documento,
@@ -18,6 +19,8 @@ export const VisorArchivos: React.FC<any> = ({
   const [fileExtension, setFileExtension] = useState<any>(null);
   const [fileURL, setFileURL] = useState<any>(null);
   const { setShowSpinner } = useSpinner();
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
 
   const tiposSoportados = [
     "docx",
@@ -48,7 +51,7 @@ export const VisorArchivos: React.FC<any> = ({
   useEffect(() => {
     if (documentoDescarga) {
       setTimeout(() => {
-        obtenerArchivo([documentoDescarga.idDocumento+""]);
+        obtenerArchivo([documentoDescarga.idDocumento + ""]);
       }, 5);
     }
     return () => {
@@ -62,18 +65,26 @@ export const VisorArchivos: React.FC<any> = ({
   const obtenerDocConvertidoPDF = async () => {
     const form = new FormData();
     form.append("archivo", documento);
-    setShowSpinner(true)
+    setShowSpinner(true);
     const doc = await ObtenerDocumentoConvertidoPDF(form);
-    setShowSpinner(false)
-    setFileURL("");
-    setFileExtension("");
+    setShowSpinner(false);
+    if (doc) {
+      setFileURL("");
+      setFileExtension("");
 
-    setTimeout(() => {
-      const url = URL.createObjectURL(doc);
-      const extension = "pdf";
-      setFileURL(url);
-      setFileExtension(extension);
-    }, 5); // Un retraso mínimo de 5ms para forzar el refresco
+      setTimeout(() => {
+        const url = URL.createObjectURL(doc);
+        const extension = "pdf";
+        setFileURL(url);
+        setFileExtension(extension);
+      }, 5); // Un retraso mínimo de 5ms para forzar el refresco
+    } else {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ha ocurrido un error al cargar el documento.",
+      });
+    }
   };
 
   useEffect(() => {
@@ -100,40 +111,12 @@ export const VisorArchivos: React.FC<any> = ({
       }
     };
   }, [documento]);
-
-  if (tiposSoportados.includes(fileExtension)) {
-    return (
-      <>
-        {fileURL && (
-          <div>
-            <div className="mb-2 d-flex justify-content-between align-items-center">
-              <h4 className="mb-0">
-                {documento?.name || documentoDescarga?.nombre}
-              </h4>
-              <Button className="btn-cancel" onClick={() => cerrar()}>
-                <AiOutlineClose />
-              </Button>
-            </div>
-
-            {error && <p>No se ha podido mostrar el archivo</p>}
-
-            <div style={{ maxHeight: "100vh", overflow: "auto" }}>
-              <FileViewer
-                style={{ overflowY: "hidden" }}
-                key={documento?.id || documentoDescarga?.idDocumento}
-                fileType={fileExtension}
-                filePath={fileURL}
-                errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
-                onError={() => setError("error")}
-              />
-            </div>
-          </div>
-        )}
-      </>
-    );
-  } else {
-    return (
-      <>
+  return (
+    <>
+      {showAlert && (
+        <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
+      )}
+      <div>
         <div className="mb-2 d-flex justify-content-between align-items-center">
           <h4 className="mb-0">
             {documento?.name || documentoDescarga?.nombre}
@@ -142,20 +125,35 @@ export const VisorArchivos: React.FC<any> = ({
             <AiOutlineClose />
           </Button>
         </div>
-        {["html", "xlsx","sql", "txt"].includes(fileExtension) && (
-          <p style={{ color: "#9E0000" }}>
-            El archivo ha sido descargado ya que posee un formato no soportado.
-          </p>
+        {error && <p>No se ha podido mostrar el archivo</p>}
+        {tiposSoportados.includes(fileExtension) && fileURL && (
+          <div style={{ maxHeight: "100vh", overflow: "auto" }}>
+            <FileViewer
+              style={{ overflowY: "hidden" }}
+              key={documento?.id || documentoDescarga?.idDocumento}
+              fileType={fileExtension}
+              filePath={fileURL}
+              errorComponent={<div>Error al cargar el archivo</div>} // Error personalizado
+              onError={() => setError("error")}
+            />
+          </div>
         )}
-        {fileURL && (
-          <iframe
-            src={fileURL}
-            width="100%"
-            height="600px"
-            title="File Preview"
-          />
-        )}
-      </>
-    );
-  }
+        {!tiposSoportados.includes(fileExtension) &&
+          ["html", "xlsx", "sql", "txt"].includes(fileExtension) && (
+            <>
+              <p style={{ color: "#9E0000" }}>
+                El archivo ha sido descargado ya que posee un formato no
+                soportado.
+              </p>
+              <iframe
+                src={fileURL}
+                width="100%"
+                height="600px"
+                title="File Preview"
+              />
+            </>
+          )}
+      </div>
+    </>
+  );
 };
