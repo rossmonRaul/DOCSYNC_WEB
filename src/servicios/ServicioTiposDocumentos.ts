@@ -21,3 +21,8 @@ export const EliminarTipoDocumento = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarTipoDocumento`;
     return await ProcesarDatosApi('PUT', url, data);
 }
+
+export const ImportarTiposDocumentos = async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/ImportarTiposDocumentos`;
+    return await ProcesarDatosApi("POST", url, data);
+  };

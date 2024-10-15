@@ -76,11 +76,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
   const eliminarTipoDocumento = async (tipoDocumento: TipoDocumento) => {
     try {
       setShowSpinner(true);
-      const tipoDocumentoEliminar = {
-        ...tipoDocumento,  
-        usuarioModificacion: identificacionUsuario,
-        fechaModificacion: new Date().toISOString()}
-      const response = await EliminarTipoDocumento(tipoDocumentoEliminar);
+      const response = await EliminarTipoDocumento(tipoDocumento);
 
       if(response){
         setShowAlert(true);
@@ -162,7 +158,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         const tipoDocumentoACrear = { ...nuevoTipoDocumento, 
           idTipoDocumento: "0", 
           usuarioCreacion: identificacionUsuario,
-          fechaCreacion:(new Date()).toISOString() 
+          fechaCreacion:(new Date()).toLocaleString()
         };
         const response = await CrearTipoDocumento(tipoDocumentoACrear);
   
