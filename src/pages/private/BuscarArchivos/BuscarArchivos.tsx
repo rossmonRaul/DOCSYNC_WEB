@@ -35,21 +35,16 @@ import { useSpinner } from "../../../context/spinnerContext";
 
 interface Archivo {
   idDocumento: Number;
-  autor: string;
-  asunto: string;
-  departamento: string;
-  confidencialidad: string;
-  contenidoRelevante: string;
-  numeroExpediente: string;
-  numeroSolicitud: string;
-  docPadre: string;
-  docHijo: string;
-  titulo: string;
-  nombre: string;
+  nomDocumento: string;
+  nombreGuardar: string;
+  numSolicitud: string;
+  idTipoDocumento: Number;
+  descripcionTipo: string;
   archivo: File;
+  tamanioArchivo: number;
   usuarioCreacion: string;
-  fechaCreacion: Date;
-  fechaModificacion: Date;
+  fechaModificacion: string;
+  fechaCreacion: string;
 }
 
 // Componente funcional que representa la página de carga de archivops
@@ -123,13 +118,39 @@ function BuscarArchivos() {
       id: "nombre",
       name: "Nombre",
       selector: (row: Archivo) => {
-        return row.nombre;
+        return row.nomDocumento;
       },
       head: "Nombre",
       sortable: true,
       style: {
         fontSize: "1.5em",
       },
+    },
+    {
+      id: "tipo",
+      name: "Tipo",
+      selector: (row: Archivo) => {
+        return row.descripcionTipo;
+      },
+      head: "Tipo",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+      omit: documentoVer != null,
+    },
+    {
+      id: "No.Solicitud",
+      name: "No.Solicitud",
+      selector: (row: Archivo) => {
+        return row.numSolicitud;
+      },
+      head: "No.Solicitud",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+      omit: documentoVer != null,
     },
     {
       id: "FechaCarga",
@@ -144,6 +165,7 @@ function BuscarArchivos() {
       style: {
         fontSize: "1.5em",
       },
+      omit: documentoVer != null,
     },
     {
       id: "Acciones",
@@ -196,7 +218,7 @@ function BuscarArchivos() {
       asunto: asunto,
       contenidoRelevante: contenidoRelevante,
       numeroExpediente: numeroExpediente,
-      numeroSolicitud: numeroSolicitud,
+      numSolicitud: numeroSolicitud,
       docPadre: docPadre,
       docHijo: docHijo,
       titulo: titulo,
@@ -293,7 +315,7 @@ function BuscarArchivos() {
       });
       setObservacionEliminacion("");
       setShowObservacionesEliminar(false);
-      handleBuscarClick()
+      handleBuscarClick();
     } else {
       setMensajeRespuesta({
         indicador: 1,
@@ -391,7 +413,7 @@ function BuscarArchivos() {
     for (const archivo of listaArchivosTablaSeleccionados) {
       historialData.push({
         IdDocumento: archivo.idDocumento,
-        NombreDocumento: archivo.nombre,
+        NombreDocumento: archivo.nomDocumento,
         IdAccion: 5,
         Descripcion:
           descripcionError !== ""
@@ -461,7 +483,8 @@ function BuscarArchivos() {
   };
 
   const areInputsEmpty = () => {
-    return countEmptyFields() < 3; // Valida si hay menos de 3 campos llenos
+    //return countEmptyFields() < 3; // Valida si hay menos de 3 campos llenos
+    return false;
   };
 
   const handleOpcionDepartamentoChange = (e: any) => {
@@ -482,7 +505,7 @@ function BuscarArchivos() {
 
   const handleVerArchivo = (archivo: Archivo) => {
     setDocumentoVer(archivo);
-    console.log(archivo)
+    console.log(archivo);
   };
 
   const handleInputChange = (e: any) => {
@@ -570,156 +593,10 @@ function BuscarArchivos() {
         showSubmitButton={false}
         show={showModal}
         onHide={handleModal}
-        title={recortarTexto(documentoSeleccionado?.nombre, 50)}
+        title={recortarTexto(documentoSeleccionado?.nomDocumento, 50)}
         formId="formCargaArchivos"
       >
-        <Form id="formCargaArchivos">
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formCodigoEstado">
-                <Form.Label>Autor</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="autor"
-                  value={documentoSeleccionado?.autor}
-                  onChange={handleInputChange}
-                  disabled={true}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Asunto</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="asunto"
-                  value={documentoSeleccionado?.asunto}
-                  disabled={true}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Departamento</Form.Label>
-                <Form.Select
-                  name="departamento"
-                  value={documentoSeleccionado?.departamento}
-                  disabled={true}
-                >
-                  <option value="">-- Selecciona una opción --</option>
-                  <option value="opcion1">Opción 1</option>
-                  <option value="opcion2">Opción 2</option>
-                  <option value="opcion3">Opción 3</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Es confidencial</Form.Label>
-                <div className="w-100">
-                  <BootstrapSwitchButton
-                    checked={
-                      documentoSeleccionado?.confidencialidad === "True"
-                        ? true
-                        : false
-                    }
-                    onlabel="Sí"
-                    onstyle="danger"
-                    offlabel="No"
-                    offstyle="success"
-                    style="w-100 mx-3;"
-                    disabled={true}
-                  />
-                </div>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Contenido relevante</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="contenidoRelevante"
-                  value={documentoSeleccionado?.contenidoRelevante}
-                  disabled={true}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>No. Expediente</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="numeroExpediente"
-                  value={documentoSeleccionado?.numeroExpediente}
-                  disabled={true}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>No. Solicitud</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="numeroSolicitud"
-                  value={documentoSeleccionado?.numeroSolicitud}
-                  disabled={true}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Doc. Hijo</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="docHijo"
-                  value={documentoSeleccionado?.docHijo}
-                  disabled={true}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Doc. Padre</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="docPadre"
-                  value={documentoSeleccionado?.docPadre}
-                  disabled={true}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formDescripcionEstado">
-                <Form.Label>Titulo</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="titulo"
-                  value={documentoSeleccionado?.titulo}
-                  disabled={true}
-                  onChange={handleInputChange}
-                  maxLength={100}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        </Form>
+        <Form id="formCargaArchivos"></Form>
       </CustomModal>
 
       <CustomModal
@@ -1063,41 +940,6 @@ function BuscarArchivos() {
                   />
                 )}
                 <div>
-                  {!mostrarDiv && listaArchivosTabla.length > 0 && (
-                    <div className="content">
-                      <Card className="mb-4">
-                        <Card.Body>
-                          <div
-                            style={{
-                              display: "flex",
-                              width: "100%",
-                              alignItems: "center",
-                            }}
-                          >
-                            <Form.Group style={{ flex: 1, marginBottom: "0" }}>
-                              <label htmlFor="Contenido">
-                                <b>Busqueda avanzada por contenido</b>
-                              </label>
-                              <Form.Control
-                                type="text"
-                                value={contenido}
-                                onChange={(e) => setContenido(e.target.value)}
-                              />
-                            </Form.Group>
-                            <Button
-                              className="btn-save"
-                              variant="primary"
-                              onClick={handleBuscarPorContenidoClick}
-                              style={{ marginLeft: "10px", marginTop: "20px" }} // Espacio entre el campo y el botón
-                            >
-                              <FaSearch className="me-2" size={24} />
-                              Buscar
-                            </Button>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </div>
-                  )}
                   {listaArchivosTabla.length > 0 ? (
                     <div className="content">
                       <Grid
