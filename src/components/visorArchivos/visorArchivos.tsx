@@ -38,14 +38,23 @@ export const VisorArchivos: React.FC<any> = ({
   const obtenerArchivo = async (ids: any) => {
     setShowSpinner(true);
     const archivoBlob = await ObtenerArchivoDocumento(ids);
-    const url = URL.createObjectURL(archivoBlob);
+
     setShowSpinner(false);
-    setFileURL(url);
-    let extensionArchivo = documentoDescarga.nombre.split(".").pop();
-    if (extensionArchivo === "doc" || extensionArchivo === "rtf") {
-      extensionArchivo = "pdf";
+    if (archivoBlob) {
+      const url = URL.createObjectURL(archivoBlob);
+      setFileURL(url);
+      let extensionArchivo = documentoDescarga.nomDocumento.split(".").pop();
+      if (extensionArchivo === "doc" || extensionArchivo === "rtf") {
+        extensionArchivo = "pdf";
+      }
+      setFileExtension(extensionArchivo);
+    } else {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ha ocurrido un error al cargar el documento.",
+      });
     }
-    setFileExtension(extensionArchivo);
   };
 
   useEffect(() => {
