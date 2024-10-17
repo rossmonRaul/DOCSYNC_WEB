@@ -3,7 +3,7 @@ import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaEdit, FaUpload } from "react-icons/fa";
+import { FaCheckSquare, FaEdit, FaUpload } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
@@ -26,6 +26,7 @@ interface Archivo {
   nomDocumento: string;
   nombreGuardar: string;
   numSolicitud: string;
+  observacion: string;
   TipoDocumento: TipoDocumento;
   archivo: File;
   tamanioArchivo: number;
@@ -39,6 +40,8 @@ function CargarArchivos() {
   const [idArchivoGenerado, setIdArchivoGenerado] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [observacion, setObservacion] = useState("");
+  const [showModalObservaciones, setShowModalObservaciones] = useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
@@ -349,14 +352,23 @@ function CargarArchivos() {
     }
   };
 
-  const cargarArchivos = async (event: FormEvent) => {
+  const cargarArchivos = async (event: FormEvent, masivo: boolean = false) => {
     event.preventDefault();
     const formData = new FormData();
-    listaArchivosTablaSeleccionados.forEach((a, index) => {
-      // Agrega el archivo al FormData
-      formData.append(`entityDocumento[${index}].IdDocumento`, "1");
-      formData.append(`entityDocumento[${index}].Archivo`, a.archivo);
-    });
+    if (masivo) {
+      listaArchivosTablaSeleccionados.forEach((a, index) => {
+        a.observacion = observacion;
+        // Agrega el archivo al FormData
+        formData.append(`entityDocumento[${index}].IdDocumento`, "1");
+        formData.append(`entityDocumento[${index}].Archivo`, a.archivo);
+      });
+    } else {
+      listaArchivosTablaSeleccionados.forEach((a, index) => {
+        // Agrega el archivo al FormData
+        formData.append(`entityDocumento[${index}].IdDocumento`, "1");
+        formData.append(`entityDocumento[${index}].Archivo`, a.archivo);
+      });
+    }
     const storedToken = localStorage.getItem("token");
     const urlCarga = `${API_BASE_URL_CARGA}/Documento/CrearDocumento`;
 
@@ -379,6 +391,17 @@ function CargarArchivos() {
 
     setListaArchivosTabla(archivosNoCargados);
     setListaArchivosTablaSeleccionados([]);
+    setShowModalObservaciones(false);
+    setObservacion("");
+  };
+
+  const prepararCarga = async (event: FormEvent) => {
+    event.preventDefault();
+    if (listaArchivosTablaSeleccionados.length > 1) {
+      setShowModalObservaciones(true);
+    } else {
+      cargarArchivos(event, false);
+    }
   };
 
   // Función para manejar el cierre del modal
@@ -405,6 +428,36 @@ function CargarArchivos() {
   };
   return (
     <>
+      <CustomModal
+        showSubmitButton={true}
+        show={showModalObservaciones}
+        onHide={() => setShowModalObservaciones(false)}
+        title={"Guardar documentos seleccionados"}
+        formId="formObservacionGuardar"
+        submitButtonLabel={"Confirmar"}
+      >
+        <Form
+          id="formObservacionGuardar"
+          onSubmit={(e) => cargarArchivos(e, true)}
+        >
+          <Row>
+            <Col md={12}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Observaciones</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="observacionEliminacion"
+                  value={observacion}
+                  required={true}
+                  onChange={(e: any) => {
+                    setObservacion(e.target.value);
+                  }}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        </Form>
+      </CustomModal>
       <h1 className="title">Cargar archivos</h1>
       <div style={{ display: "flex", maxHeight: "100vh", overflow: "auto" }}>
         {/* Primera mitad de la pantalla */}
@@ -419,7 +472,7 @@ function CargarArchivos() {
           )}
           <div>
             <div className="content">
-              <Form onSubmit={cargarArchivos}>
+              <Form>
                 <Form.Group style={{ marginBottom: "20px" }}>
                   <Form.Label>Tipo de documento</Form.Label>
                   <Form.Select
@@ -459,28 +512,59 @@ function CargarArchivos() {
                 )}
                 {listaArchivosTabla.length > 0 && (
                   <>
-                    <div className="mb-6 mt-4 d-flex justify-content-between align-items-center">
-                      {listaArchivosTablaSeleccionados.length > 0 && (
+                    <div className="mb-6 mt-4 d-flex justify-content-end align-items-right">
+                      {listaArchivosTabla.length !==
+                        listaArchivosTablaSeleccionados.length && (
                         <Button
-                          type="submit"
-                          className="mt-3 mb-0 btn-save"
+                          className="btn-save me-4  ms-auto"
                           variant="primary"
+                          onClick={() => {
+                            setListaArchivosTablaSeleccionados(
+                              listaArchivosTabla
+                            );
+                          }}
+                          style={{ marginTop: "20px" }}
                         >
-                          <FaUpload className="me-2" size={20} />
-                          Guardar
+                          <FaCheckSquare className="me-2" size={24} />
+                          Seleccionar todos
                         </Button>
                       )}
-                      <h4 className="mt-4 ms-auto">
+                      {listaArchivosTabla.length ===
+                        listaArchivosTablaSeleccionados.length && (
+                        <Button
+                          className="btn-cancel me-4  ms-auto"
+                          variant="primary"
+                          onClick={() => {
+                            setListaArchivosTablaSeleccionados([]);
+                          }}
+                          style={{ marginTop: "20px" }}
+                        >
+                          <FaCheckSquare className="me-2" size={24} />
+                          Deseleccionar todos
+                        </Button>
+                      )}
+                      <h4 className="mt-4">
                         Archivos seleccionados:{" "}
                         {listaArchivosTablaSeleccionados.length}
                       </h4>
                     </div>
-
-                    <Grid
-                      gridHeading={encabezadoArchivo}
-                      gridData={listaArchivosTabla}
-                      selectableRows={false}
-                    ></Grid>
+                    <div style={{ marginTop: "20px" }}>
+                      <Grid
+                        filterColumns={"nomDocumento"}
+                        botonesAccion={[
+                          {
+                            condicion:
+                              listaArchivosTablaSeleccionados.length > 0,
+                            accion: prepararCarga,
+                            icono: <FaUpload className="me-2" size={20} />,
+                            texto: "Guardar",
+                          },
+                        ]}
+                        gridHeading={encabezadoArchivo}
+                        gridData={listaArchivosTabla}
+                        selectableRows={false}
+                      ></Grid>
+                    </div>
                   </>
                 )}
               </Form>
