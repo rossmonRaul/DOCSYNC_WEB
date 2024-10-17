@@ -22,7 +22,7 @@ import AuthGuard from "./guards/AuthGuard.tsx";
 import Login from "./pages/LoginPage.tsx";
 import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
 import { WorkerProvider } from "./context/workerContext.tsx";
-import { SpinnerProvider } from "./context/spinnerContext"; 
+import { SpinnerProvider } from "./context/spinnerContext";
 import CatalogoTiposDocumentos from "./pages/private/Catalogos/CatalogoTiposDocumentos.tsx";
 import CatalogoJerarquiasDocumentos from "./pages/private/Catalogos/CatalogoJerarquiasDocumentos.tsx";
 import CatalogoUsuarios from "./pages/private/Catalogos/CatalogoUsuarios.tsx";
@@ -43,8 +43,8 @@ const router = createBrowserRouter(
       <Route element={<AuthGuard privateValidation={true} />}>
         {/* Rutas privada */}
         <Route path={`${PrivateRoutes.PRIVATE}/*`} element={<Private />} />
-      </Route>
-      {/* <Route element={<RolGuard rol={Roles.SuperAdmin} />}> */}
+
+        {/* <Route element={<RolGuard rol={Roles.SuperAdmin} />}> */}
         <Route
           path={PrivateRoutes.CARGARARCHIVOS}
           element={<CargarArchivos />}
@@ -54,10 +54,7 @@ const router = createBrowserRouter(
           path={PrivateRoutes.BUSCARARCHIVOS}
           element={<BuscarArchivos />}
         />
-         <Route
-          path={PrivateRoutes.HISTORIALARCHIVOS}
-          element={<Historial />}
-        />
+        <Route path={PrivateRoutes.HISTORIALARCHIVOS} element={<Historial />} />
         <Route
           path={PrivateRoutes.CATALOGOPERSONAS}
           element={<CatalogoPersonas />}
@@ -78,10 +75,7 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGOUSUARIOS}
           element={<CatalogoUsuarios />}
         />
-        <Route
-          path={PrivateRoutes.ADMINROLES}
-          element={<AdministrarRoles />}
-        />
+        <Route path={PrivateRoutes.ADMINROLES} element={<AdministrarRoles />} />
         <Route
           path={PrivateRoutes.CATALOGODEPARTAMENTOS}
           element={<CatalogoDepartamentos />}
@@ -90,6 +84,8 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGODEPUESTOS}
           element={<CatalogoPuestos />}
         />
+      </Route>
+
       {/* </Route> */}
     </Route>
   )

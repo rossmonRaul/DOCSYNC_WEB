@@ -15,6 +15,8 @@ import { FaCheckCircle } from "react-icons/fa";
 import { recortarTexto } from "../../../utils/utils";
 import { ObtenerTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
 import { useSpinner } from "../../../context/spinnerContext";
+import { useSelector } from "react-redux";
+import { AppStore } from "../../../redux/Store";
 
 interface TipoDocumento {
   idTipoDocumento: string;
@@ -56,6 +58,7 @@ function CargarArchivos() {
   const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
   const FILE_MAX_SIZE = FILE_MAX_SIZE_MB * (1024 * 1024);
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
+  const userState = useSelector((store: AppStore) => store.user);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
   const { setShowSpinner } = useSpinner();
@@ -75,6 +78,7 @@ function CargarArchivos() {
     }
   };
   useEffect(() => {
+    console.log( sessionStorage.getItem("user"))
     setTaskTitle("Carga de archivos");
     cargarTiposDocumentos();
   }, []);

@@ -6,7 +6,8 @@ export const persisSessionStorage = <T,>(key: string, value: T) =>{
 // Limpiar los datos de la session
 export const clearSessionStorage = (key: string) => {
     const token = localStorage.getItem('token');
-
+    sessionStorage.removeItem(key);
+    sessionStorage.clear();
     if (token) {
         // Verificar si el token ha expirado
        /* const tokenData = JSON.parse(atob(token.split('.')[1])); // Decodificar el token JWT
