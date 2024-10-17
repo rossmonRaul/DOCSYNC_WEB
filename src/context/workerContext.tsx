@@ -31,10 +31,8 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     if (loading) {
-      alert("hola");
       event.preventDefault();
-      return (event.returnValue =
-        'Are you sure you want to exit?');
+      return (event.returnValue = "Are you sure you want to exit?");
     }
   };
 
@@ -53,6 +51,7 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
       if (e.data.type === "Error") {
         setError(e.data.result);
       } else {
+        setError(null);
         setResult(e.data.result);
       }
       setLoading(false);
