@@ -20,4 +20,5 @@ export const PrivateRoutes = {
     ADMINROLES: 'admin-roles',
     CATALOGODEPARTAMENTOS: 'catalogo-departamentos',
     CATALOGODEPUESTOS: 'catalogo-puestos',
+    CATALOGOCRITERIOBUSQUEDA: 'catalogo-criterio-busqueda',
 };
