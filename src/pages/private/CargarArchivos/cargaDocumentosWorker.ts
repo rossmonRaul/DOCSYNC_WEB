@@ -67,9 +67,11 @@ export const cargarDocumentosWorker = () => {
       //si pudo insertar las metadata bien entonces ingresa los archivos como tal
       if (respuestaServidor === 0) {
         const obtenerArchivoPorNombre = (nombre: any) => {
-          return docs.find((item: any) => item.nombre === nombre).archivo;
+          return docs.find((item: any) => item.nomDocumento === nombre).archivo;
         };
+
         const docsInsertados = dataMetadatos.datos.archivosCargados;
+        console.log(docsInsertados)
         //preparar datos para la peticion a mongo, mandar el id del doc junto con el doc
         docsInsertados.forEach((a: any, index: number) => {
           // Agrega el archivo al FormData
@@ -79,7 +81,7 @@ export const cargarDocumentosWorker = () => {
           );
           formData.append(
             `entityDocumento[${index}].Archivo`,
-            obtenerArchivoPorNombre(a.nombre)
+            obtenerArchivoPorNombre(a.nomDocumento)
           );
         });
 
@@ -100,7 +102,7 @@ export const cargarDocumentosWorker = () => {
               Accept: "application/json",
             }
           );
-          console.log(responseRollback);
+          console.log(docsInsertados);
 
           //Guarda en historial de errores (no se hace mediante el rollback para guardar la excepcion)
            const responseHistorial = await procesarArchivosYEnviarHistorial(
@@ -171,7 +173,7 @@ export const cargarDocumentosWorker = () => {
     // Mapear los archivos al formato EntityHistorial
     const historialData = archivos.map((archivo:any) => ({
       IdDocumento: archivo.idDocumento,
-      NombreDocumento: archivo.nombre,
+      NombreDocumento: archivo.nomDocumento,
       IdAccion: 4, 
       Descripcion: archivo.descripcionError ? archivo.descripcionError : mensajeError, // Mensaje de error
       DetalleError: detalleExcepcion ? detalleExcepcion : '', // Detalle de la excepción

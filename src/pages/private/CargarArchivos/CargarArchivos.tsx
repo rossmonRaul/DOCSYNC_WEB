@@ -17,6 +17,7 @@ import { ObtenerTiposDocumentos } from "../../../servicios/ServicioTiposDocument
 import { useSpinner } from "../../../context/spinnerContext";
 import { useSelector } from "react-redux";
 import { AppStore } from "../../../redux/Store";
+import { ExtraerContenido } from "../../../servicios/ServicioDocumentos";
 
 interface TipoDocumento {
   idTipoDocumento: string;
@@ -29,7 +30,7 @@ interface Archivo {
   nombreGuardar: string;
   numSolicitud: string;
   observacion: string;
-  TipoDocumento: TipoDocumento;
+  tipoDocumento: TipoDocumento;
   archivo: File;
   tamanioArchivo: number;
   usuarioCreacion: string;
@@ -52,13 +53,14 @@ function CargarArchivos() {
     useState<TipoDocumento>({ idTipoDocumento: "", descripcion: "" });
   const [tipoDocumento, setTipoDocumento] = useState<any>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
-  const { startWorker, setTaskTitle } = useWorker();
+  const { startWorker, setTaskTitle, loading } = useWorker();
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const API_BASE_URL_BD = import.meta.env.VITE_API_BASE_URL;
   const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
   const FILE_MAX_SIZE = FILE_MAX_SIZE_MB * (1024 * 1024);
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
   const userState = useSelector((store: AppStore) => store.user);
+
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
   const { setShowSpinner } = useSpinner();
@@ -78,7 +80,6 @@ function CargarArchivos() {
     }
   };
   useEffect(() => {
-    console.log( sessionStorage.getItem("user"))
     setTaskTitle("Carga de archivos");
     cargarTiposDocumentos();
   }, []);
@@ -103,11 +104,11 @@ function CargarArchivos() {
     {
       id: "nombre",
       name: "Nombre",
-      selector: (row: { archivo: File }) => {
+      selector: (row: Archivo) => {
         if (documentoVer) {
-          return recortarTexto(row.archivo.name);
+          return recortarTexto(row.nomDocumento);
         }
-        return recortarTexto(row.archivo.name, 100);
+        return recortarTexto(row.nomDocumento, 100);
       },
       head: "Nombre",
       sortable: true,
@@ -123,7 +124,7 @@ function CargarArchivos() {
         return (
           <Form.Select
             name="tipoDocumento"
-            value={row.TipoDocumento.idTipoDocumento}
+            value={row.tipoDocumento?.idTipoDocumento}
             onChange={(e) => handleTipoChange(e, row.id)}
           >
             {tipoDocumento &&
@@ -150,7 +151,7 @@ function CargarArchivos() {
           <Form.Control
             type="text"
             name="autor"
-            value={row.numSolicitud}
+            value={row?.numSolicitud}
             onChange={(e) => handleNoSolicitudChange(e, row.id)}
           />
         );
@@ -190,13 +191,12 @@ function CargarArchivos() {
   ) => {
     const selectedValue = e.target.value;
     const selectedText = e.target.options[e.target.selectedIndex].text;
-
     setListaArchivosTabla((prevData) =>
       prevData.map((row) =>
         row.id === rowId
           ? {
               ...row,
-              TipoDocumento: {
+              tipoDocumento: {
                 idTipoDocumento: selectedValue,
                 descripcion: selectedText,
               },
@@ -211,7 +211,7 @@ function CargarArchivos() {
 
     setListaArchivosTabla((prevData) =>
       prevData.map((row) =>
-        row.id === rowId ? { ...row, numeroSolicitud: selectedValue } : row
+        row.id === rowId ? { ...row, numSolicitud: selectedValue } : row
       )
     );
   };
@@ -247,7 +247,7 @@ function CargarArchivos() {
   };
 
   // Maneja el cambio de archivos
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const selectedFiles = Array.from(event.target.files); // Convierte FileList a un array
       setFiles(selectedFiles); // Actualiza el estado con el array de archivos
@@ -271,9 +271,10 @@ function CargarArchivos() {
               const file: Archivo = {
                 id: consecutivo++,
                 archivo: element,
+                observacion: "",
                 numSolicitud: "123",
                 tamanioArchivo: element.size,
-                TipoDocumento: tipoDocumentoSeleccionado,
+                tipoDocumento: tipoDocumentoSeleccionado,
                 nombreGuardar:
                   tipoDocumentoSeleccionado.descripcion +
                   "-" +
@@ -296,9 +297,50 @@ function CargarArchivos() {
             }
           }
         });
-        setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
-        setIdArchivoGenerado(consecutivo);
-        setFiles([]);
+        //extraer el num de solicitud
+        const formData = new FormData();
+        archivosAux.forEach((a: Archivo, index: number) => {
+          formData.append(`entity[${index}].Id`, a.id + "");
+          formData.append(`entity[${index}].NomDocumento`, a.nomDocumento);
+          formData.append(`entity[${index}].Archivo`, a.archivo);
+          formData.append(
+            `entity[${index}].IdTipoDoc`,
+            a.tipoDocumento.idTipoDocumento
+          );
+          formData.append(
+            `entity[${index}].DescripcionDoc`,
+            a.tipoDocumento.descripcion
+          );
+          formData.append(`entity[${index}].FechaCreacion`, a.fechaCreacion);
+          formData.append(
+            `entity[${index}].UsuarioCreacion`,
+            a.usuarioCreacion
+          );
+        });
+        setShowSpinner(true);
+        const response = await ExtraerContenido(formData);
+        setShowSpinner(false);
+        if (response) {
+          const docsConNumeroSolicitud = response?.datos;
+          const obtenerNumSolicitud = (nombre: any) => {
+            return docsConNumeroSolicitud?.find(
+              (item: any) => item.nomDocumento === nombre
+            )?.numSolicitud;
+          };
+          archivosAux.forEach((a) => {
+            a.numSolicitud = obtenerNumSolicitud(a.nomDocumento);
+          });
+          setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
+          setIdArchivoGenerado(consecutivo);
+          setFiles([]);
+        } else {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje:
+              "Error. Ha ocurrido un error al extraer número de solicitud.",
+          });
+        }
       }
     }
   };
@@ -360,6 +402,7 @@ function CargarArchivos() {
     event.preventDefault();
     const formData = new FormData();
     if (masivo) {
+
       listaArchivosTablaSeleccionados.forEach((a, index) => {
         a.observacion = observacion;
         // Agrega el archivo al FormData
@@ -415,10 +458,9 @@ function CargarArchivos() {
 
   const validarDatosCompletosArchivo = (archivo: Archivo): boolean => {
     //return true;
-    const valores = Object.values(archivo);
-
-    for (const valor of valores) {
-      if (valor === undefined || valor === "") {
+    const valores = Object.entries(archivo);
+    for (const [key, valor] of valores) {
+      if (key !== "observacion" && (valor === undefined || valor === "")) {
         return false;
       }
     }
@@ -558,7 +600,8 @@ function CargarArchivos() {
                         botonesAccion={[
                           {
                             condicion:
-                              listaArchivosTablaSeleccionados.length > 0,
+                              listaArchivosTablaSeleccionados.length > 0 &&
+                              !loading,
                             accion: prepararCarga,
                             icono: <FaUpload className="me-2" size={20} />,
                             texto: "Guardar",

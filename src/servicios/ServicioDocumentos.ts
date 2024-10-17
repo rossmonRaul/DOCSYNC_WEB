@@ -33,3 +33,8 @@ export const EliminarDocumento = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/EliminarDocumento`;
   return await ProcesarDatosApi("POST", url, data);
 };
+
+export const ExtraerContenido = async (data: any) => {
+  const url = `${API_BASE_URL}/${controlador}/ExtraerContenido`;
+  return await ProcesarDatosApi("POST", url, data,false,true);
+};

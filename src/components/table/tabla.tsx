@@ -32,7 +32,6 @@ export const Grid: React.FC<any> = ({
 
   useEffect(() => {
     setRecords(gridData);
-    console.log(botonesAccion);
   }, [gridData]);
 
   const onRowSelected = (row: any) => {
