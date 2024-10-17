@@ -7,7 +7,7 @@ import NavDropdown from "react-bootstrap/NavDropdown";
 import { useSelector } from "react-redux";
 import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
-import { FaRegBell, FaBook, FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog, FaUpload, FaBuilding, FaUserTie } from "react-icons/fa";
+import { FaRegBell, FaBook, FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog, FaUpload, FaBuilding, FaUserTie, FaSearch } from "react-icons/fa";
 import { IconType } from 'react-icons/lib';
 import "../../css/TopBar.css";
 import icono from "../../assets/logo.png";
@@ -55,6 +55,7 @@ const NavbarMenu: React.FC = () => {
     setShowNotifications(!showNotifications);
   };
 
+  // Aquí se deben agregar los nuevos iconos para las opciones de menú
   const iconMap: { [key: string]: IconType } = {
     FaHistory: FaHistory,
     FaSignature: FaSignature,
@@ -68,7 +69,8 @@ const NavbarMenu: React.FC = () => {
     FaUpload: FaUpload,
     AiOutlineFileSearch: AiOutlineFileSearch,
     FaBuilding: FaBuilding,
-    FaUserTie: FaUserTie
+    FaUserTie: FaUserTie,
+    FaSearch: FaSearch
   };
 
   const obtenerOpcionesMenu = async () => {

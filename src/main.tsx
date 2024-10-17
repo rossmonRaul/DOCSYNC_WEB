@@ -30,6 +30,7 @@ import AdministrarRoles from "./pages/private/AdministrarRoles/AdministrarRoles.
 import CatalogoDepartamentos from "./pages/private/Catalogos/CatalogoDepartamentos.tsx";
 import CatalogoPuestos from "./pages/private/Catalogos/CatalogoPuestos.tsx";
 import Historial from "./pages/private/Historial/Historial.tsx";
+import CatalogoCriterioBusqueda from "./pages/private/Catalogos/CatalogoCriterioBusqueda.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(

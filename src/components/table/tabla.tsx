@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, Spinner } from "react-bootstrap";
 import DataTable from "react-data-table-component";
-import { FaPlus, FaUpload } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 
 export const Grid: React.FC<any> = ({
   gridHeading,
@@ -11,14 +11,10 @@ export const Grid: React.FC<any> = ({
   setFilaSeleccionada,
   idBuscar,
   filterColumns,
-  className,
   rowModal,
   handle,
   buttonVisible,
-  botonesAccion,
-  nameButtonOpcion1,
-  handleButtonOpcion1,
-  iconButtonOpcion1,
+  botonesAccion
 }) => {
   const [id, setId] = useState(-1);
   const [records, setRecords] = useState([]);

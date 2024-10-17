@@ -292,8 +292,9 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         // Validar que todos los campos son correctos
         formattedData.forEach(({ codigo, numCaracteres, descripcion }) => {
           if (typeof codigo !== 'string' || codigo === null) errores.push('Código');
-          if ( codigo.length > 3) errores.push('Código (máximo 3 caracteres)');
+          if ( codigo.length > 10) errores.push('Código (máximo 10 caracteres)');
           if (typeof numCaracteres !== 'number' || numCaracteres === null) errores.push('Número de Caracteres');
+          if ( numCaracteres > 999999999) errores.push('Número de Caracteres (mayor a 999999999)');
           if (typeof descripcion !== 'string' || descripcion === null) errores.push('Descripción');
         });
 
@@ -456,10 +457,14 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           buttonVisible={true}
           filterColumns={["codigo", "descripcion"]}
           selectableRows={false}
-          visibleButtonOpcion1={true}
-          nameButtonOpcion1={"Importar"}
-          iconButtonOpcion1={<FaFileCirclePlus className="me-2" size={24} />}
-          handleButtonOpcion1={handleModalImportar}
+          botonesAccion={[          
+          {
+          condicion:true,
+          accion:handleModalImportar,
+          icono:<FaFileCirclePlus className="me-2" size={24} />,
+          texto:"Importar"
+          },
+          ]}
         ></Grid>
       </div>
   
@@ -483,7 +488,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
                   value={nuevoTipoDocumento.codigo}
                   onChange={handleChange}
                   required
-                  maxLength={3}
+                  maxLength={10}
                 />
               </Form.Group>
             </Col>

@@ -575,10 +575,14 @@ function CatalogoPersonas() {
           buttonVisible={true}
           filterColumns={["nombreCompleto", "identificacion", "departamento", "puesto", "telefono", "email",]}
           selectableRows={false}
-          visibleButtonOpcion1={true}
-          nameButtonOpcion1={"Importar"}
-          iconButtonOpcion1={<FaFileCirclePlus className="me-2" size={24} />}
-          handleButtonOpcion1={handleModalImportar}
+          botonesAccion={[          
+            {
+            condicion:true,
+            accion:handleModalImportar,
+            icono:<FaFileCirclePlus className="me-2" size={24} />,
+            texto:"Importar"
+            },
+          ]}
         ></Grid>
       </div>
 
