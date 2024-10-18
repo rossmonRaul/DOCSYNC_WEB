@@ -142,6 +142,7 @@ function CargarArchivos() {
         fontSize: "1.5em",
       },
       width: documentoVer ? "100px" : "400px",
+      omit: documentoVer != null,
     },
     {
       id: "numeroSolicitud",
@@ -157,6 +158,7 @@ function CargarArchivos() {
         );
       },
       sorteable: false,
+      omit: documentoVer != null,
     },
     {
       id: "Acciones",
@@ -402,7 +404,6 @@ function CargarArchivos() {
     event.preventDefault();
     const formData = new FormData();
     if (masivo) {
-
       listaArchivosTablaSeleccionados.forEach((a, index) => {
         a.observacion = observacion;
         // Agrega el archivo al FormData
