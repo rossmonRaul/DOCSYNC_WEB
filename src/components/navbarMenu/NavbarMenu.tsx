@@ -14,6 +14,7 @@ import icono from "../../assets/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { ObtenerAccesoMenuPorRol } from "../../servicios/ServicioUsuario";
 import { AiOutlineFileSearch } from "react-icons/ai";
+import {jwtDecode} from 'jwt-decode';
 
 // Interfaz para que reciba el nombre que se desea para la pantalla
 interface MenuItem {
@@ -109,7 +110,27 @@ const NavbarMenu: React.FC = () => {
     setMostrarEncabezado(menuEnc.length > 0);
   }
 
-  useEffect(() => {  
+  const tokenExpirado = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) return true;
+
+    const decoded = jwtDecode(token);
+    const exp = decoded.exp;
+
+    if(!exp) return true;
+
+    // Compara la fecha de expiración con la fecha actual
+    return exp * 1000 < Date.now();
+  }
+
+  useEffect(() => {      
+    // Validar que el token no haya expirado
+    if(tokenExpirado()){
+      localStorage.setItem("token", ""); // Se borra el token de sesión
+      navigate('/login');
+    }
+
     const hayMenu = menuCompleto.length > 0;
 
     // Validar si rol tiene acceso a la vista
