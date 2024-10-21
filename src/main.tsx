@@ -31,6 +31,8 @@ import CatalogoDepartamentos from "./pages/private/Catalogos/CatalogoDepartament
 import CatalogoPuestos from "./pages/private/Catalogos/CatalogoPuestos.tsx";
 import Historial from "./pages/private/Historial/Historial.tsx";
 import CatalogoCriterioBusqueda from "./pages/private/Catalogos/CatalogoCriterioBusqueda.tsx";
+import BuscarArchivosSolicitud from "./pages/private/BuscarArchivosSolicitud/BuscarArchivosSolicitud.tsx";
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -39,6 +41,10 @@ const router = createBrowserRouter(
       <Route path="/" element={<Navigate to={PrivateRoutes.PRIVATE} />} />
       {/* Ruta pública para el inicio de sesión */}
       <Route path={PublicRoutes.LOGIN} element={<Login />} />
+      <Route
+          path={PublicRoutes.BUSCARARCHIVOSSOLICITUD}
+          element={<BuscarArchivosSolicitud/>}
+        />
 
       {/* Ruta con guardia de autenticación */}
       <Route element={<AuthGuard privateValidation={true} />}>
@@ -89,10 +95,12 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGOCRITERIOBUSQUEDA}
           element={<CatalogoCriterioBusqueda />}
         />
+        
       </Route>
-
       {/* </Route> */}
     </Route>
+
+    
   )
 );
 
