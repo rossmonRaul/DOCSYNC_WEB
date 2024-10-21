@@ -220,6 +220,14 @@ const Login: React.FC = () => {
     clearSessionStorage(UserKey);
     dispatch(resetUser());
     navigate(`/${PublicRoutes.LOGIN}`, { replace: true });
+
+    if(localStorage.getItem("token") === ""){
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 2,
+        mensaje: "Su sesión expiró, por favor inicie nuevamente"
+      });
+    }
   }, []);
 
   const dispatch = useDispatch();

@@ -85,6 +85,10 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGODEPUESTOS}
           element={<CatalogoPuestos />}
         />
+        <Route
+          path={PrivateRoutes.CATALOGOCRITERIOBUSQUEDA}
+          element={<CatalogoCriterioBusqueda />}
+        />
       </Route>
 
       {/* </Route> */}
