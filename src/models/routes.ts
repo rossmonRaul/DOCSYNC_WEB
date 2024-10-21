@@ -1,5 +1,6 @@
 export const PublicRoutes = {
-    LOGIN: 'login'
+    LOGIN: 'login',
+    BUSCARARCHIVOSSOLICITUD: 'buscar-archivos-solicitud'
 };
 
 export const PrivateRoutes = {
@@ -21,4 +22,6 @@ export const PrivateRoutes = {
     CATALOGODEPARTAMENTOS: 'catalogo-departamentos',
     CATALOGODEPUESTOS: 'catalogo-puestos',
     CATALOGOCRITERIOBUSQUEDA: 'catalogo-criterio-busqueda',
+    
+
 };
