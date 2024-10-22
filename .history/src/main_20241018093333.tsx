@@ -41,10 +41,6 @@ const router = createBrowserRouter(
       <Route path="/" element={<Navigate to={PrivateRoutes.PRIVATE} />} />
       {/* Ruta pública para el inicio de sesión */}
       <Route path={PublicRoutes.LOGIN} element={<Login />} />
-      <Route
-          path={PublicRoutes.BUSCARARCHIVOSSOLICITUD}
-          element={<BuscarArchivosSolicitud/>}
-        />
 
       {/* Ruta con guardia de autenticación */}
       <Route element={<AuthGuard privateValidation={true} />}>
@@ -91,12 +87,14 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGODEPUESTOS}
           element={<CatalogoPuestos />}
         />
-        <Route
-          path={PrivateRoutes.CATALOGOCRITERIOBUSQUEDA}
-          element={<CatalogoCriterioBusqueda />}
-        />
         
       </Route>
+
+      <Route
+          path={PublicRoutes.BUSCARARCHIVOSSOLICITUD}
+          element={<BuscarArchivosSolicitud/>}
+        />
+
       {/* </Route> */}
     </Route>
 
