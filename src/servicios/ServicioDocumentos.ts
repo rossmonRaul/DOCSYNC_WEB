@@ -38,3 +38,8 @@ export const ExtraerContenido = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/ExtraerContenido`;
   return await ProcesarDatosApi("POST", url, data,false,true);
 };
+
+export const ObtenerDocumentoPorSolicitud = async (data: any) => {
+  const url = `${API_BASE_URL}/${controlador}/ObtenerDocumentoPorSolicitud`;
+  return await ProcesarDatosApi("POST", url, data);
+};

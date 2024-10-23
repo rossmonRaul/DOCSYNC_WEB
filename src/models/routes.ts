@@ -1,6 +1,6 @@
 export const PublicRoutes = {
     LOGIN: 'login',
-    BUSCARARCHIVOSSOLICITUD: 'buscar-archivos-solicitud'
+    BUSCARARCHIVOSSOLICITUD: 'buscar-archivos-solicitud/:numSolicitudSecreta/:usuario/:token',
 };
 
 export const PrivateRoutes = {
