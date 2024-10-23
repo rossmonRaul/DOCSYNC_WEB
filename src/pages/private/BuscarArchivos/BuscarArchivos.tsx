@@ -256,7 +256,7 @@ function BuscarArchivos() {
     if(criterioBusquedaText.trim().toLowerCase() === 'solicitud'){
 
       const filtro = {
-        numSolicitud: numeroSolicitud,
+        numSolicitud: paramBusqueda,
         fechaFiltroInicial:
           fechaFiltroInicial === null ? null : fechaFiltroInicial,
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal
