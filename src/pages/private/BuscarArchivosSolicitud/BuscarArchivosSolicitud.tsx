@@ -5,11 +5,13 @@ import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
 import {FaEye} from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
-import {ObtenerDocumento} from "../../../servicios/ServicioDocumentos";
+import {ObtenerDocumentoPorSolicitud} from "../../../servicios/ServicioDocumentos";
 import { format } from "date-fns";
 import { LuSearchX } from "react-icons/lu";
 import { AiOutlineFileSearch } from "react-icons/ai";
 import { useSpinner } from "../../../context/spinnerContext";
+import { useParams } from "react-router-dom";
+
 
 interface Archivo {
   idDocumento: Number;
@@ -27,6 +29,7 @@ interface Archivo {
 
 // Componente funcional que representa la página de consulta de archivos para una solicitud
 function BuscarArchivosSolicitud() {
+  const [ numSolicitudVisible,setNumSolicitudVisible] = useState('');
   const { setShowSpinner } = useSpinner();
   const [showAlert, setShowAlert] = useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
@@ -36,9 +39,25 @@ function BuscarArchivosSolicitud() {
     mensaje: "",
   });
 
-  useEffect(() => {
-    obtenerDocumentos();
-  }, []);
+  const { numSolicitudSecreta,usuario , token } = useParams<{ numSolicitudSecreta: string; usuario : string ;token: string }>();
+
+useEffect(() => {
+  if (numSolicitudSecreta && token && usuario) {
+    // Decodificar el token y numSolicitudSecreta recibidos de la URL
+    const decodedToken = decodeURIComponent(token);
+    const decodedNumSolicitud = decodeURIComponent(numSolicitudSecreta);
+    const decodedUsuario = decodeURIComponent(usuario);
+
+    // Guardar el token decodificado en localStorage
+    localStorage.setItem("token", decodedToken);
+
+    // Llamar a la función de obtener documentos si hay una solicitud secreta
+    if (decodedNumSolicitud) {
+      obtenerDocumentos(decodedNumSolicitud,decodedUsuario);
+    }
+  }
+}, [token, numSolicitudSecreta]);
+
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -115,16 +134,17 @@ function BuscarArchivosSolicitud() {
     },
   ];
 
-  const obtenerDocumentos = async () => {
+  const obtenerDocumentos = async (numSolicitud: string, usuario: string) => {
 
     try{
       setShowSpinner(true);
     setListaArchivosTabla([]);
 
     const filtro = {
-      numSolicitud: '123',
-    }; 
-    const resultadosObtenidos = await ObtenerDocumento(filtro);
+      numSolicitud: numSolicitud,
+      usuarioCreacion: usuario
+    };
+    const resultadosObtenidos = await ObtenerDocumentoPorSolicitud(filtro);
     setListaArchivosTabla(resultadosObtenidos);
 
     if (resultadosObtenidos.length === 0) {
@@ -133,9 +153,12 @@ function BuscarArchivosSolicitud() {
         indicador: 2,
         mensaje: "No se encontraron resultados.",
       });
+    }else{
+      setNumSolicitudVisible(resultadosObtenidos[0]?.numSolicitud ?resultadosObtenidos[0].numSolicitud: '');
     }
 
     }catch(e){
+      setListaArchivosTabla([]);
       console.log(e);
 
     }finally{
@@ -159,7 +182,7 @@ function BuscarArchivosSolicitud() {
           <Col md={10} className="d-flex justify-content-start">
             <div style={{ display: "flex", alignItems: "center" }}>
               <AiOutlineFileSearch size={34} style={{ marginTop: "10px" }} />
-              <h1 className="title">Número Solicitud: {'123'}</h1>
+              <h1 className="title">Número Solicitud: {numSolicitudVisible}</h1>
             </div>
           </Col>
         </Row>
