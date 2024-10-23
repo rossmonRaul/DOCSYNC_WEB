@@ -1,6 +1,6 @@
-import { useState, ChangeEvent, FormEvent, lazy, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
@@ -21,17 +21,16 @@ import {
   EliminarDocumento,
   ObtenerDocumento,
   ObtenerDocumentosDescarga,
-  ObtenerDocumentosPorContenido,
+  // ObtenerDocumentosPorContenido,
 } from "../../../servicios/ServicioDocumentos";
 import { InsertarRegistrosHistorial } from "../../../servicios/ServiceHistorial";
-
-import axios from "axios";
-import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { format } from "date-fns";
 import { LuSearchX } from "react-icons/lu";
 import { AiOutlineFileSearch } from "react-icons/ai";
 import { recortarTexto } from "../../../utils/utils";
 import { useSpinner } from "../../../context/spinnerContext";
+import Select from "react-select"
+import { BusquedaSolicitudIHTT, ObtenerCriterioBusqueda } from "../../../servicios/ServicioCriterioBusqueda";
 
 interface Archivo {
   idDocumento: Number;
@@ -58,6 +57,11 @@ function BuscarArchivos() {
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
+  const [criterioBusquedaId, setCriterioBusquedaId] = useState("");
+  const [criterioBusquedaText, setCriterioBusquedaText] = useState("");
+  const [criteriosBusqueda, setCriteriosBusqueda] = useState<any[]>([]);
+  const [paramBusqueda, setParamBusqueda] = useState("");
+  const [regExp, setRegExp] = useState<RegExp>(/.*/);
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
@@ -93,7 +97,9 @@ function BuscarArchivos() {
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    obtenerCriteriosBusqueda();
+  }, []);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -202,8 +208,19 @@ function BuscarArchivos() {
     const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
     const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
 
+    // Validar que se hayan ingresado las fechas
+    if(!fechaInicio || !fechaFin){
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Debe ingresar las fechas de búsqueda",
+      });
+      setPendiente(false);
+      return;
+    }
+
     // Validar que la fecha final no sea menor que la fecha inicial
-    if (fechaInicio && fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
+    if (new Date(fechaFin) < new Date(fechaInicio)) {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
@@ -213,78 +230,159 @@ function BuscarArchivos() {
       return;
     }
 
-    const filtro = {
-      autor: autor,
-      asunto: asunto,
-      contenidoRelevante: contenidoRelevante,
-      numeroExpediente: numeroExpediente,
-      numSolicitud: numeroSolicitud,
-      docPadre: docPadre,
-      docHijo: docHijo,
-      titulo: titulo,
-      nombre: nombre,
-      departamento: opcionDepartamento,
-      confidencialidad: opcionConfidencialidad,
-      fechaFiltroInicial:
-        fechaFiltroInicial === null ? null : fechaFiltroInicial,
-      fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
-    };
-
-    // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
-    //console.log('filtro del buscar antes de ejecutar el sp')
-    //console.log(filtro)
-    const resultadosObtenidos = await ObtenerDocumento(filtro);
-    //console.log('resultadosObtenidos:')
-    //console.log(resultadosObtenidos)
-
-    setListaArchivosTabla(resultadosObtenidos);
-    setPendiente(false);
-    setContenido("");
-
-    if (resultadosObtenidos.length === 0) {
+    // Validar que se haya elegido un criterio de búsqueda
+    if(criterioBusquedaText === ''){
       setShowAlert(true);
       setMensajeRespuesta({
-        indicador: 2,
-        mensaje: "No se encontraron resultados.",
+        indicador: 1,
+        mensaje: "Debe seleccionar un criterio de búsqueda"
       });
-    } else {
-      setMostrarBusqueda(!mostrarBusqueda);
+      setPendiente(false);
+      return;
     }
-  };
 
-  const handleBuscarPorContenidoClick = async () => {
-    setPendiente(true);
-
-    if (contenido !== "") {
-      // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
-      //console.log('filtro del buscar antes de ejecutar el sp')
-      //console.log(filtro)
-      const resultadosObtenidos = await ObtenerDocumentosPorContenido({
-        archivosBuscar: listaArchivosTabla.map((a) => a.idDocumento + ""),
-        contenido,
+    // Validar que se haya ingresado un parámetro de búsqueda
+    if(paramBusqueda.trim() === ''){
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Debe ingresar un parámetro de búsqueda"
       });
+      setPendiente(false);
+      return;
+    }
 
-      if (resultadosObtenidos.indicador === 0) {
-        const coincidencias = resultadosObtenidos.datos;
-        const archivosContenido = listaArchivosTabla.filter((a) =>
-          coincidencias.some((s: any) => s.idDocumento === a.idDocumento + "")
-        );
-        console.log(coincidencias);
-        setListaArchivosTabla(archivosContenido);
+    // Validar cual método de API llamar
+    if(criterioBusquedaText.trim().toLowerCase() === 'solicitud'){
+
+      const filtro = {
+        numSolicitud: numeroSolicitud,
+        fechaFiltroInicial:
+          fechaFiltroInicial === null ? null : fechaFiltroInicial,
+        fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal
+      };    
+
+      const resultadosObtenidos = await ObtenerDocumento(filtro);
+    
+      setListaArchivosTabla(resultadosObtenidos);
+      setPendiente(false);
+      setContenido("");
+
+      if (resultadosObtenidos.length === 0) {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 2,
+          mensaje: "No hay registros con los parámetros indicados",
+        });
+      } else {
+        setMostrarBusqueda(!mostrarBusqueda);
+      }
+    }
+    else{
+      const filtro = {
+        fechaInicio: fechaInicio,
+        fechaFinal: fechaFin,
+        nombreApoderado: criterioBusquedaText.toLowerCase().trim() === 'apoderado' ? paramBusqueda : null,
+        nombreSolicitante: criterioBusquedaText.toLowerCase().trim() === 'solicitante' ? paramBusqueda : null,
+        rtnSolicitante: criterioBusquedaText.toLowerCase().trim() === 'id/rtn' ? paramBusqueda : null,
+        numeroExpediente: criterioBusquedaText.toLowerCase().trim() === 'expediente' ? paramBusqueda : undefined,
+        codigoCertificado: criterioBusquedaText.toLowerCase().trim() === 'certificado' ? paramBusqueda : null,
+        codigoPermiso: criterioBusquedaText.toLowerCase().trim() === 'permiso' ? paramBusqueda : null,
+        placa: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null,
+        //placaIngresa: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null, // Validar
+        //preforma: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null,
+        codigoGea: criterioBusquedaText.toLowerCase().trim() === 'gea' ? paramBusqueda : null,
+        // regional: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
+        // solicitudAnterior: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
+      }
+
+      var response = await BusquedaSolicitudIHTT(filtro);
+
+      if(response.indicador){
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Ocurrió un error al buscar solicitudes"
+        });
         setPendiente(false);
-        setListaArchivosTablaSeleccionados([]);
-        //setContenido("");
+      }
 
-        if (archivosContenido.length === 0) {
+      if(response.length === 0){
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 2,
+          mensaje: "No hay registros con los parámetros indicados"
+        });
+        setPendiente(false);
+      }
+      else{
+        setMostrarBusqueda(!mostrarBusqueda);
+
+        var solics = "";
+
+        response.forEach((element: any) => {
+          solics += solics === "" ? element.codigoSolicitud : "," + element.codigoSolicitud;
+        });
+
+        const filtroDocs = {
+          numSolicitud: solics,
+          fechaFiltroInicial:
+            fechaFiltroInicial === null ? null : fechaFiltroInicial,
+          fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal
+        };    
+  
+        const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
+
+        if(resultadosObtenidos.length === 0){
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
-            mensaje: "No se encontraron resultados.",
+            mensaje: "No hay registros con los parámetros indicados"
           });
+          setPendiente(false);
+        }
+        else{        
+          setListaArchivosTabla(resultadosObtenidos);
+          setPendiente(false);
+          setContenido("");
         }
       }
-    }
+    } 
   };
+
+  // const handleBuscarPorContenidoClick = async () => {
+  //   setPendiente(true);
+
+  //   if (contenido !== "") {
+  //     // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
+  //     //console.log('filtro del buscar antes de ejecutar el sp')
+  //     //console.log(filtro)
+  //     const resultadosObtenidos = await ObtenerDocumentosPorContenido({
+  //       archivosBuscar: listaArchivosTabla.map((a) => a.idDocumento + ""),
+  //       contenido,
+  //     });
+
+  //     if (resultadosObtenidos.indicador === 0) {
+  //       const coincidencias = resultadosObtenidos.datos;
+  //       const archivosContenido = listaArchivosTabla.filter((a) =>
+  //         coincidencias.some((s: any) => s.idDocumento === a.idDocumento + "")
+  //       );
+  //       console.log(coincidencias);
+  //       setListaArchivosTabla(archivosContenido);
+  //       setPendiente(false);
+  //       setListaArchivosTablaSeleccionados([]);
+  //       //setContenido("");
+
+  //       if (archivosContenido.length === 0) {
+  //         setShowAlert(true);
+  //         setMensajeRespuesta({
+  //           indicador: 2,
+  //           mensaje: "No se encontraron resultados.",
+  //         });
+  //       }
+  //     }
+  //   }
+  // };
 
   const base64ToUint8Array = (base64: string) => {
     const binaryString = atob(base64);
@@ -325,6 +423,7 @@ function BuscarArchivos() {
 
     console.log("hola");
   };
+
   const handleDescargarArchivos = async () => {
     const historialData = []; //hisorial
     let descripcionError = "";
@@ -459,28 +558,28 @@ function BuscarArchivos() {
     setShowSpinner(false);
   };
 
-  const countEmptyFields = () => {
-    let count = 0;
-    // Cuenta los campos que no están vacíos
-    if (autor !== "") count++;
-    if (asunto !== "") count++;
-    if (opcionDepartamento !== "") count++;
-    if (contenidoRelevante !== "") count++;
-    if (numeroExpediente !== "") count++;
-    if (numeroSolicitud !== "") count++;
-    if (docPadre !== "") count++;
-    if (docHijo !== "") count++;
-    if (titulo !== "") count++;
-    if (nombre !== "") count++;
-    if (fechaFiltroInicial !== null && fechaFiltroFinal !== null) count++;
-    else if (
-      (fechaFiltroInicial !== null && fechaFiltroFinal == null) ||
-      (fechaFiltroFinal !== null && fechaFiltroInicial == null)
-    )
-      count = 0;
+  // const countEmptyFields = () => {
+  //   let count = 0;
+  //   // Cuenta los campos que no están vacíos
+  //   if (autor !== "") count++;
+  //   if (asunto !== "") count++;
+  //   if (opcionDepartamento !== "") count++;
+  //   if (contenidoRelevante !== "") count++;
+  //   if (numeroExpediente !== "") count++;
+  //   if (numeroSolicitud !== "") count++;
+  //   if (docPadre !== "") count++;
+  //   if (docHijo !== "") count++;
+  //   if (titulo !== "") count++;
+  //   if (nombre !== "") count++;
+  //   if (fechaFiltroInicial !== null && fechaFiltroFinal !== null) count++;
+  //   else if (
+  //     (fechaFiltroInicial !== null && fechaFiltroFinal == null) ||
+  //     (fechaFiltroFinal !== null && fechaFiltroInicial == null)
+  //   )
+  //     count = 0;
 
-    return count;
-  };
+  //   return count;
+  // };
 
   const areInputsEmpty = () => {
     //return countEmptyFields() < 3; // Valida si hay menos de 3 campos llenos
@@ -508,14 +607,14 @@ function BuscarArchivos() {
     console.log(archivo);
   };
 
-  const handleInputChange = (e: any) => {
-    if (documentoSeleccionado) {
-      setDocumentoSeleccionado({
-        ...documentoSeleccionado,
-        [e.target.name]: e.target.value,
-      });
-    }
-  };
+  // const handleInputChange = (e: any) => {
+  //   if (documentoSeleccionado) {
+  //     setDocumentoSeleccionado({
+  //       ...documentoSeleccionado,
+  //       [e.target.name]: e.target.value,
+  //     });
+  //   }
+  // };
 
   const handleFilaSeleccionada = (row: Archivo) => {
     seleccionarDocumento(row);
@@ -587,6 +686,32 @@ function BuscarArchivos() {
     setMostrarDiv((prev) => !prev); // Alterna el estado
     setMostrarBusqueda((prev) => !prev);
   };
+
+  const obtenerCriteriosBusqueda = async () =>{
+    const response = await ObtenerCriterioBusqueda(true);
+    
+    if(!response){
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ocurrió un error al obtener los criterios de búsqueda"
+      });
+    }
+    else{
+      setCriteriosBusqueda(response);
+    }
+  }
+
+  const handleCriterioBusqueda = (criterio: any) => {
+    const criterioText = criteriosBusqueda.filter((x: any) => x.idCriterioBusqueda === criterio)[0].criterioBusqueda;
+    const regularExp = criteriosBusqueda.filter((x: any) => x.idCriterioBusqueda === criterio)[0].expresionRegular;
+
+    setParamBusqueda("");
+    setCriterioBusquedaText(criterioText);
+    setCriterioBusquedaId(criterio);
+    setRegExp(new RegExp(regularExp));
+  }
+
   return (
     <>
       <CustomModal
@@ -683,199 +808,6 @@ function BuscarArchivos() {
                   className="d-flex flex-column"
                   style={{ padding: "0 10px" }}
                 >
-                  <Form.Group>
-                    <label htmlFor="Nombre">
-                      <b>Nombre de archivo</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group className="mb-4">
-                    <label htmlFor="autor">
-                      <b>Autor</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={autor}
-                      onChange={(e) => setAutor(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group className="mb-4">
-                    <label htmlFor="nombre">
-                      <b>Asunto</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={asunto}
-                      onChange={(e) => setAsunto(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group className="mb-4">
-                    <label htmlFor="departamento">
-                      <b>Departamento</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      as="select"
-                      value={opcionDepartamento}
-                      onChange={handleOpcionDepartamentoChange}
-                    >
-                      <option value="">-- Selecciona una opción --</option>
-                      <option value="opcion1">Opción 1</option>
-                      <option value="opcion2">Opción 2</option>
-                      <option value="opcion3">Opción 3</option>
-                    </Form.Control>
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group className="mb-4">
-                    <label htmlFor="confidencialidad">
-                      <b>Es confidencial</b>
-                    </label>
-
-                    <BootstrapSwitchButton
-                      checked={opcionConfidencialidad === "true"}
-                      onlabel="Sí"
-                      onstyle="danger"
-                      offlabel="No"
-                      offstyle="success"
-                      style="w-100 mx-3;" // Ajusta este valor según el tamaño deseado
-                      onChange={(checked: boolean) =>
-                        handleOpcionConfidenChange({
-                          target: {
-                            type: "switch",
-                            name: "confidencialidad",
-                            checked,
-                          },
-                        })
-                      }
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group>
-                    <label htmlFor="ContenidoRelevante">
-                      <b>Contenido relevante</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={contenidoRelevante}
-                      onChange={(e) => setContenidoRelevante(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group>
-                    <label htmlFor="NumeroExpediente">
-                      <b>No. Expediente</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={numeroExpediente}
-                      onChange={(e) => setNumeroExpediente(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group>
-                    <label htmlFor="NumeroSolicitud">
-                      <b>No. Solicitud</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={numeroSolicitud}
-                      onChange={(e) => setNumeroSolicitud(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group>
-                    <label htmlFor="DocHijo">
-                      <b>Doc. Hijo</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={docHijo}
-                      onChange={(e) => setDocHijo(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group>
-                    <label htmlFor="DocPadre">
-                      <b>Doc. Padre</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={docPadre}
-                      onChange={(e) => setDocPadre(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <Form.Group>
-                    <label htmlFor="Titulo">
-                      <b>TÍtulo</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={titulo}
-                      onChange={(e) => setTitulo(e.target.value)}
-                    />
-                  </Form.Group>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
                   <label htmlFor="FechaFiltroInicial">
                     <b>Fecha inicial</b>
                   </label>
@@ -887,6 +819,7 @@ function BuscarArchivos() {
                       dateFormat="dd/MM/yyyy"
                       className="form-control"
                       locale={es}
+                      placeholderText="Fecha inicial"
                     />
                   </Form.Group>
                 </div>
@@ -895,6 +828,7 @@ function BuscarArchivos() {
                   className="d-flex flex-column"
                   style={{ padding: "0 10px" }}
                 >
+                  <br />
                   <label htmlFor="FechaFiltroFinal">
                     <b>Fecha final</b>
                   </label>
@@ -905,10 +839,74 @@ function BuscarArchivos() {
                       onChange={(date) => setFechaFiltroFinal(date)}
                       dateFormat="dd/MM/yyyy"
                       className="form-control"
-                      locale={es}
+                      locale={es}                      
+                      placeholderText="Fecha final"
                     />
                   </Form.Group>
                 </div>
+
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <br />
+                  <label htmlFor="FechaFiltroFinal">
+                    <b>Criterio de búsqueda</b>
+                  </label>
+                  <Form.Group>
+                  <Select
+                      onChange={(e: any) => handleCriterioBusqueda(e.value)}
+                      className="GrupoFiltro"
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'
+                        }),
+                      }}
+                      placeholder="Seleccione"
+                      options={criteriosBusqueda.map((x: any) => ({
+                        value: x.idCriterioBusqueda,
+                        label: x.criterioBusqueda                        
+                      }))}      
+                      value={
+                        criterioBusquedaText !== '' ?
+                          ({ 
+                            value: criterioBusquedaId,
+                            label: criterioBusquedaText
+                          })
+                        : null
+                      }
+                    /> 
+                  </Form.Group>
+                </div>
+
+                <div
+                  className="d-flex flex-column"
+                  style={{ padding: "0 10px" }}
+                >
+                  <br />
+                  <label htmlFor="FechaFiltroFinal">
+                    <b>Parámetro de búsqueda</b>
+                  </label>
+                  <Form.Group>
+                  <Form.Control
+                      className="GrupoFiltro"
+                      type="text"
+                      value={paramBusqueda}
+                      placeholder="Parámetro de búsqueda"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                    
+                        // Si el valor cumple con la expresión regular, actualiza el estado
+                        if (regExp.test(value)) {
+                          setParamBusqueda(value);
+                        }
+                      }}
+                    />
+                  </Form.Group>
+                </div>
+
+                
                 <div
                   className="d-flex flex-column mt-auto p-3"
                   style={{ padding: "3px 10px", alignSelf: "flex-end" }}
