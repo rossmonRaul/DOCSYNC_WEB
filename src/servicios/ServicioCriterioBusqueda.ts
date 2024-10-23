@@ -32,3 +32,8 @@ export const CargaMasivaCriterioBusqueda = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/CargaMasivaCriterioBusqueda`;
     return await ProcesarDatosApi('POST', url, data);
 }
+
+export const BusquedaSolicitudIHTT = async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/BusquedaSolicitudIHTT`;
+    return await ProcesarDatosApi('POST', url, data);
+}
