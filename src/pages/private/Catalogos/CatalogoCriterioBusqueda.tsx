@@ -75,7 +75,7 @@ function CatalogoCriterioBusqueda() {
   };
 
   // Función para inhabilitar un criterio
-  const eliminar = async (row: any) => {
+  const eliminar = (row: any) => {
     openConfirm("Está seguro que desea inactivar?", async () => {
       try {
         setShowSpinner(true);

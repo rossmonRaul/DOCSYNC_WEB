@@ -7,6 +7,7 @@ import { FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; 
 import { AlertDismissible } from "../../../components/alert/alert";
+import { useConfirm } from "../../../context/confirmContext";
 
 
 // Interfaz
@@ -30,6 +31,7 @@ const [nuevaJerarquiaDocumento, setNuevaJerarquiaDocumento] = useState<Jerarquia
   usuarioModificacion: ""
 });
   const [isEditing, setIsEditing] = useState(false);
+  const { openConfirm } = useConfirm();
   const [showAlert, setShowAlert] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
@@ -49,6 +51,7 @@ const [nuevaJerarquiaDocumento, setNuevaJerarquiaDocumento] = useState<Jerarquia
 
   // Función para eliminar una jerarquía
   const eliminarJerarquiaDoc = async (jerarquiasDoc: JerarquiaDocumento) => {
+    openConfirm("¿Está seguro que desea inactivar?", async () => {
     try {
 
       const response = await EliminarJerarquiaDoc(jerarquiasDoc);
@@ -65,6 +68,7 @@ const [nuevaJerarquiaDocumento, setNuevaJerarquiaDocumento] = useState<Jerarquia
       setShowAlert(true);
       setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar la jerarquía de documento" });
     }
+  })
   };
 
   // Función para abrir el modal y editar una jerarquía

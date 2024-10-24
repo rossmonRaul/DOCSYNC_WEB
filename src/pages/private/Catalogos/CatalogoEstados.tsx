@@ -7,6 +7,7 @@ import { FaTrash ,FaPlus } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
 import { AlertDismissible } from "../../../components/alert/alert";
+import { useConfirm } from "../../../context/confirmContext";
 
 
 // Interfaz para la información de el estado
@@ -31,6 +32,7 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
 });
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const { openConfirm } = useConfirm();
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
 
   useEffect(() => {
@@ -49,6 +51,7 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
 
   // Función para eliminar un estado
   const eliminarEstado = async (estado: Estado) => {
+    openConfirm("¿Está seguro que desea inactivar?", async () => {
     try {
 
       const response = await EliminarEstado(estado);
@@ -66,6 +69,7 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
       setShowAlert(true);
       setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el estado" });
     }
+  })
   };
 
   // Función para abrir el modal y editar un estado
