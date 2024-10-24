@@ -29,8 +29,11 @@ import { LuSearchX } from "react-icons/lu";
 import { AiOutlineFileSearch } from "react-icons/ai";
 import { recortarTexto } from "../../../utils/utils";
 import { useSpinner } from "../../../context/spinnerContext";
-import Select from "react-select"
-import { BusquedaSolicitudIHTT, ObtenerCriterioBusqueda } from "../../../servicios/ServicioCriterioBusqueda";
+import Select from "react-select";
+import {
+  BusquedaSolicitudIHTT,
+  ObtenerCriterioBusqueda,
+} from "../../../servicios/ServicioCriterioBusqueda";
 
 interface Archivo {
   idDocumento: Number;
@@ -209,7 +212,7 @@ function BuscarArchivos() {
     const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
 
     // Validar que se hayan ingresado las fechas
-    if(!fechaInicio || !fechaFin){
+    if (!fechaInicio || !fechaFin) {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
@@ -231,39 +234,38 @@ function BuscarArchivos() {
     }
 
     // Validar que se haya elegido un criterio de búsqueda
-    if(criterioBusquedaText === ''){
+    if (criterioBusquedaText === "") {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Debe seleccionar un criterio de búsqueda"
+        mensaje: "Debe seleccionar un criterio de búsqueda",
       });
       setPendiente(false);
       return;
     }
 
     // Validar que se haya ingresado un parámetro de búsqueda
-    if(paramBusqueda.trim() === ''){
+    if (paramBusqueda.trim() === "") {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Debe ingresar un parámetro de búsqueda"
+        mensaje: "Debe ingresar un parámetro de búsqueda",
       });
       setPendiente(false);
       return;
     }
 
     // Validar cual método de API llamar
-    if(criterioBusquedaText.trim().toLowerCase() === 'solicitud'){
-
+    if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
       const filtro = {
         numSolicitud: paramBusqueda,
         fechaFiltroInicial:
           fechaFiltroInicial === null ? null : fechaFiltroInicial,
-        fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal
-      };    
+        fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+      };
 
       const resultadosObtenidos = await ObtenerDocumento(filtro);
-    
+
       setListaArchivosTabla(resultadosObtenidos);
       setPendiente(false);
       setContenido("");
@@ -277,77 +279,101 @@ function BuscarArchivos() {
       } else {
         setMostrarBusqueda(!mostrarBusqueda);
       }
-    }
-    else{
+    } else {
       const filtro = {
         fechaInicio: fechaInicio,
         fechaFinal: fechaFin,
-        nombreApoderado: criterioBusquedaText.toLowerCase().trim() === 'apoderado' ? paramBusqueda : null,
-        nombreSolicitante: criterioBusquedaText.toLowerCase().trim() === 'solicitante' ? paramBusqueda : null,
-        rtnSolicitante: criterioBusquedaText.toLowerCase().trim() === 'id/rtn' ? paramBusqueda : null,
-        numeroExpediente: criterioBusquedaText.toLowerCase().trim() === 'expediente' ? paramBusqueda : undefined,
-        codigoCertificado: criterioBusquedaText.toLowerCase().trim() === 'certificado' ? paramBusqueda : null,
-        codigoPermiso: criterioBusquedaText.toLowerCase().trim() === 'permiso' ? paramBusqueda : null,
-        placa: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null,
+        nombreApoderado:
+          criterioBusquedaText.toLowerCase().trim() === "apoderado"
+            ? paramBusqueda
+            : null,
+        nombreSolicitante:
+          criterioBusquedaText.toLowerCase().trim() === "solicitante"
+            ? paramBusqueda
+            : null,
+        rtnSolicitante:
+          criterioBusquedaText.toLowerCase().trim() === "id/rtn"
+            ? paramBusqueda
+            : null,
+        numeroExpediente:
+          criterioBusquedaText.toLowerCase().trim() === "expediente"
+            ? paramBusqueda
+            : undefined,
+        codigoCertificado:
+          criterioBusquedaText.toLowerCase().trim() === "certificado"
+            ? paramBusqueda
+            : null,
+        codigoPermiso:
+          criterioBusquedaText.toLowerCase().trim() === "permiso"
+            ? paramBusqueda
+            : null,
+        placa:
+          criterioBusquedaText.toLowerCase().trim() === "placa"
+            ? paramBusqueda
+            : null,
         //placaIngresa: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null, // Validar
         //preforma: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null,
-        codigoGea: criterioBusquedaText.toLowerCase().trim() === 'gea' ? paramBusqueda : null,
+        codigoGea:
+          criterioBusquedaText.toLowerCase().trim() === "gea"
+            ? paramBusqueda
+            : null,
         // regional: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
         // solicitudAnterior: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
-      }
+      };
 
       var response = await BusquedaSolicitudIHTT(filtro);
 
-      if(response.indicador){
+      if (response.indicador) {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: "Ocurrió un error al buscar solicitudes"
+          mensaje: "Ocurrió un error al buscar solicitudes",
         });
         setPendiente(false);
       }
 
-      if(response.length === 0){
+      if (response.length === 0) {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 2,
-          mensaje: "No hay registros con los parámetros indicados"
+          mensaje: "No hay registros con los parámetros indicados",
         });
         setPendiente(false);
-      }
-      else{
+      } else {
         setMostrarBusqueda(!mostrarBusqueda);
 
         var solics = "";
 
         response.forEach((element: any) => {
-          solics += solics === "" ? element.codigoSolicitud : "," + element.codigoSolicitud;
+          solics +=
+            solics === ""
+              ? element.codigoSolicitud
+              : "," + element.codigoSolicitud;
         });
 
         const filtroDocs = {
           numSolicitud: solics,
           fechaFiltroInicial:
             fechaFiltroInicial === null ? null : fechaFiltroInicial,
-          fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal
-        };    
-  
+          fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+        };
+
         const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
 
-        if(resultadosObtenidos.length === 0){
+        if (resultadosObtenidos.length === 0) {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
-            mensaje: "No hay registros con los parámetros indicados"
+            mensaje: "No hay registros con los parámetros indicados",
           });
           setPendiente(false);
-        }
-        else{        
+        } else {
           setListaArchivosTabla(resultadosObtenidos);
           setPendiente(false);
           setContenido("");
         }
       }
-    } 
+    }
   };
 
   // const handleBuscarPorContenidoClick = async () => {
@@ -687,30 +713,33 @@ function BuscarArchivos() {
     setMostrarBusqueda((prev) => !prev);
   };
 
-  const obtenerCriteriosBusqueda = async () =>{
+  const obtenerCriteriosBusqueda = async () => {
     const response = await ObtenerCriterioBusqueda(true);
-    
-    if(!response){
+
+    if (!response) {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Ocurrió un error al obtener los criterios de búsqueda"
+        mensaje: "Ocurrió un error al obtener los criterios de búsqueda",
       });
-    }
-    else{
+    } else {
       setCriteriosBusqueda(response);
     }
-  }
+  };
 
   const handleCriterioBusqueda = (criterio: any) => {
-    const criterioText = criteriosBusqueda.filter((x: any) => x.idCriterioBusqueda === criterio)[0].criterioBusqueda;
-    const regularExp = criteriosBusqueda.filter((x: any) => x.idCriterioBusqueda === criterio)[0].expresionRegular;
+    const criterioText = criteriosBusqueda.filter(
+      (x: any) => x.idCriterioBusqueda === criterio
+    )[0].criterioBusqueda;
+    const regularExp = criteriosBusqueda.filter(
+      (x: any) => x.idCriterioBusqueda === criterio
+    )[0].expresionRegular;
 
     setParamBusqueda("");
     setCriterioBusquedaText(criterioText);
     setCriterioBusquedaId(criterio);
     setRegExp(new RegExp(regularExp));
-  }
+  };
 
   return (
     <>
@@ -839,7 +868,7 @@ function BuscarArchivos() {
                       onChange={(date) => setFechaFiltroFinal(date)}
                       dateFormat="dd/MM/yyyy"
                       className="form-control"
-                      locale={es}                      
+                      locale={es}
                       placeholderText="Fecha final"
                     />
                   </Form.Group>
@@ -854,29 +883,32 @@ function BuscarArchivos() {
                     <b>Criterio de búsqueda</b>
                   </label>
                   <Form.Group>
-                  <Select
+                    <Select
                       onChange={(e: any) => handleCriterioBusqueda(e.value)}
                       className="GrupoFiltro"
                       styles={{
                         control: (provided) => ({
                           ...provided,
-                          fontSize: '16px', padding: '2%', outline: 'none', marginTop: '1%'
+                          fontSize: "16px",
+                          padding: "2%",
+                          outline: "none",
+                          marginTop: "1%",
                         }),
                       }}
                       placeholder="Seleccione"
                       options={criteriosBusqueda.map((x: any) => ({
                         value: x.idCriterioBusqueda,
-                        label: x.criterioBusqueda                        
-                      }))}      
+                        label: x.criterioBusqueda,
+                      }))}
                       value={
-                        criterioBusquedaText !== '' ?
-                          ({ 
-                            value: criterioBusquedaId,
-                            label: criterioBusquedaText
-                          })
-                        : null
+                        criterioBusquedaText !== ""
+                          ? {
+                              value: criterioBusquedaId,
+                              label: criterioBusquedaText,
+                            }
+                          : null
                       }
-                    /> 
+                    />
                   </Form.Group>
                 </div>
 
@@ -889,16 +921,16 @@ function BuscarArchivos() {
                     <b>Parámetro de búsqueda</b>
                   </label>
                   <Form.Group>
-                  <Form.Control
+                    <Form.Control
                       className="GrupoFiltro"
                       type="text"
                       value={paramBusqueda}
                       placeholder="Parámetro de búsqueda"
                       onChange={(e) => {
                         const value = e.target.value;
-                    
+
                         // Si el valor cumple con la expresión regular, actualiza el estado
-                        if (regExp.test(value) || value === '') {
+                        if (regExp.test(value) || value === "") {
                           setParamBusqueda(value);
                         }
                       }}
@@ -906,7 +938,6 @@ function BuscarArchivos() {
                   </Form.Group>
                 </div>
 
-                
                 <div
                   className="d-flex flex-column mt-auto p-3"
                   style={{ padding: "3px 10px", alignSelf: "flex-end" }}

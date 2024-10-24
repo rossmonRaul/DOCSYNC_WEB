@@ -142,6 +142,7 @@ function CargarArchivos() {
         fontSize: "1.5em",
       },
       width: documentoVer ? "100px" : "400px",
+      omit: documentoVer != null,
     },
     {
       id: "numeroSolicitud",
@@ -157,6 +158,7 @@ function CargarArchivos() {
         );
       },
       sorteable: false,
+      omit: documentoVer != null,
     },
     {
       id: "Acciones",
@@ -402,7 +404,6 @@ function CargarArchivos() {
     event.preventDefault();
     const formData = new FormData();
     if (masivo) {
-
       listaArchivosTablaSeleccionados.forEach((a, index) => {
         a.observacion = observacion;
         // Agrega el archivo al FormData
@@ -519,76 +520,54 @@ function CargarArchivos() {
           <div>
             <div className="content">
               <Form>
-                <Form.Group style={{ marginBottom: "20px" }}>
-                  <Form.Label>Tipo de documento</Form.Label>
-                  <Form.Select
-                    name="tipoDocumento"
-                    value={tipoDocumentoSeleccionado?.idTipoDocumento}
-                    onChange={(e) => {
-                      const selectedValue = e.target.value;
-                      const selectedText =
-                        e.target.options[e.target.selectedIndex].text;
-                      setTipoDocumentoSeleccionado({
-                        idTipoDocumento: selectedValue,
-                        descripcion: selectedText,
-                      });
-                    }}
-                  >
-                    <option value="">-- Selecciona una opción --</option>
-                    {tipoDocumento &&
-                      tipoDocumento?.map((t: any, index: any) => (
-                        <option key={index} value={t.idTipoDocumento}>
-                          {t.descripcion}
-                        </option>
-                      ))}
-                  </Form.Select>
-                </Form.Group>
-                {tipoDocumentoSeleccionado?.idTipoDocumento !== "" && (
-                  <Form.Group>
-                    <Form.Label>
-                      Selecciona un archivo (peso máximo {FILE_MAX_SIZE_MB} MB)
-                    </Form.Label>
-                    <Form.Control
-                      multiple
-                      accept=".pdf,.doc,.html,.dot,.dotx,.htm,.odt,.ods,.odp,.sql,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.csv,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
-                      type="file"
-                      onChange={handleFileChange}
-                    />
-                  </Form.Group>
-                )}
+                <Row>
+                  <Col>
+                    <Form.Group style={{ marginBottom: "20px" }}>
+                      <Form.Label>Tipo de documento</Form.Label>
+                      <Form.Select
+                        name="tipoDocumento"
+                        value={tipoDocumentoSeleccionado?.idTipoDocumento}
+                        onChange={(e) => {
+                          const selectedValue = e.target.value;
+                          const selectedText =
+                            e.target.options[e.target.selectedIndex].text;
+                          setTipoDocumentoSeleccionado({
+                            idTipoDocumento: selectedValue,
+                            descripcion: selectedText,
+                          });
+                        }}
+                      >
+                        <option value="">-- Selecciona una opción --</option>
+                        {tipoDocumento &&
+                          tipoDocumento?.map((t: any, index: any) => (
+                            <option key={index} value={t.idTipoDocumento}>
+                              {t.descripcion}
+                            </option>
+                          ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    {tipoDocumentoSeleccionado?.idTipoDocumento !== "" && (
+                      <Form.Group>
+                        <Form.Label>
+                          Selecciona un archivo (peso máximo {FILE_MAX_SIZE_MB}{" "}
+                          MB)
+                        </Form.Label>
+                        <Form.Control
+                          multiple
+                          accept=".pdf,.doc,.html,.dot,.dotx,.htm,.odt,.ods,.odp,.sql,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.csv,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
+                          type="file"
+                          onChange={handleFileChange}
+                        />
+                      </Form.Group>
+                    )}
+                  </Col>
+                </Row>
+
                 {listaArchivosTabla.length > 0 && (
                   <>
                     <div className="mb-6 mt-4 d-flex justify-content-end align-items-right">
-                      {listaArchivosTabla.length !==
-                        listaArchivosTablaSeleccionados.length && (
-                        <Button
-                          className="btn-save me-4  ms-auto"
-                          variant="primary"
-                          onClick={() => {
-                            setListaArchivosTablaSeleccionados(
-                              listaArchivosTabla
-                            );
-                          }}
-                          style={{ marginTop: "20px" }}
-                        >
-                          <FaCheckSquare className="me-2" size={24} />
-                          Seleccionar todos
-                        </Button>
-                      )}
-                      {listaArchivosTabla.length ===
-                        listaArchivosTablaSeleccionados.length && (
-                        <Button
-                          className="btn-cancel me-4  ms-auto"
-                          variant="primary"
-                          onClick={() => {
-                            setListaArchivosTablaSeleccionados([]);
-                          }}
-                          style={{ marginTop: "20px" }}
-                        >
-                          <FaCheckSquare className="me-2" size={24} />
-                          Deseleccionar todos
-                        </Button>
-                      )}
                       <h4 className="mt-4">
                         Archivos seleccionados:{" "}
                         {listaArchivosTablaSeleccionados.length}
@@ -605,6 +584,28 @@ function CargarArchivos() {
                             accion: prepararCarga,
                             icono: <FaUpload className="me-2" size={20} />,
                             texto: "Guardar",
+                          },
+                          {
+                            condicion:
+                              listaArchivosTabla.length !==
+                              listaArchivosTablaSeleccionados.length,
+                            accion: () => {
+                              setListaArchivosTablaSeleccionados(
+                                listaArchivosTabla
+                              );
+                            },
+                            icono: <FaCheckSquare className="me-2" size={24} />,
+                            texto: "Seleccionar todos",
+                          },
+                          {
+                            condicion:
+                              listaArchivosTabla.length ===
+                              listaArchivosTablaSeleccionados.length,
+                            accion: () => {
+                              setListaArchivosTablaSeleccionados([]);
+                            },
+                            icono: <FaCheckSquare className="me-2" size={24} />,
+                            texto: "Deseleccionar todos",
                           },
                         ]}
                         gridHeading={encabezadoArchivo}

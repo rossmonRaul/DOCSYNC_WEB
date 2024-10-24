@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Container, Form , Row} from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
-import { ObtenerTiposDocumentos, CrearTipoDocumento, EliminarTipoDocumento, ActualizarTipoDocumento, ImportarTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
-import { FaTrash , FaUpload } from "react-icons/fa";
+import {
+  ObtenerTiposDocumentos,
+  CrearTipoDocumento,
+  EliminarTipoDocumento,
+  ActualizarTipoDocumento,
+  ImportarTiposDocumentos,
+} from "../../../servicios/ServicioTiposDocumentos";
+import { FaTrash, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
@@ -11,20 +17,20 @@ import { AlertDismissible } from "../../../components/alert/alert";
 import { useSpinner } from "../../../context/spinnerContext";
 import { RiSaveFill } from "react-icons/ri";
 
-import * as XLSX from 'xlsx';
-
+import * as XLSX from "xlsx";
+import { useConfirm } from "../../../context/confirmContext";
 
 // Interfaz para la información del tipo de documento
 interface TipoDocumento {
-    idTipoDocumento: string;
-    numCaracteres: number;
-    codigo: string;
-    descripcion: string;
-    usuarioCreacion: string;
-    usuarioModificacion: string;
-  }
-  
-  // Definición de tipos para la respuesta
+  idTipoDocumento: string;
+  numCaracteres: number;
+  codigo: string;
+  descripcion: string;
+  usuarioCreacion: string;
+  usuarioModificacion: string;
+}
+
+// Definición de tipos para la respuesta
 interface ErrorResponse {
   indicador: number;
   mensaje: string;
@@ -33,27 +39,34 @@ interface ErrorResponse {
 // Componente principal
 function CatalogoTiposDocumentos() {
   const { setShowSpinner } = useSpinner();
-  const [listaTiposDocumentos, setListaTiposDocumentos] = useState<TipoDocumento[]>([]);
+  const [listaTiposDocumentos, setListaTiposDocumentos] = useState<
+    TipoDocumento[]
+  >([]);
   const [showModal, setShowModal] = useState(false);
-const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
-  idTipoDocumento: "0",
-  codigo: "",
-  numCaracteres: 0,
-  descripcion: "",
-  usuarioCreacion: "",
-  usuarioModificacion: ""
-});
+  const { openConfirm } = useConfirm();
+  const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
+    idTipoDocumento: "0",
+    codigo: "",
+    numCaracteres: 0,
+    descripcion: "",
+    usuarioCreacion: "",
+    usuarioModificacion: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({
+    indicador: 0,
+    mensaje: "",
+  });
 
   //
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const [showModalImportar, setShowModalImportar] = useState(false);
-  const [listaTiposDocImportar, setListaTiposDocImportar] = useState<TipoDocumento[]>([]);
+  const [listaTiposDocImportar, setListaTiposDocImportar] = useState<
+    TipoDocumento[]
+  >([]);
   const [showImportButton, setShowImportButton] = useState(false);
   const [file, setFile] = useState(null);
-
 
   useEffect(() => {
     obtenerTiposDocumentos();
@@ -67,35 +80,44 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
       setListaTiposDocumentos(tiposDocumentos);
     } catch (error) {
       console.error("Error al obtener los tipos de documentos:", error);
-    }finally{
+    } finally {
       setShowSpinner(false);
     }
   };
 
   // Función para eliminar un tipo de documento
-  const eliminarTipoDocumento = async (tipoDocumento: TipoDocumento) => {
-    try {
-      setShowSpinner(true);
-      const tipoDocumentoEliminar = {
-        ...tipoDocumento,  
-        usuarioModificacion: identificacionUsuario,
-        fechaModificacion: new Date().toISOString()}
-      const response = await EliminarTipoDocumento(tipoDocumentoEliminar);
+  const eliminarTipoDocumento = (tipoDocumento: TipoDocumento) => {
+    openConfirm("¿Está seguro que desea eliminar?", async () => {
+      try {
+        setShowSpinner(true);
+        const tipoDocumentoEliminar = {
+          ...tipoDocumento,
+          usuarioModificacion: identificacionUsuario,
+          fechaModificacion: new Date().toISOString(),
+        };
+        const response = await EliminarTipoDocumento(tipoDocumentoEliminar);
 
-      if(response){
+        if (response) {
+          setShowAlert(true);
+          setMensajeRespuesta(response);
+          obtenerTiposDocumentos();
+        } else {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "Error al eliminar el tipo de documento",
+          });
+        }
+      } catch (error) {
         setShowAlert(true);
-        setMensajeRespuesta(response);
-            obtenerTiposDocumentos();
-          } else {
-            setShowAlert(true);
-        setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el tipo de documento" });
-          }
-    } catch (error) {
-      setShowAlert(true);
-      setMensajeRespuesta({indicador : 1, mensaje : "Error al eliminar el tipo de documento" });
-    }finally{
-      setShowSpinner(false);
-    }
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Error al eliminar el tipo de documento",
+        });
+      } finally {
+        setShowSpinner(false);
+      }
+    });
   };
 
   // Función para abrir el modal y editar un tipo de documento
@@ -110,12 +132,12 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
     setShowModal(!showModal);
     setIsEditing(false);
     setNuevoTipoDocumento({
-        idTipoDocumento: "0",
-        codigo: "",
-        numCaracteres:0,
-        descripcion: "",
-        usuarioCreacion: "",
-        usuarioModificacion: ""
+      idTipoDocumento: "0",
+      codigo: "",
+      numCaracteres: 0,
+      descripcion: "",
+      usuarioCreacion: "",
+      usuarioModificacion: "",
     });
   };
 
@@ -127,74 +149,106 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
     });
   };
 
-  // Maneja el envío del formulario para agregar o editar un tipo de dotcumento 
+  // Maneja el envío del formulario para agregar o editar un tipo de dotcumento
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (isEditing) {
-      // Editar tipo de dotcumento 
+      // Editar tipo de dotcumento
       try {
         setShowSpinner(true);
-        const tipoDocumentoActualizar = { 
-          ...nuevoTipoDocumento, 
+        const tipoDocumentoActualizar = {
+          ...nuevoTipoDocumento,
           usuarioModificacion: identificacionUsuario,
-          fechaModificacion: new Date().toISOString() };
+          fechaModificacion: new Date().toISOString(),
+        };
         const response = await ActualizarTipoDocumento(tipoDocumentoActualizar);
-  
-        if(response){
+
+        if (response) {
           setShowAlert(true);
           setMensajeRespuesta(response);
           obtenerTiposDocumentos();
-        } else{
+        } else {
           setShowAlert(true);
-          setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el tipo de documento" });
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "Error al actualizar el tipo de documento",
+          });
         }
       } catch (error) {
         setShowAlert(true);
-        setMensajeRespuesta({indicador : 1, mensaje : "Error al actualizar el tipo de documento" });
-      }finally{
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Error al actualizar el tipo de documento",
+        });
+      } finally {
         setShowSpinner(false);
       }
     } else {
       // Crear tipo de documento
       try {
         setShowSpinner(true);
-        const tipoDocumentoACrear = { ...nuevoTipoDocumento, 
-          idTipoDocumento: "0", 
+        const tipoDocumentoACrear = {
+          ...nuevoTipoDocumento,
+          idTipoDocumento: "0",
           usuarioCreacion: identificacionUsuario,
-          fechaCreacion:(new Date()).toISOString() 
+          fechaCreacion: new Date().toISOString(),
         };
         const response = await CrearTipoDocumento(tipoDocumentoACrear);
-  
-        if(response){
+
+        if (response) {
           setShowAlert(true);
           setMensajeRespuesta(response);
           obtenerTiposDocumentos();
-        } else{
+        } else {
           setShowAlert(true);
-          setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el tipo de documento" });
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "Error al crear el tipo de documento",
+          });
         }
       } catch (error) {
         setShowAlert(true);
-        setMensajeRespuesta({indicador : 1, mensaje : "Error al crear el tipo de documento" });
-      }finally{
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Error al crear el tipo de documento",
+        });
+      } finally {
         setShowSpinner(false);
       }
     }
-    handleModal();  // Cierra el modal 
+    handleModal(); // Cierra el modal
   };
 
   // Encabezados de la tabla con acciones
   const encabezadoTiposDocumentos = [
-    { id: "codigo", name: "Código", selector: (row: TipoDocumento) => row.codigo, sortable: true, style: {
-      fontSize: "1.2em",
-    }, },
-    { id: "numCaracteres", name: "Número de Caracteres", selector: (row: TipoDocumento) => row.numCaracteres, sortable: true, style: {
-      fontSize: "1.2em",
-    }, },
-    { id: "descripcion", name: "Descripción", selector: (row: TipoDocumento) => row.descripcion, sortable: true, style: {
-      fontSize: "1.2em",
-    }, },
+    {
+      id: "codigo",
+      name: "Código",
+      selector: (row: TipoDocumento) => row.codigo,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "numCaracteres",
+      name: "Número de Caracteres",
+      selector: (row: TipoDocumento) => row.numCaracteres,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "descripcion",
+      name: "Descripción",
+      selector: (row: TipoDocumento) => row.descripcion,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
     {
       id: "acciones",
       name: "Acciones",
@@ -203,34 +257,36 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           <Button
             onClick={() => editarTipoDocumento(row)}
             size="sm"
-            className="bg-secondary me-1">
+            className="bg-secondary me-1"
+          >
             <VscEdit />
           </Button>
           <Button
             size="sm"
             onClick={() => eliminarTipoDocumento(row)}
-            className="bg-secondary">
+            className="bg-secondary"
+          >
             <FaTrash />
-          </Button>      
+          </Button>
         </>
-      ), width:"120px",
+      ),
+      width: "120px",
     },
   ];
 
-
-    // Función para manejar el cierre del modal de importar
-    const handleModalImportar = () => {
-      setListaTiposDocImportar([])
-      setFile(null);
-      setShowImportButton(false);
-      setShowModalImportar(!showModalImportar);
-    };
+  // Función para manejar el cierre del modal de importar
+  const handleModalImportar = () => {
+    setListaTiposDocImportar([]);
+    setFile(null);
+    setShowImportButton(false);
+    setShowModalImportar(!showModalImportar);
+  };
   const handleFileChange = (e: any) => {
     const file = e.target.files[0];
     setShowImportButton(false);
     setListaTiposDocImportar([]);
     setFile(file);
-  }
+  };
 
   const importarExcel = () => {
     setShowSpinner(true);
@@ -243,12 +299,18 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         const arrayBuffer = e.target?.result as ArrayBuffer;
 
         // Convierte el ArrayBuffer a una cadena binaria
-        const binaryString = new Uint8Array(arrayBuffer).reduce((acc, byte) => acc + String.fromCharCode(byte), "");
+        const binaryString = new Uint8Array(arrayBuffer).reduce(
+          (acc, byte) => acc + String.fromCharCode(byte),
+          ""
+        );
 
-        const workbook = XLSX.read(binaryString, { type: 'binary' });
+        const workbook = XLSX.read(binaryString, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as (string | number)[][];
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as (
+          | string
+          | number
+        )[][];
         //console.log("jsonData:" + jsonData);
         // Obtener nombres de propiedades desde la primera fila
         const properties: (string | number)[] = jsonData[0];
@@ -257,22 +319,33 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
 
         // Crear un array de objetos utilizando los nombres de propiedades
         const formattedData: TipoDocumento[] = jsonData.slice(1).map((row) => {
-          const obj: Partial<TipoDocumento> = {}; 
+          const obj: Partial<TipoDocumento> = {};
 
           properties.forEach((property, index) => {
             const value = row[index];
-            if (property === 'Código' && (value === undefined || value === '')) InfoValida = false;
-            if (property === 'Número de Caracteres' && (value === undefined || value === '')) InfoValida = false;
-            if (property === 'Descripción' && (value === undefined || value === '')) InfoValida = false;
-
+            if (property === "Código" && (value === undefined || value === ""))
+              InfoValida = false;
+            if (
+              property === "Número de Caracteres" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
+            if (
+              property === "Descripción" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
 
             // Asignar valores al objeto TipoDocumento
             obj.idTipoDocumento = "0" as string;
-            if (property === 'Código') obj.codigo = value as string;
-            if (property === 'Número de Caracteres') obj.numCaracteres = value as number;
-            if (property === 'Descripción') obj.descripcion = value as string;    
-            obj.usuarioCreacion = identificacionUsuario ? identificacionUsuario:"";
-            obj.usuarioModificacion = '';
+            if (property === "Código") obj.codigo = value as string;
+            if (property === "Número de Caracteres")
+              obj.numCaracteres = value as number;
+            if (property === "Descripción") obj.descripcion = value as string;
+            obj.usuarioCreacion = identificacionUsuario
+              ? identificacionUsuario
+              : "";
+            obj.usuarioModificacion = "";
           });
           return obj as TipoDocumento; //  convertimos a un objeto de TipoDocumento
         });
@@ -281,7 +354,8 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: 'Información incompleta. Verifique los campos requeridos en el archivo.'
+            mensaje:
+              "Información incompleta. Verifique los campos requeridos en el archivo.",
           });
           setShowSpinner(false);
           return;
@@ -291,22 +365,29 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
 
         // Validar que todos los campos son correctos
         formattedData.forEach(({ codigo, numCaracteres, descripcion }) => {
-          if (typeof codigo !== 'string' || codigo === null) errores.push('Código');
-          if ( codigo.length > 10) errores.push('Código (máximo 10 caracteres)');
-          if (typeof numCaracteres !== 'number' || numCaracteres === null) errores.push('Número de Caracteres');
-          if ( numCaracteres > 999999999) errores.push('Número de Caracteres (mayor a 999999999)');
-          if (typeof descripcion !== 'string' || descripcion === null) errores.push('Descripción');
+          if (typeof codigo !== "string" || codigo === null)
+            errores.push("Código");
+          if (codigo.length > 10) errores.push("Código (máximo 10 caracteres)");
+          if (typeof numCaracteres !== "number" || numCaracteres === null)
+            errores.push("Número de Caracteres");
+          if (numCaracteres > 999999999)
+            errores.push("Número de Caracteres (mayor a 999999999)");
+          if (typeof descripcion !== "string" || descripcion === null)
+            errores.push("Descripción");
         });
 
         if (errores.length > 0) {
           const columnasErroneas = Array.from(new Set(errores)); // Elimina duplicados
-          const mensaje = columnasErroneas.length === 1
-            ? `La columna ${columnasErroneas[0]} no cumple con el formato esperado.`
-            : `Debe cargar un archivo de Excel con las siguientes columnas: ${columnasErroneas.join(', ')}.`;
+          const mensaje =
+            columnasErroneas.length === 1
+              ? `La columna ${columnasErroneas[0]} no cumple con el formato esperado.`
+              : `Debe cargar un archivo de Excel con las siguientes columnas: ${columnasErroneas.join(
+                  ", "
+                )}.`;
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: mensaje
+            mensaje: mensaje,
           });
           setShowSpinner(false);
           return;
@@ -316,7 +397,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: mensaje
+            mensaje: mensaje,
           });
           setShowSpinner(false);
           return;
@@ -333,11 +414,10 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 2,
-        mensaje: 'Seleccione un archivo de Excel válido.'
+        mensaje: "Seleccione un archivo de Excel válido.",
       });
     }
   };
-
 
   // Encabezados de la tabla de importación sin acciones
   const encabezadoTiposDocImportar = [
@@ -371,83 +451,82 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
   ];
 
   const importarArchivoExcel = async () => {
-
     setShowSpinner(true);
 
-    var tiposDocumentos = listaTiposDocImportar.map(item => {
-
+    var tiposDocumentos = listaTiposDocImportar.map((item) => {
       return {
         idTipoDocumento: item.idTipoDocumento,
         codigo: item.codigo,
         numCaracteres: item.numCaracteres,
         descripcion: item.descripcion,
         usuarioCreacion: item.usuarioCreacion,
-        usuarioModificacion: '',
-        fechaCreacion:(new Date()).toISOString()
+        usuarioModificacion: "",
+        fechaCreacion: new Date().toISOString(),
       };
     });
 
     // Función para verificar si ya existe en listaTiposDocumentos
     const tipoDocExists = (tipoDocumento: TipoDocumento) => {
-      return listaTiposDocumentos.some(existingPersona =>
-        existingPersona.codigo === tipoDocumento.codigo 
+      return listaTiposDocumentos.some(
+        (existingPersona) => existingPersona.codigo === tipoDocumento.codigo
       );
     };
 
     // Filtrar  para eliminar duplicados
-    const tiposDocSinDuplicados = tiposDocumentos.filter(petipoDoc => !tipoDocExists(petipoDoc));
+    const tiposDocSinDuplicados = tiposDocumentos.filter(
+      (petipoDoc) => !tipoDocExists(petipoDoc)
+    );
 
     if (tiposDocumentos.length > 0 && tiposDocSinDuplicados.length == 0) {
       setShowAlert(true);
-      setMensajeRespuesta(
-        {
-          "indicador": 1,
-          "mensaje": `Los tipos de documento que intenta importar ya existen.`
-        });
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: `Los tipos de documento que intenta importar ya existen.`,
+      });
 
       setShowSpinner(false);
       return;
     }
-    const respuesta: ErrorResponse[] = await ImportarTiposDocumentos(tiposDocSinDuplicados);
+    const respuesta: ErrorResponse[] = await ImportarTiposDocumentos(
+      tiposDocSinDuplicados
+    );
 
     if (respuesta && respuesta.length > 0) {
       // Filtrar los errores de la respuestea
-      const errores = respuesta.filter(item => item.indicador === 1);
+      const errores = respuesta.filter((item) => item.indicador === 1);
 
-      // setIsLoading(false); 
+      // setIsLoading(false);
 
       if (errores.length > 0) {
-        const mensajesDeError = errores.map(error => error.mensaje).join('\n');
+        const mensajesDeError = errores
+          .map((error) => error.mensaje)
+          .join("\n");
         setShowSpinner(false);
         setShowAlert(true);
         setMensajeRespuesta({
-          "indicador": 1,
-          "mensaje": `Errores encontrados:\n${mensajesDeError}`
+          indicador: 1,
+          mensaje: `Errores encontrados:\n${mensajesDeError}`,
         });
-
       } else {
         setShowSpinner(false);
-        // Mostrar mensaje de éxito si no hay errores     
+        // Mostrar mensaje de éxito si no hay errores
         obtenerTiposDocumentos();
         handleModalImportar();
         setShowAlert(true);
         setMensajeRespuesta({
-          "indicador": 0,
-          "mensaje": 'Importación exitosamente.'
+          indicador: 0,
+          mensaje: "Importación exitosamente.",
         });
       }
     }
-  }
+  };
 
   return (
     <>
       <h1 className="title">Catálogo Tipos de Documentos</h1>
       <div style={{ padding: "20px" }}>
-      {showAlert && (
-          <AlertDismissible
-          mensaje={mensajeRespuesta}
-          setShow={setShowAlert}
-          />
+        {showAlert && (
+          <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
         )}
         {/* Tabla de tipos de documentos */}
         <Grid
@@ -457,26 +536,28 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           buttonVisible={true}
           filterColumns={["codigo", "descripcion"]}
           selectableRows={false}
-          botonesAccion={[          
-          {
-          condicion:true,
-          accion:handleModalImportar,
-          icono:<FaFileCirclePlus className="me-2" size={24} />,
-          texto:"Importar"
-          },
+          botonesAccion={[
+            {
+              condicion: true,
+              accion: handleModalImportar,
+              icono: <FaFileCirclePlus className="me-2" size={24} />,
+              texto: "Importar",
+            },
           ]}
         ></Grid>
       </div>
-  
+
       {/* Modal para agregar o editar un tipo de documento */}
       <CustomModal
-          show={showModal}
-          onHide={handleModal}
-          title={isEditing ? "Editar Tipo de Documento" : "Agregar Tipo de Documento"}
-          showSubmitButton={true} 
-          submitButtonLabel={isEditing ? "Actualizar" : "Guardar"} 
-          formId="formTipoDocumento"
-        >
+        show={showModal}
+        onHide={handleModal}
+        title={
+          isEditing ? "Editar Tipo de Documento" : "Agregar Tipo de Documento"
+        }
+        showSubmitButton={true}
+        submitButtonLabel={isEditing ? "Actualizar" : "Guardar"}
+        formId="formTipoDocumento"
+      >
         <Form id="formTipoDocumento" onSubmit={handleSubmit}>
           <Row>
             <Col md={3}>
@@ -521,7 +602,6 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         </Form>
       </CustomModal>
 
-
       {/* Modal para importar tipos de documentos  */}
       <CustomModal
         size={"xl"}
@@ -531,12 +611,14 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         showSubmitButton={false}
       >
         {/* Importar personas */}
-        <Container className='d-Grid align-content-center'>
+        <Container className="d-Grid align-content-center">
           <Form>
             <Form.Group controlId="file">
               <Row className="align-items-left">
                 <Col md={6}>
-                  <Form.Label className="mr-2"><strong>Archivo: </strong></Form.Label>
+                  <Form.Label className="mr-2">
+                    <strong>Archivo: </strong>
+                  </Form.Label>
                 </Col>
               </Row>
               <Row className="align-items-center justify-content-between">
@@ -549,7 +631,8 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
                   />
                 </Col>
                 <Col md={3} className="d-flex justify-content-end">
-                  <Button style={{ margin: 4 }}
+                  <Button
+                    style={{ margin: 4 }}
                     className="btn-crear"
                     variant="primary"
                     onClick={importarExcel}
@@ -559,7 +642,6 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
                   </Button>
                 </Col>
               </Row>
-
             </Form.Group>
           </Form>
         </Container>
@@ -577,7 +659,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
             <Button
               style={{
                 margin: 4,
-                display: showImportButton ? 'inline-block' : 'none',
+                display: showImportButton ? "inline-block" : "none",
               }}
               className="btn-save"
               variant="primary"

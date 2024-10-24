@@ -35,7 +35,7 @@ function Logout() {
 
     return <button 
                 style={{
-                        color:"white",
+                        color:"black",
                         backgroundColor: 'danger'                       
                     }}
                 className="btn-cerrar-sesion"
