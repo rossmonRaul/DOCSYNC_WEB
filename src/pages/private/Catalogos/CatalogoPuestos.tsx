@@ -47,8 +47,13 @@ function CatalogoPuestos() {
   const eliminar = async (row: any) => {
     try {
       setShowSpinner(true);
+            
+      const identificacionUsuario = localStorage.getItem('identificacionUsuario');
+
       const data = {
-        idPuesto: row.idPuesto
+        idPuesto: row.idPuesto,
+        usuarioModificacion: identificacionUsuario,
+        fechaModificacion: (new Date()).toISOString()
       }
 
       const response = await EliminarPuesto(data);

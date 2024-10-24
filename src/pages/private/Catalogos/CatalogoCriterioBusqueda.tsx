@@ -75,7 +75,9 @@ function CatalogoCriterioBusqueda() {
     try {
       setShowSpinner(true);
       const data = {
-        idCriterioBusqueda: row.idCriterioBusqueda
+        idCriterioBusqueda: row.idCriterioBusqueda,
+        fechaModificacion: (new Date()).toISOString(),
+        usuarioModificacion: localStorage.getItem('identificacionUsuario')
       }
 
       const response = await EliminarCriterioBusqueda(data);
@@ -137,8 +139,8 @@ function CatalogoCriterioBusqueda() {
             valorExterno: valorExterno,
             idTipoValidacion: idTipoValidacion,
             estado: estado,
-            usuarioCreacion: identificacionUsuario,
-            fechaCreacion: (new Date()).toISOString()
+            usuarioModificacion: identificacionUsuario,
+            fechaModificacion: (new Date()).toISOString()
           };
           
           const response = await ActualizarCriterioBusqueda(obj);         

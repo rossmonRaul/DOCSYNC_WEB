@@ -65,11 +65,20 @@
     align-content: center;
     align-items: center;
   }
+
 .react-datepicker-popper{
   z-index: 2 !important;
 }
 
 .GrupoFiltro {
+  background: linear-gradient(to left, white 50%, #f2f2f2 50%);
+  background-position: right bottom;
+  background-size: 200% 100%;
+  transition: all 0.5s ease-out;
+  transition-timing-function: linear;
+}
+
+.GrupoFiltroAdmRoles{
   background: linear-gradient(to left, white 50%, #f2f2f2 50%);
   background-position: right bottom;
   background-size: 200% 100%;

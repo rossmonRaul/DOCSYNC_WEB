@@ -384,7 +384,7 @@ function AdministrarRoles() {
                     <Form.Label style={{marginTop: '5%'}}>Categoría</Form.Label>
                     <Select
                       onChange={(e: any) => handleCategoriaChange(e)}
-                      className="GrupoFiltro"
+                      className="GrupoFiltroAdmRoles"
                       styles={{
                         control: (provided) => ({
                           ...provided,
@@ -404,7 +404,7 @@ function AdministrarRoles() {
                     <Form.Label style={{marginTop: '5%'}}>Opción</Form.Label>
                     <Select
                       onChange={(e: any) => setOpcionSelected(e.value)}
-                      className="GrupoFiltro"
+                      className="GrupoFiltroAdmRoles"
                       styles={{
                         control: (provided) => ({
                           ...provided,

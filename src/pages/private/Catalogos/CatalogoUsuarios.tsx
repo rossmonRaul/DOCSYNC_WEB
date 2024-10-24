@@ -83,8 +83,13 @@ function CatalogoPersonas() {
   const eliminar = async (usuario: any) => {
     try {
       setShowSpinner(true);
+        
+      const identificacionUsuario = localStorage.getItem('identificacionUsuario');
+
       const data = {
-        idUsuario: usuario.idUsuario
+        idUsuario: usuario.idUsuario,
+        fechaModificacion: (new Date()).toISOString(),
+        usuarioModificacion: identificacionUsuario
       }
 
       const response = await EliminarUsuario(data);

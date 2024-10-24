@@ -898,7 +898,7 @@ function BuscarArchivos() {
                         const value = e.target.value;
                     
                         // Si el valor cumple con la expresión regular, actualiza el estado
-                        if (regExp.test(value)) {
+                        if (regExp.test(value) || value === '') {
                           setParamBusqueda(value);
                         }
                       }}

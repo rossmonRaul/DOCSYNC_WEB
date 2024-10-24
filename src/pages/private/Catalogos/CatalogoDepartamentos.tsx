@@ -47,8 +47,13 @@ function CatalogoDepartamentos() {
   const eliminar = async (row: any) => {
     try {
       setShowSpinner(true);
+        
+      const identificacionUsuario = localStorage.getItem('identificacionUsuario');
+
       const data = {
-        idDepartamento: row.idDepartamento
+        idDepartamento: row.idDepartamento,
+        usuarioModificacion: identificacionUsuario,
+        fechaModificacion: (new Date()).toISOString()
       }
 
       const response = await EliminarDepartamento(data);
