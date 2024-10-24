@@ -4,15 +4,21 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import CustomModal from "../../../components/modal/CustomModal";
 
 import { Grid } from "../../../components/table/tabla";
-import { ObtenerPersonas, CrearPersona, EliminarPersona, ActualizarPersona, ImportarPersonas } from "../../../servicios/ServicioPersonas";
+import {
+  ObtenerPersonas,
+  CrearPersona,
+  EliminarPersona,
+  ActualizarPersona,
+  ImportarPersonas,
+} from "../../../servicios/ServicioPersonas";
 import { FaTrash, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import { RiSaveFill } from "react-icons/ri";
 import { useSpinner } from "../../../context/spinnerContext";
-
+import { useConfirm } from "../../../context/confirmContext";
 
 // Interfaz para la información de la persona
 interface Persona {
@@ -49,16 +55,22 @@ function CatalogoPersonas() {
     nombreCompleto: "",
     puesto: "",
     telefono: "",
-    usuarioCreacion: identificacionUsuario?identificacionUsuario:"",
+    usuarioCreacion: identificacionUsuario ? identificacionUsuario : "",
     usuarioModificacion: "",
-    fechaCreacion:""
+    fechaCreacion: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [mensajeRespuesta, setMensajeRespuesta] = useState({ indicador: 0, mensaje: "" });
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({
+    indicador: 0,
+    mensaje: "",
+  });
+  const { openConfirm } = useConfirm();
 
   const [showModalImportar, setShowModalImportar] = useState(false);
-  const [listaPersonasImportar, setListaPersonasImportar] = useState<Persona[]>([]);
+  const [listaPersonasImportar, setListaPersonasImportar] = useState<Persona[]>(
+    []
+  );
   const [showImportButton, setShowImportButton] = useState(false);
   const [file, setFile] = useState(null);
 
@@ -80,29 +92,36 @@ function CatalogoPersonas() {
   };
 
   // Función para eliminar una persona
-  const eliminarPersona = async (persona: Persona) => {
-    try {
-      const personaActualizar = {
-        ...persona,
-        UsuarioModificacion: identificacionUsuario,
-        FechaModificacion: (new Date()).toISOString()
-      };
-      const response = await EliminarPersona(personaActualizar);
+  const eliminarPersona = (persona: Persona) => {
+    openConfirm("¿Está seguro que desea eliminar?", async () => {
+      try {
+        const personaActualizar = {
+          ...persona,
+          UsuarioModificacion: identificacionUsuario,
+          FechaModificacion: new Date().toISOString(),
+        };
+        const response = await EliminarPersona(personaActualizar);
 
-      if (response) {
+        if (response) {
+          setShowAlert(true);
+          setMensajeRespuesta(response);
+          obtenerPersonas();
+        } else {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "Error al eliminar la persona",
+          });
+        }
+      } catch (error) {
         setShowAlert(true);
-        setMensajeRespuesta(response);
-        obtenerPersonas();
-      } else {
-        setShowAlert(true);
-        setMensajeRespuesta({ indicador: 1, mensaje: "Error al eliminar la persona" });
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Error al eliminar la persona",
+        });
       }
-    } catch (error) {
-      setShowAlert(true);
-      setMensajeRespuesta({ indicador: 1, mensaje: "Error al eliminar la persona" });
-    }
+    });
   };
-
 
   // Función para abrir el modal y editar una persona
   const editarPersona = (persona: Persona) => {
@@ -125,7 +144,7 @@ function CatalogoPersonas() {
       telefono: "",
       usuarioCreacion: "",
       usuarioModificacion: "",
-      fechaCreacion:""
+      fechaCreacion: "",
     });
   };
 
@@ -150,7 +169,7 @@ function CatalogoPersonas() {
         const personaActualizar = {
           ...nuevaPersona,
           UsuarioModificacion: identificacionUsuario,
-          FechaModificacion: (new Date()).toISOString()
+          FechaModificacion: new Date().toISOString(),
         };
         const response = await ActualizarPersona(personaActualizar);
 
@@ -160,11 +179,17 @@ function CatalogoPersonas() {
           obtenerPersonas();
         } else {
           setShowAlert(true);
-          setMensajeRespuesta({ indicador: 1, mensaje: "Error al actualizar la persona" });
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "Error al actualizar la persona",
+          });
         }
       } catch (error) {
         setShowAlert(true);
-        setMensajeRespuesta({ indicador: 1, mensaje: "Error al actualizar la persona" });
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Error al actualizar la persona",
+        });
       }
     } else {
       // agregar persona
@@ -176,7 +201,7 @@ function CatalogoPersonas() {
           ...nuevaPersona,
           idPersona: "0",
           usuarioCreacion: identificacionUsuario,
-          fechaCreacion:(new Date()).toISOString()
+          fechaCreacion: new Date().toISOString(),
         };
         const response = await CrearPersona(personaACrear); // Crea la persona
         if (response) {
@@ -185,15 +210,18 @@ function CatalogoPersonas() {
           obtenerPersonas();
         } else {
           setShowAlert(true);
-          setMensajeRespuesta({ indicador: 1, mensaje: "Error al crear la persona" });
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "Error al crear la persona",
+          });
         }
-
       } catch (error) {
-
         setShowAlert(true);
-        setMensajeRespuesta({ indicador: 1, mensaje: "Error al crear la persona" });
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Error al crear la persona",
+        });
       }
-
     }
     handleModal(); // Cierra el modal
   };
@@ -281,7 +309,7 @@ function CatalogoPersonas() {
 
   // Función para manejar el cierre del modal de importar
   const handleModalImportar = () => {
-    setListaPersonasImportar([])
+    setListaPersonasImportar([]);
     setFile(null);
     setShowImportButton(false);
     setShowModalImportar(!showModalImportar);
@@ -293,7 +321,7 @@ function CatalogoPersonas() {
     setListaPersonasImportar([]);
     //setDataArray([]);
     setFile(file);
-  }
+  };
 
   const importarExcel = () => {
     setShowSpinner(true);
@@ -306,12 +334,18 @@ function CatalogoPersonas() {
         const arrayBuffer = e.target?.result as ArrayBuffer;
 
         // Convierte el ArrayBuffer a una cadena binaria
-        const binaryString = new Uint8Array(arrayBuffer).reduce((acc, byte) => acc + String.fromCharCode(byte), "");
+        const binaryString = new Uint8Array(arrayBuffer).reduce(
+          (acc, byte) => acc + String.fromCharCode(byte),
+          ""
+        );
 
-        const workbook = XLSX.read(binaryString, { type: 'binary' });
+        const workbook = XLSX.read(binaryString, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as (string | number)[][];
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as (
+          | string
+          | number
+        )[][];
         //console.log("jsonData:" + jsonData);
         // Obtener nombres de propiedades desde la primera fila
         const properties: (string | number)[] = jsonData[0];
@@ -324,23 +358,41 @@ function CatalogoPersonas() {
 
           properties.forEach((property, index) => {
             const value = row[index];
-            if (property === 'Nombre' && (value === undefined || value === '')) InfoValida = false;
-            if (property === 'Identificación' && (value === undefined || value === '')) InfoValida = false;
-            if (property === 'Departamento' && (value === undefined || value === '')) InfoValida = false;
-            if (property === 'Puesto' && (value === undefined || value === '')) InfoValida = false;
-            if (property === 'Teléfono' && (value === undefined || value === '')) InfoValida = false;
-            if (property === 'Correo' && (value === undefined || value === '')) InfoValida = false;
+            if (property === "Nombre" && (value === undefined || value === ""))
+              InfoValida = false;
+            if (
+              property === "Identificación" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
+            if (
+              property === "Departamento" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
+            if (property === "Puesto" && (value === undefined || value === ""))
+              InfoValida = false;
+            if (
+              property === "Teléfono" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
+            if (property === "Correo" && (value === undefined || value === ""))
+              InfoValida = false;
 
             // Asignar valores al objeto Persona
             obj.idPersona = "0" as string;
-            if (property === 'Nombre') obj.nombreCompleto = value as string;
-            if (property === 'Identificación') obj.identificacion = value as string;
-            if (property === 'Departamento') obj.departamento = value as string;
-            if (property === 'Puesto') obj.puesto = value as string;
-            if (property === 'Teléfono') obj.telefono = value as string;
-            if (property === 'Correo') obj.email = value as string;
-            obj.usuarioCreacion = identificacionUsuario ? identificacionUsuario:"";
-            obj.usuarioModificacion = '';
+            if (property === "Nombre") obj.nombreCompleto = value as string;
+            if (property === "Identificación")
+              obj.identificacion = value as string;
+            if (property === "Departamento") obj.departamento = value as string;
+            if (property === "Puesto") obj.puesto = value as string;
+            if (property === "Teléfono") obj.telefono = value as string;
+            if (property === "Correo") obj.email = value as string;
+            obj.usuarioCreacion = identificacionUsuario
+              ? identificacionUsuario
+              : "";
+            obj.usuarioModificacion = "";
           });
           return obj as Persona; // Finalmente convertimos a un objeto de tipo Persona
         });
@@ -349,7 +401,8 @@ function CatalogoPersonas() {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: 'Información incompleta. Verifique los campos requeridos en el archivo.'
+            mensaje:
+              "Información incompleta. Verifique los campos requeridos en el archivo.",
           });
           setShowSpinner(false);
           return;
@@ -358,24 +411,51 @@ function CatalogoPersonas() {
         const errores: string[] = [];
 
         // Validar que todos los campos son correctos
-        formattedData.forEach(({ departamento, email, identificacion, nombreCompleto, puesto, telefono }) => {
-          if (typeof nombreCompleto !== 'string' || nombreCompleto === null) errores.push('Nombre');
-          if (typeof identificacion !== 'string' && typeof telefono !== 'number' || identificacion === null) errores.push('Identificación');
-          if (typeof departamento !== 'string' || departamento === null) errores.push('Departamento');
-          if (typeof puesto !== 'string' || puesto === null) errores.push('Puesto');
-          if (typeof telefono !== 'number' || telefono === null) errores.push('Teléfono');
-          if (typeof email !== 'string' || email === null || !email.includes('@')) { errores.push('Correo'); }
-        });
+        formattedData.forEach(
+          ({
+            departamento,
+            email,
+            identificacion,
+            nombreCompleto,
+            puesto,
+            telefono,
+          }) => {
+            if (typeof nombreCompleto !== "string" || nombreCompleto === null)
+              errores.push("Nombre");
+            if (
+              (typeof identificacion !== "string" &&
+                typeof telefono !== "number") ||
+              identificacion === null
+            )
+              errores.push("Identificación");
+            if (typeof departamento !== "string" || departamento === null)
+              errores.push("Departamento");
+            if (typeof puesto !== "string" || puesto === null)
+              errores.push("Puesto");
+            if (typeof telefono !== "number" || telefono === null)
+              errores.push("Teléfono");
+            if (
+              typeof email !== "string" ||
+              email === null ||
+              !email.includes("@")
+            ) {
+              errores.push("Correo");
+            }
+          }
+        );
 
         if (errores.length > 0) {
           const columnasErroneas = Array.from(new Set(errores)); // Elimina duplicados
-          const mensaje = columnasErroneas.length === 1
-            ? `La columna ${columnasErroneas[0]} no cumple con el formato esperado.`
-            : `Las siguientes columnas no cumplen con el formato esperado: ${columnasErroneas.join(', ')}.`;
+          const mensaje =
+            columnasErroneas.length === 1
+              ? `La columna ${columnasErroneas[0]} no cumple con el formato esperado.`
+              : `Las siguientes columnas no cumplen con el formato esperado: ${columnasErroneas.join(
+                  ", "
+                )}.`;
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: mensaje
+            mensaje: mensaje,
           });
           setShowSpinner(false);
           return;
@@ -385,7 +465,7 @@ function CatalogoPersonas() {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: mensaje
+            mensaje: mensaje,
           });
           setShowSpinner(false);
           return;
@@ -402,17 +482,16 @@ function CatalogoPersonas() {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 2,
-        mensaje: 'Seleccione un archivo válido.'
+        mensaje: "Seleccione un archivo válido.",
       });
     }
   };
 
   const importarArchivoExcel = async () => {
-
     //let erroresFormato = false;
     setShowSpinner(true);
 
-    var personas = listaPersonasImportar.map(item => {
+    var personas = listaPersonasImportar.map((item) => {
       //agregar validadciones a campos
 
       return {
@@ -424,29 +503,31 @@ function CatalogoPersonas() {
         puesto: item.puesto,
         telefono: item.telefono.toString(),
         usuarioCreacion: item.usuarioCreacion,
-        usuarioModificacion: '',
-        fechaCreacion:(new Date()).toISOString()
+        usuarioModificacion: "",
+        fechaCreacion: new Date().toISOString(),
       };
     });
 
     // Función para verifica si una persona ya existe en listaPersonas
     const personaExists = (persona: Persona) => {
-      return listaPersonas.some(existingPersona =>
-        existingPersona.identificacion === persona.identificacion ||
-        existingPersona.email === persona.email
+      return listaPersonas.some(
+        (existingPersona) =>
+          existingPersona.identificacion === persona.identificacion ||
+          existingPersona.email === persona.email
       );
     };
 
     // Filtrar personas para eliminar duplicados
-    const personasSinDuplicados = personas.filter(persona => !personaExists(persona));
+    const personasSinDuplicados = personas.filter(
+      (persona) => !personaExists(persona)
+    );
 
     if (personas.length > 0 && personasSinDuplicados.length == 0) {
       setShowAlert(true);
-      setMensajeRespuesta(
-        {
-          "indicador": 1,
-          "mensaje": `Las personas que intenta importar ya existen.`
-        });
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: `Las personas que intenta importar ya existen.`,
+      });
 
       setShowSpinner(false);
       return;
@@ -461,37 +542,39 @@ function CatalogoPersonas() {
         return; // Detiene el proceso si el formato  es correcto
     }*/
 
-    const respuesta: ErrorResponse[] = await ImportarPersonas(personasSinDuplicados);
+    const respuesta: ErrorResponse[] = await ImportarPersonas(
+      personasSinDuplicados
+    );
 
     if (respuesta && respuesta.length > 0) {
       // Filtrar los errores de la respuestea
-      const errores = respuesta.filter(item => item.indicador === 1);
+      const errores = respuesta.filter((item) => item.indicador === 1);
 
-      // setIsLoading(false); 
+      // setIsLoading(false);
 
       if (errores.length > 0) {
-        const mensajesDeError = errores.map(error => error.mensaje).join('\n');
+        const mensajesDeError = errores
+          .map((error) => error.mensaje)
+          .join("\n");
         setShowSpinner(false);
         setShowAlert(true);
         setMensajeRespuesta({
-          "indicador": 1,
-          "mensaje": `Errores encontrados:\n${mensajesDeError}`
+          indicador: 1,
+          mensaje: `Errores encontrados:\n${mensajesDeError}`,
         });
-
       } else {
         setShowSpinner(false);
-        // Mostrar mensaje de éxito si no hay errores     
+        // Mostrar mensaje de éxito si no hay errores
         obtenerPersonas();
         handleModalImportar();
         setShowAlert(true);
         setMensajeRespuesta({
-          "indicador": 0,
-          "mensaje": 'Importación exitosamente.'
+          indicador: 0,
+          mensaje: "Importación exitosamente.",
         });
       }
     }
-  }
-
+  };
 
   // Encabezados de la tabla de importación sin acciones
   const encabezadoPersonasImportar = [
@@ -556,16 +639,15 @@ function CatalogoPersonas() {
       <div className="container-fluid">
         <Row>
           <Col md={10} className="d-flex justify-content-start">
-            <h1 style={{ marginLeft: 20 }} className="title">Catálogo de Personas</h1>
+            <h1 style={{ marginLeft: 20 }} className="title">
+              Catálogo de Personas
+            </h1>
           </Col>
         </Row>
       </div>
       <div style={{ padding: "20px" }}>
         {showAlert && (
-          <AlertDismissible
-            mensaje={mensajeRespuesta}
-            setShow={setShowAlert}
-          />
+          <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
         )}
         {/* Tabla de personas */}
         <Grid
@@ -573,14 +655,21 @@ function CatalogoPersonas() {
           gridData={listaPersonas}
           handle={handleModal}
           buttonVisible={true}
-          filterColumns={["nombreCompleto", "identificacion", "departamento", "puesto", "telefono", "email",]}
+          filterColumns={[
+            "nombreCompleto",
+            "identificacion",
+            "departamento",
+            "puesto",
+            "telefono",
+            "email",
+          ]}
           selectableRows={false}
-          botonesAccion={[          
+          botonesAccion={[
             {
-            condicion:true,
-            accion:handleModalImportar,
-            icono:<FaFileCirclePlus className="me-2" size={24} />,
-            texto:"Importar"
+              condicion: true,
+              accion: handleModalImportar,
+              icono: <FaFileCirclePlus className="me-2" size={24} />,
+              texto: "Importar",
             },
           ]}
         ></Grid>
@@ -690,12 +779,14 @@ function CatalogoPersonas() {
         showSubmitButton={false}
       >
         {/* Importar personas */}
-        <Container className='d-Grid align-content-center'>
+        <Container className="d-Grid align-content-center">
           <Form>
             <Form.Group controlId="file">
               <Row className="align-items-left">
                 <Col md={6}>
-                  <Form.Label className="mr-2"><strong>Archivo: </strong></Form.Label>
+                  <Form.Label className="mr-2">
+                    <strong>Archivo: </strong>
+                  </Form.Label>
                 </Col>
               </Row>
               <Row className="align-items-center justify-content-between">
@@ -708,7 +799,8 @@ function CatalogoPersonas() {
                   />
                 </Col>
                 <Col md={3} className="d-flex justify-content-end">
-                  <Button style={{ margin: 4 }}
+                  <Button
+                    style={{ margin: 4 }}
                     className="btn-crear"
                     variant="primary"
                     onClick={importarExcel}
@@ -718,7 +810,6 @@ function CatalogoPersonas() {
                   </Button>
                 </Col>
               </Row>
-
             </Form.Group>
           </Form>
         </Container>
@@ -736,7 +827,7 @@ function CatalogoPersonas() {
             <Button
               style={{
                 margin: 4,
-                display: showImportButton ? 'inline-block' : 'none',
+                display: showImportButton ? "inline-block" : "none",
               }}
               className="btn-save"
               variant="primary"
