@@ -21,3 +21,8 @@ export const EliminarJerarquiaDoc = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarJerarquiaDoc`;
     return await ProcesarDatosApi('PUT', url, data);
 }
+
+export const ImportarJerarquiasDoc = async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/ImportarJerarquiasDoc`;
+    return await ProcesarDatosApi("POST", url, data);
+  };

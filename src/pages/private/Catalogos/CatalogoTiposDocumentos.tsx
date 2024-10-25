@@ -6,10 +6,11 @@ import { ObtenerTiposDocumentos, CrearTipoDocumento, EliminarTipoDocumento, Actu
 import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
-import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
+import CustomModal from "../../../components/modal/CustomModal"; 
 import { AlertDismissible } from "../../../components/alert/alert";
 import { useSpinner } from "../../../context/spinnerContext";
 import { RiSaveFill } from "react-icons/ri";
+import BootstrapSwitchButton from "bootstrap-switch-button-react";
 
 import * as XLSX from "xlsx";
 import { useConfirm } from "../../../context/confirmContext";
@@ -84,7 +85,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
 
   // Función para eliminar un tipo de documento
   const eliminarTipoDocumento = (tipoDocumento: TipoDocumento) => {
-    openConfirm("¿Está seguro que desea eliminar?", async () => {
+    openConfirm("¿Está seguro que desea cambiar el estado?", async () => {
       try {
         setShowSpinner(true);
         const tipoDocumentoEliminar = {
@@ -102,14 +103,14 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: "Error al eliminar el tipo de documento",
+            mensaje: "Error al cambiar estado del tipo de documento",
           });
         }
       } catch (error) {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: "Error al eliminar el tipo de documento",
+          mensaje: "Error al cambiar estado del tipo de documento",
         });
       } finally {
         setShowSpinner(false);
@@ -242,6 +243,15 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
       id: "descripcion",
       name: "Descripción",
       selector: (row: TipoDocumento) => row.descripcion,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "estado",
+      name: "Estado",
+      selector: (row: any) => (row.estado ? "Activo" : "Inactivo"),
       sortable: true,
       style: {
         fontSize: "1.2em",
@@ -557,7 +567,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
       >
         <Form id="formTipoDocumento" onSubmit={handleSubmit}>
           <Row>
-            <Col md={3}>
+            <Col md={6}>
               <Form.Group controlId="formCodigoTipoDocumento">
                 <Form.Label>Código</Form.Label>
                 <Form.Control
@@ -570,7 +580,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
                 />
               </Form.Group>
             </Col>
-            <Col md={3}>
+            <Col md={6}>
               <Form.Group controlId="formNumCaracteres">
                 <Form.Label>Número de caracteres</Form.Label>
                 <Form.Control
@@ -595,11 +605,38 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
                 />
               </Form.Group>
             </Col>
+            <Col md={6}>
+              <Form.Group controlId="formEstado">
+                <div
+                  style={{
+                    display: "flex",
+                    alignContent: "start",
+                    alignItems: "start",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Form.Label style={{ marginTop: "3%" }}>
+                    Tipo de documento activo
+                  </Form.Label>
+                  <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={nuevoTipoDocumento.estado === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;"
+                      onChange={(checked) => nuevoTipoDocumento.estado = checked}
+                    />
+                  </div>
+                </div>
+              </Form.Group>
+            </Col>
           </Row>
         </Form>
       </CustomModal>
 
-      {/* Modal para importar tipos de documentos  */}
+      {/* Modal para importar   */}
       <CustomModal
         size={"xl"}
         show={showModalImportar}
@@ -607,7 +644,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         title={"Importar Registros"}
         showSubmitButton={false}
       >
-        {/* Importar personas */}
+        {/* Importar */}
         <Container className="d-Grid align-content-center">
           <Form>
             <Form.Group controlId="file">
@@ -643,7 +680,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           </Form>
         </Container>
         <br></br>
-        {/* Tabla de personas */}
+        {/* Tabla  */}
         <Grid
           gridHeading={encabezadoTiposDocImportar}
           gridData={listaTiposDocImportar}
