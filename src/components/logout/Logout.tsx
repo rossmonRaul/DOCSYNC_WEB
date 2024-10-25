@@ -3,7 +3,6 @@ import { UserKey, resetUser } from "../../redux/state/User";
 import { clearSessionStorage } from "../../utilities";
 import { PublicRoutes } from "../../models/routes";
 import { useDispatch } from "react-redux";
-import Swal from "sweetalert2";
 import { IoLogOut } from "react-icons/io5";
 import { useConfirm } from "../../context/confirmContext";
 

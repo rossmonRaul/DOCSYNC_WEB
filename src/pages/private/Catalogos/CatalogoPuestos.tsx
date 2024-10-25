@@ -8,7 +8,7 @@ import {
   EliminarPuesto,
   ObtenerPuestos,
 } from "../../../servicios/ServicioPuesto";
-import { FaTrash } from "react-icons/fa";
+import { FaBan, FaRedo } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
@@ -200,11 +200,10 @@ function CatalogoPuestos() {
           </Button>
           <Button
             size="sm"
-            onClick={() => eliminar(row)}
-            className="bg-secondary"
-          >
-            <FaTrash />
-          </Button>
+             onClick={() => eliminar(row)}
+            className="bg-secondary">            
+            {row.estado ? <FaBan /> : <FaRedo />}
+          </Button>      
         </>
       ),
       width: "120px",

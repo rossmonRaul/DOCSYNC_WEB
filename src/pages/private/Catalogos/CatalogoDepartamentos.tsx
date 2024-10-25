@@ -8,7 +8,7 @@ import {
   EliminarDepartamento,
   ObtenerDepartamentos,
 } from "../../../servicios/ServicioDepartamento";
-import { FaTrash } from "react-icons/fa";
+import { FaBan, FaRedo } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
@@ -198,11 +198,10 @@ function CatalogoDepartamentos() {
           </Button>
           <Button
             size="sm"
-            onClick={() => eliminar(row)}
-            className="bg-secondary"
-          >
-            <FaTrash />
-          </Button>
+             onClick={() => eliminar(row)}
+            className="bg-secondary">
+            {row.estado ? <FaBan /> : <FaRedo />}
+          </Button>      
         </>
       ),
       width: "120px",

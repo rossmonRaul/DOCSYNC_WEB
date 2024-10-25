@@ -3,7 +3,7 @@ import "../../../css/general.css";
 import { Button, Col, Form , Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { ObtenerJerarquiasDoc, CrearJerarquiaDoc, EliminarJerarquiaDoc, ActualizarJerarquiaDoc } from "../../../servicios/ServicioJerarquiasDocumentos";
-import { FaTrash } from "react-icons/fa";
+import { FaBan, FaRedo } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; 
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -17,6 +17,7 @@ interface JerarquiaDocumento {
     descripcion: string;
     usuarioCreacion: string;
     usuarioModificacion: string;
+    estado: boolean;
   }
 
 // Componente principal
@@ -28,7 +29,8 @@ const [nuevaJerarquiaDocumento, setNuevaJerarquiaDocumento] = useState<Jerarquia
   codigo: "",
   descripcion: "",
   usuarioCreacion: "",
-  usuarioModificacion: ""
+  usuarioModificacion: "",
+  estado: false
 });
   const [isEditing, setIsEditing] = useState(false);
   const { openConfirm } = useConfirm();
@@ -87,7 +89,8 @@ const [nuevaJerarquiaDocumento, setNuevaJerarquiaDocumento] = useState<Jerarquia
         codigo: "",
         descripcion: "",
         usuarioCreacion: "",
-        usuarioModificacion: ""
+        usuarioModificacion: "",
+        estado: false
     });
   };
 
@@ -168,7 +171,7 @@ const [nuevaJerarquiaDocumento, setNuevaJerarquiaDocumento] = useState<Jerarquia
             size="sm"
             onClick={() => eliminarJerarquiaDoc(row)}
             className="bg-secondary">
-            <FaTrash />
+            {row.estado ? <FaBan /> : <FaRedo />}
           </Button>      
         </>
       ), width:"120px",

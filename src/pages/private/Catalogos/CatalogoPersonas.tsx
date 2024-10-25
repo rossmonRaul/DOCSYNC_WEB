@@ -4,14 +4,8 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import CustomModal from "../../../components/modal/CustomModal";
 
 import { Grid } from "../../../components/table/tabla";
-import {
-  ObtenerPersonas,
-  CrearPersona,
-  EliminarPersona,
-  ActualizarPersona,
-  ImportarPersonas,
-} from "../../../servicios/ServicioPersonas";
-import { FaTrash, FaUpload } from "react-icons/fa";
+import { ObtenerPersonas, CrearPersona, EliminarPersona, ActualizarPersona, ImportarPersonas } from "../../../servicios/ServicioPersonas";
+import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -32,6 +26,7 @@ interface Persona {
   usuarioCreacion: string;
   usuarioModificacion: string;
   fechaCreacion: string;
+  estado: boolean;
 }
 
 // Definición de tipos para la respuesta
@@ -57,7 +52,8 @@ function CatalogoPersonas() {
     telefono: "",
     usuarioCreacion: identificacionUsuario ? identificacionUsuario : "",
     usuarioModificacion: "",
-    fechaCreacion: "",
+    fechaCreacion:"",
+    estado: false
   });
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -144,7 +140,8 @@ function CatalogoPersonas() {
       telefono: "",
       usuarioCreacion: "",
       usuarioModificacion: "",
-      fechaCreacion: "",
+      fechaCreacion:"",
+      estado: false
     });
   };
 
@@ -299,7 +296,8 @@ function CatalogoPersonas() {
             onClick={() => eliminarPersona(row)}
             className="bg-secondary"
           >
-            <FaTrash />
+            
+            {row.estado ? <FaBan /> : <FaRedo />}
           </Button>
         </>
       ),
@@ -519,7 +517,7 @@ function CatalogoPersonas() {
 
     // Filtrar personas para eliminar duplicados
     const personasSinDuplicados = personas.filter(
-      (persona) => !personaExists(persona)
+      (persona: any) => !personaExists(persona)
     );
 
     if (personas.length > 0 && personasSinDuplicados.length == 0) {

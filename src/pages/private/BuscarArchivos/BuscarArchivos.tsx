@@ -65,6 +65,8 @@ function BuscarArchivos() {
   const [criteriosBusqueda, setCriteriosBusqueda] = useState<any[]>([]);
   const [paramBusqueda, setParamBusqueda] = useState("");
   const [regExp, setRegExp] = useState<RegExp>(/.*/);
+  const [tamPag, setTamPag] = useState(10);
+  const [numPag, setNumPag] = useState(1);
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
@@ -234,34 +236,38 @@ function BuscarArchivos() {
     }
 
     // Validar que se haya elegido un criterio de búsqueda
-    if (criterioBusquedaText === "") {
+    if (criterioBusquedaText === '') {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Debe seleccionar un criterio de búsqueda",
+        mensaje: "Debe seleccionar un criterio de búsqueda"
       });
       setPendiente(false);
       return;
     }
 
     // Validar que se haya ingresado un parámetro de búsqueda
-    if (paramBusqueda.trim() === "") {
+    if (paramBusqueda.trim() === '') {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Debe ingresar un parámetro de búsqueda",
+        mensaje: "Debe ingresar un parámetro de búsqueda"
       });
       setPendiente(false);
       return;
     }
 
     // Validar cual método de API llamar
-    if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
+    if (criterioBusquedaText.trim().toLowerCase() === 'solicitud') {
+
       const filtro = {
         numSolicitud: paramBusqueda,
         fechaFiltroInicial:
           fechaFiltroInicial === null ? null : fechaFiltroInicial,
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+		tamannoPagina: tamPag,
+        numeroPagina: numPag,
+        usuarioBusqueda: identificacionUsuario					  
       };
 
       const resultadosObtenidos = await ObtenerDocumento(filtro);
@@ -279,6 +285,7 @@ function BuscarArchivos() {
       } else {
         setMostrarBusqueda(!mostrarBusqueda);
       }
+	 
     } else {
       const filtro = {
         fechaInicio: fechaInicio,
@@ -320,6 +327,7 @@ function BuscarArchivos() {
         // regional: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
         // solicitudAnterior: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
       };
+	   
 
       var response = await BusquedaSolicitudIHTT(filtro);
 
@@ -340,6 +348,7 @@ function BuscarArchivos() {
         });
         setPendiente(false);
       } else {
+		   
         setMostrarBusqueda(!mostrarBusqueda);
 
         var solics = "";
@@ -356,6 +365,9 @@ function BuscarArchivos() {
           fechaFiltroInicial:
             fechaFiltroInicial === null ? null : fechaFiltroInicial,
           fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+								
+							   
+												
         };
 
         const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
@@ -364,10 +376,11 @@ function BuscarArchivos() {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
-            mensaje: "No hay registros con los parámetros indicados",
+            mensaje: "No hay registros con los parámetros indicados"
           });
           setPendiente(false);
         } else {
+					 
           setListaArchivosTabla(resultadosObtenidos);
           setPendiente(false);
           setContenido("");
@@ -720,9 +733,10 @@ function BuscarArchivos() {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Ocurrió un error al obtener los criterios de búsqueda",
+        mensaje: "Ocurrió un error al obtener los criterios de búsqueda"
       });
     } else {
+		 
       setCriteriosBusqueda(response);
     }
   };
@@ -901,7 +915,7 @@ function BuscarArchivos() {
                         label: x.criterioBusqueda,
                       }))}
                       value={
-                        criterioBusquedaText !== ""
+                        criterioBusquedaText !== ''
                           ? {
                               value: criterioBusquedaId,
                               label: criterioBusquedaText,
@@ -930,7 +944,7 @@ function BuscarArchivos() {
                         const value = e.target.value;
 
                         // Si el valor cumple con la expresión regular, actualiza el estado
-                        if (regExp.test(value) || value === "") {
+                        if (regExp.test(value) || value === '') {
                           setParamBusqueda(value);
                         }
                       }}
@@ -938,6 +952,7 @@ function BuscarArchivos() {
                   </Form.Group>
                 </div>
 
+				
                 <div
                   className="d-flex flex-column mt-auto p-3"
                   style={{ padding: "3px 10px", alignSelf: "flex-end" }}

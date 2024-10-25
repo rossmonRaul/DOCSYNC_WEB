@@ -2,14 +2,8 @@ import { useState, useEffect } from "react";
 import "../../../css/general.css";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
-import {
-  ObtenerTiposDocumentos,
-  CrearTipoDocumento,
-  EliminarTipoDocumento,
-  ActualizarTipoDocumento,
-  ImportarTiposDocumentos,
-} from "../../../servicios/ServicioTiposDocumentos";
-import { FaTrash, FaUpload } from "react-icons/fa";
+import { ObtenerTiposDocumentos, CrearTipoDocumento, EliminarTipoDocumento, ActualizarTipoDocumento, ImportarTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
+import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
@@ -22,15 +16,16 @@ import { useConfirm } from "../../../context/confirmContext";
 
 // Interfaz para la información del tipo de documento
 interface TipoDocumento {
-  idTipoDocumento: string;
-  numCaracteres: number;
-  codigo: string;
-  descripcion: string;
-  usuarioCreacion: string;
-  usuarioModificacion: string;
-}
-
-// Definición de tipos para la respuesta
+    idTipoDocumento: string;
+    numCaracteres: number;
+    codigo: string;
+    descripcion: string;
+    usuarioCreacion: string;
+    usuarioModificacion: string;
+    estado: boolean;
+  }
+  
+  // Definición de tipos para la respuesta
 interface ErrorResponse {
   indicador: number;
   mensaje: string;
@@ -38,20 +33,22 @@ interface ErrorResponse {
 
 // Componente principal
 function CatalogoTiposDocumentos() {
+  
+  const { openConfirm } = useConfirm();
   const { setShowSpinner } = useSpinner();
   const [listaTiposDocumentos, setListaTiposDocumentos] = useState<
     TipoDocumento[]
   >([]);
   const [showModal, setShowModal] = useState(false);
-  const { openConfirm } = useConfirm();
-  const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
-    idTipoDocumento: "0",
-    codigo: "",
-    numCaracteres: 0,
-    descripcion: "",
-    usuarioCreacion: "",
-    usuarioModificacion: "",
-  });
+const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
+  idTipoDocumento: "0",
+  codigo: "",
+  numCaracteres: 0,
+  descripcion: "",
+  usuarioCreacion: "",
+  usuarioModificacion: "",
+  estado: false
+});
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({
@@ -138,6 +135,7 @@ function CatalogoTiposDocumentos() {
       descripcion: "",
       usuarioCreacion: "",
       usuarioModificacion: "",
+      estado: false
     });
   };
 
@@ -264,10 +262,9 @@ function CatalogoTiposDocumentos() {
           <Button
             size="sm"
             onClick={() => eliminarTipoDocumento(row)}
-            className="bg-secondary"
-          >
-            <FaTrash />
-          </Button>
+            className="bg-secondary">
+            {row.estado ? <FaBan /> : <FaRedo />}
+          </Button>      
         </>
       ),
       width: "120px",
@@ -474,7 +471,7 @@ function CatalogoTiposDocumentos() {
 
     // Filtrar  para eliminar duplicados
     const tiposDocSinDuplicados = tiposDocumentos.filter(
-      (petipoDoc) => !tipoDocExists(petipoDoc)
+      (petipoDoc: any) => !tipoDocExists(petipoDoc)
     );
 
     if (tiposDocumentos.length > 0 && tiposDocSinDuplicados.length == 0) {

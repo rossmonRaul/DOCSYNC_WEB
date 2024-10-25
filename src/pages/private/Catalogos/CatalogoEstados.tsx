@@ -3,7 +3,7 @@ import "../../../css/general.css";
 import { Button, Col, Form , Row} from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { ObtenerEstados, CrearEstado, EliminarEstado, ActualizarEstado } from "../../../servicios/ServicioEstados";
-import { FaTrash ,FaPlus } from "react-icons/fa";
+import { FaBan, FaRedo } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal"; // Importar el nuevo modal
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -17,6 +17,7 @@ interface Estado {
     descripcionEstado: string;
     usuarioCreacion: string;
     usuarioModificacion: string;
+    estado: boolean;
   }
 
 // Componente principal
@@ -28,7 +29,8 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
   codigoEstado: "",
   descripcionEstado: "",
   usuarioCreacion: "",
-  usuarioModificacion: ""
+  usuarioModificacion: "",
+  estado: false
 });
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -88,7 +90,8 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
         codigoEstado: "",
         descripcionEstado: "",
         usuarioCreacion: "",
-        usuarioModificacion: ""
+        usuarioModificacion: "",
+        estado: false
     });
   };
 
@@ -169,7 +172,7 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
             size="sm"
             onClick={() => eliminarEstado(row)}
             className="bg-secondary">
-            <FaTrash />
+            {row.estado ? <FaBan /> : <FaRedo/>}
           </Button>      
         </>
       ), width:"120px",

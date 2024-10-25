@@ -10,7 +10,7 @@ import {
   ActualizarUsuario,
 } from "../../../servicios/ServicioUsuario";
 import { ObtenerPersonas } from "../../../servicios/ServicioPersonas";
-import { FaTrash } from "react-icons/fa";
+import { FaBan, FaRedo } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
@@ -20,7 +20,7 @@ import Select from "react-select";
 import { useConfirm } from "../../../context/confirmContext";
 
 // Componente principal
-function CatalogoPersonas() {
+function CatalogoUsuarios() {
   const { setShowSpinner } = useSpinner();
   const [listaUsuarios, setUsuarios] = useState<any[]>([]);
   const [correoE, setCorreoE] = useState<string>("");
@@ -108,6 +108,7 @@ function CatalogoPersonas() {
         console.error("Error al eliminar usuario:", error);
       }
     });
+  }
 
     // Función para abrir el modal y editar
     const editarUsuario = (usuario: any) => {
@@ -274,92 +275,51 @@ function CatalogoPersonas() {
       setShowSpinner(false);
     };
 
-    // Encabezados de la tabla con acciones
-    const encabezadoTabla = [
-      {
-        id: "identificacion",
-        name: "Identificación",
-        selector: (row: any) => row.identificacion,
-        sortable: true,
-        style: {
-          fontSize: "1.2em",
-        },
-      },
-      {
-        id: "nombreCompleto",
-        name: "Nombre",
-        selector: (row: any) => row.nombreCompleto,
-        sortable: true,
-        style: {
-          fontSize: "1.2em",
-        },
-      },
-      {
-        id: "rol",
-        name: "Rol",
-        selector: (row: any) => row.rol,
-        sortable: true,
-        style: {
-          fontSize: "1.2em",
-        },
-      },
-      {
-        id: "puesto",
-        name: "Puesto",
-        selector: (row: any) => row.puesto,
-        sortable: true,
-        style: {
-          fontSize: "1.2em",
-        },
-      },
-      {
-        id: "verConfidencial",
-        name: "Confidencial",
-        sortable: true,
-        cell: (row: any) => (
-          <div
-            style={{
-              fontSize: "1.2em",
-              color: row.verConfidencial ? "green" : "red",
-            }}
-          >
-            {row.verConfidencial ? "Sí" : "No"}
-          </div>
-        ),
-      },
-      {
-        id: "estado",
-        name: "Estado",
-        selector: (row: any) => (row.estado ? "Activo" : "Inactivo"),
-        sortable: true,
-        style: {
-          fontSize: "1.2em",
-        },
-      },
-      {
-        id: "acciones",
-        name: "Acciones",
-        cell: (row: any) => (
-          <>
-            <Button
-              onClick={() => editarUsuario(row)}
-              size="sm"
-              className="bg-secondary me-1"
-            >
-              <VscEdit />
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => eliminar(row)}
-              className="bg-secondary"
-            >
-              <FaTrash />
-            </Button>
-          </>
-        ),
-        width: "120px",
-      },
-    ];
+  // Encabezados de la tabla con acciones
+  const encabezadoTabla = [
+    { id: "identificacion", name: "Identificación", selector: (row: any) => row.identificacion, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "nombreCompleto", name: "Nombre", selector: (row: any) => row.nombreCompleto, sortable: true, style: {
+      fontSize: "1.2em",
+    },},
+    { id: "rol", name: "Rol", selector: (row: any) => row.rol, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "puesto", name: "Puesto", selector: (row: any) => row.puesto, sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    { id: "verConfidencial", name: "Confidencial", sortable: true,
+      cell: (row: any) => (
+        <div style={{ fontSize: "1.2em", color: row.verConfidencial ? 'green' : 'red' }}>
+          {row.verConfidencial ? 'Sí' : 'No'}
+        </div>
+      ),
+    },
+    { id: "estado", name: "Estado", selector: (row: any) => (row.estado ? 'Activo' : 'Inactivo'), sortable: true,style: {
+      fontSize: "1.2em",
+    }, },
+    {
+      id: "acciones",
+      name: "Acciones",
+      cell: (row: any) => (
+        <>
+        <Button
+            onClick={() => editarUsuario(row)}
+            size="sm"
+            className="bg-secondary me-1">
+            <VscEdit  />
+          </Button>
+          <Button
+            size="sm"
+             onClick={() => eliminar(row)}
+            className="bg-secondary">
+            {row.estado ? <FaBan /> : <FaRedo />}
+          </Button>      
+        </>
+      ), width:"120px",
+    },
+  ];
 
     return (
       <>
@@ -470,7 +430,7 @@ function CatalogoPersonas() {
                   <Form.Control
                     type="text"
                     name="identificacion"
-                    value={identificacion || ""} // Valor opcional
+                    value={identificacion || ""} 
                     maxLength={50}
                     readOnly
                     style={{
@@ -490,7 +450,7 @@ function CatalogoPersonas() {
                   <Form.Control
                     type="text"
                     name="correoElectronico"
-                    value={correoE || ""} // Valor opcional
+                    value={correoE || ""}
                     maxLength={50}
                     readOnly
                     style={{
@@ -584,7 +544,6 @@ function CatalogoPersonas() {
         </CustomModal>
       </>
     );
-  };
 }
 
-export default CatalogoPersonas;
+export default CatalogoUsuarios;
