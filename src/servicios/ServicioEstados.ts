@@ -21,3 +21,8 @@ export const EliminarEstado = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/EliminarEstado`;
   return await ProcesarDatosApi("PUT", url, data);
 };
+
+export const ImportarEstados = async (data: any) => {
+  const url = `${API_BASE_URL}/${controlador}/ImportarEstados`;
+  return await ProcesarDatosApi("POST", url, data);
+};
