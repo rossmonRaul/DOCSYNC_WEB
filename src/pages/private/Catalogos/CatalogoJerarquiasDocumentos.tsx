@@ -522,7 +522,7 @@ const [nuevaJerarquiaDocumento, setNuevaJerarquiaDocumento] = useState<Jerarquia
                   }}
                 >
                   <Form.Label style={{ marginTop: "3%" }}>
-                    Tipo de documento activo
+                    Jerarquía de Documento activo
                   </Form.Label>
                   <div className="w-100">
                     <BootstrapSwitchButton
