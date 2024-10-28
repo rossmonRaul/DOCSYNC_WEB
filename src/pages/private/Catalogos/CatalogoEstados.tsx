@@ -522,7 +522,7 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
                   }}
                 >
                   <Form.Label style={{ marginTop: "3%" }}>
-                    Tipo de documento activo
+                    Estado activo
                   </Form.Label>
                   <div className="w-100">
                     <BootstrapSwitchButton
@@ -541,14 +541,15 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
           </Row>
         </Form>
       </CustomModal>
-               {/* Modal para importar   */}
-               <CustomModal
-        size={"xl"}
-        show={showModalImportar}
-        onHide={handleModalImportar}
-        title={"Importar Registros"}
-        showSubmitButton={false}
-      >
+      
+      {/* Modal para importar   */}
+      <CustomModal
+          size={"xl"}
+          show={showModalImportar}
+          onHide={handleModalImportar}
+          title={"Importar Registros"}
+          showSubmitButton={false}
+        >
         {/* Importar */}
         <Container className="d-Grid align-content-center">
           <Form>
