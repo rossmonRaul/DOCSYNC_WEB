@@ -18,6 +18,7 @@ import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { useSpinner } from "../../../context/spinnerContext";
 import Select from "react-select"
+import { useConfirm } from "../../../context/confirmContext";
 
 // Componente principal
 function AdministrarRoles() {
@@ -35,6 +36,7 @@ function AdministrarRoles() {
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
+  const { openConfirm } = useConfirm();
 
   useEffect(() => {
     obtenerDatos();
@@ -156,25 +158,14 @@ function AdministrarRoles() {
   }
 
   const eliminarOpcion = (opcion: any) => {
-    // Swal.fire({
-    //   title: "Eliminar acceso",
-    //   text: "¿Estás seguro de que deseas eliminar el acceso a la opción "+opcion.opcion+"?",
-    //   icon: "question",
-    //   showCancelButton: true,
-    //   confirmButtonText: "Sí",
-    //   cancelButtonText: "No"
-    // }).then(async (result) => {
-    //     if (result.isConfirmed) {
-            
+    openConfirm("¿Está seguro que desea eliminar el acceso?", () => {
       setOpcionesRol((prevOpcionesRol: any[]) =>
         prevOpcionesRol.filter((op: any) => op.idOpcion !== opcion.idOpcion)
       );
 
       setShowAlert(true);
-      setMensajeRespuesta({indicador: 0, mensaje: 'Acceso eliminado'});
-
-      // }
-    // });       
+      setMensajeRespuesta({indicador: 0, mensaje: 'Acceso eliminado'}); 
+    });      
   }
 
   // Maneja el envío del formulario para agregar o editar
@@ -396,6 +387,7 @@ function AdministrarRoles() {
                         value: cat.idCategoria,
                         label: cat.descripcion,
                       }))}      
+                      noOptionsMessage={() => "Opción no encontrada"}     
                     /> 
                 </Form.Group>
               </Col>
@@ -416,6 +408,7 @@ function AdministrarRoles() {
                         value: cat.idOpcion,
                         label: cat.descripcion,
                       }))}      
+                      noOptionsMessage={() => "Opción no encontrada"}     
                     /> 
                 </Form.Group>
               </Col>

@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import {
   ActualizarDepartamento,
   AgregarDepartamento,
+  CargaMasivaDepartamento,
   EliminarDepartamento,
   ObtenerDepartamentos,
 } from "../../../servicios/ServicioDepartamento";
-import { FaBan, FaRedo } from "react-icons/fa";
+import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
 import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { useSpinner } from "../../../context/spinnerContext";
 import { useConfirm } from "../../../context/confirmContext";
+import { FaFileCirclePlus } from "react-icons/fa6";
+import * as XLSX from "xlsx";
+import { RiSaveFill } from "react-icons/ri";
 
 // Componente principal
 function CatalogoDepartamentos() {
@@ -31,6 +35,10 @@ function CatalogoDepartamentos() {
     indicador: 0,
     mensaje: "",
   });
+  const [showModalImportar, setShowModalImportar] = useState(false);
+  const [listaImportar, setListaImportar] = useState<any[]>([]);
+  const [showImportButton, setShowImportButton] = useState(false);
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
     obtenerDepartamentos();
@@ -49,7 +57,7 @@ function CatalogoDepartamentos() {
 
   // Función para inhabilitar un departamento
   const eliminar = (row: any) => {
-    openConfirm("Está seguro que desea inactivar?", async () => {
+    openConfirm("¿Está seguro que desea cambiar el estado?", async () => {
       try {
         const identificacionUsuario = localStorage.getItem('identificacionUsuario');
         setShowSpinner(true);
@@ -208,6 +216,253 @@ function CatalogoDepartamentos() {
     },
   ];
 
+  // Función para manejar el cierre del modal de importar
+  const handleModalImportar = () => {
+    setListaImportar([]);
+    setFile(null);
+    setShowImportButton(false);
+    setShowModalImportar(!showModalImportar);
+  };
+
+  const handleFileChange = (e: any) => {
+    setListaImportar([]);
+    const file = e.target.files[0];
+    setShowImportButton(false);
+    setFile(file);
+  };
+
+  const importarExcel = () => {
+    setShowSpinner(true);
+    let InfoValida = true;
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const identificacionUsuario = localStorage.getItem(
+          "identificacionUsuario"
+        );
+
+        const arrayBuffer = e.target?.result as ArrayBuffer;
+
+        // Convierte el ArrayBuffer a una cadena binaria
+        const binaryString = new Uint8Array(arrayBuffer).reduce(
+          (acc, byte) => acc + String.fromCharCode(byte),
+          ""
+        );
+
+        const workbook = XLSX.read(binaryString, { type: "binary" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as (
+          | string
+          | number
+        )[][];
+
+        // Obtener nombres de propiedades desde la primera fila
+        const properties: (string | number)[] = jsonData[0];
+        let FormatoValido = true;
+        let mensaje = "";
+
+        // Crear un array de objetos utilizando los nombres de propiedades
+        const formattedData: any[] = jsonData.slice(1).map((row) => {
+          const obj: Partial<any> = {};
+
+          properties.forEach((property, index) => {
+            const value = row[index];
+
+            if (
+              property === "Criterio búsqueda" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
+            if (
+              property === "Tipo de validación" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
+            if (
+              property === "Valor externo" &&
+              (value === undefined || value === "")
+            )
+              InfoValida = false;
+
+            // Asignar valores al objeto
+            if (property === "Nombre departamento") obj.nombre = value;
+            
+            obj.usuarioCreacion = identificacionUsuario
+              ? identificacionUsuario
+              : "";
+            obj.fechaCreacion = new Date().toISOString();
+          });
+          return obj as any;
+        });
+
+        if (!InfoValida) {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje:
+              "Información incompleta. Verifique los campos requeridos en el archivo.",
+          });
+          setShowSpinner(false);
+          return;
+        }
+
+        const errores: string[] = [];
+
+        var nombresRep = "";
+        var nombresRepetidos = false;
+
+        // Validar que todos los campos son correctos
+        formattedData.forEach((item: any) => {
+          // Validar columnas
+          if (!item.nombre) {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: 'No se encontró la columna "Nombre departamento"',
+            });
+            return;
+          }          
+          if (
+            typeof item.nombre !== "string" ||
+            item.nombre === null
+          )
+            errores.push("Nombre departamento");
+          if (item.nombre.length > 50)
+            errores.push("Nombre departamento (máximo 50 caracteres)");
+
+          // Se identifican los nombres ya existentes
+          if (
+            listaDepartamentos.filter(
+              (x: any) => x.nombre.toLowerCase() === item.nombre.toLowerCase().trim()
+            ).length > 0
+          ) {
+            nombresRep +=
+              nombresRep === ""
+                ? item.nombre
+                : ", " + item.nombre;
+            item.nombre = undefined; // Se marca como undefined para no cargarlo
+          }
+
+          // Se identifican nombres repetidos en documento
+          if (
+            formattedData.filter(
+              (x: any) => x.nombre === item.nombre
+            ).length > 1
+          ) {
+            item.nombre = undefined; // Se marca como undefined para no cargarlo
+            nombresRepetidos = true;
+          }
+        });
+        
+        // Indicador de nombres repetidos
+        if (nombresRep.length > 0) {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje:
+              "Los siguientes departamentos, ya existen en el sistema: " +
+              nombresRep +
+              ". Por lo que no serán cargados",
+          });
+          setShowSpinner(false);
+        }
+        // Indicador de nombres repetidos en el archivo de carga
+        else if (nombresRepetidos) {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje:
+              "Se encontraron registros con el mismo nombre, por lo que serán descartados para la carga. Favor validar los registros",
+          });
+          setShowSpinner(false);
+        } else if (errores.length > 0) {
+          const columnasErroneas = Array.from(new Set(errores)); // Elimina duplicados
+          const mensaje =
+            columnasErroneas.length === 1
+              ? `La columna ${columnasErroneas[0]} no cumple con el formato esperado.`
+              : `Debe cargar un archivo de Excel con las siguientes columnas: ${columnasErroneas.join(
+                  ", "
+                )}.`;
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: mensaje,
+          });
+          setShowSpinner(false);
+        } else if (!FormatoValido) {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: mensaje,
+          });
+          setShowSpinner(false);
+        }
+
+        setShowSpinner(false);
+        setListaImportar(
+          formattedData.filter(
+            (x: any) => x.nombre
+          )
+        );
+        setShowImportButton(true);
+      };
+
+      reader.readAsArrayBuffer(file);
+    } else {
+      setShowSpinner(false);
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 2,
+        mensaje: "Seleccione un archivo de Excel válido.",
+      });
+    }
+  };
+
+  const importarArchivoExcel = async () => {
+    if (listaImportar.length < 1) {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 2,
+        mensaje: "No hay registros por cargar",
+      });
+    } else {
+      setShowSpinner(true);
+
+      var listaImportada = listaImportar.map((item) => {
+        return {
+          nombre: item.nombre,
+          estado: true,
+          usuarioCreacion: item.usuarioCreacion,
+          fechaCreacion: new Date().toISOString(),
+        };
+      });
+
+      const response = await CargaMasivaDepartamento(listaImportada);
+
+      setShowAlert(true);
+      setMensajeRespuesta(response);
+      setShowSpinner(false);
+      handleModalImportar();
+      obtenerDepartamentos();
+    }
+  };
+
+  // Encabezados de la tabla de importación sin acciones
+  const encabezadoImportar = [
+    {
+      id: "nombre",
+      name: "Departamento",
+      selector: (row: any) => row.nombre,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    }
+  ];
+
   return (
     <>
       <h1 className="title">Catálogo de departamentos</h1>
@@ -225,6 +480,14 @@ function CatalogoDepartamentos() {
           gridData={listaDepartamentos}
           filterColumns={["nombre", "estado"]}
           selectableRows={false}
+          botonesAccion={[
+            {
+              condicion: true,
+              accion: handleModalImportar,
+              icono: <FaFileCirclePlus className="me-2" size={24} />,
+              texto: "Importar",
+            },
+          ]}
         ></Grid>
       </div>
 
@@ -286,6 +549,78 @@ function CatalogoDepartamentos() {
             </Col>
           </Row>
         </Form>
+      </CustomModal>
+
+      {/* Modal para importar*/}
+      <CustomModal
+        size={"xl"}
+        show={showModalImportar}
+        onHide={handleModalImportar}
+        title={"Importar registros"}
+        showSubmitButton={false}
+      >
+        {/* Importar */}
+        <Container className="d-Grid align-content-center">
+          <Form>
+            <Form.Group controlId="file">
+              <Row className="align-items-left">
+                <Col md={6}>
+                  <Form.Label className="mr-2">
+                    <strong>Archivo: </strong>
+                  </Form.Label>
+                </Col>
+              </Row>
+              <Row className="align-items-center justify-content-between">
+                <Col md={9}>
+                  <Form.Control
+                    type="file"
+                    required={true}
+                    accept=".xlsx"
+                    onChange={handleFileChange}
+                  />
+                </Col>
+                <Col md={3} className="d-flex justify-content-end">
+                  <Button
+                    style={{ margin: 4 }}
+                    className="btn-crear"
+                    variant="primary"
+                    onClick={importarExcel}
+                  >
+                    <FaUpload className="me-2" size={24} />
+                    Cargar archivo
+                  </Button>
+                </Col>
+              </Row>
+            </Form.Group>
+          </Form>
+        </Container>
+        <br></br>
+
+        {/* Tabla de importar */}
+        <Grid
+          gridHeading={encabezadoImportar}
+          gridData={listaImportar}
+          handle={handleModalImportar}
+          buttonVisible={false}
+          selectableRows={false}
+        />
+        <Row>
+          <Col md={12} className="d-flex justify-content-end">
+            <Button
+              style={{
+                margin: 4,
+                display: showImportButton ? "inline-block" : "none",
+              }}
+              className="btn-save"
+              variant="primary"
+              type="submit"
+              onClick={importarArchivoExcel}
+            >
+              <RiSaveFill className="me-2" size={24} />
+              Guardar
+            </Button>
+          </Col>
+        </Row>
       </CustomModal>
     </>
   );

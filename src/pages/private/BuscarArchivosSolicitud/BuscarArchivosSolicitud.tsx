@@ -7,7 +7,6 @@ import {FaEye} from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import {ObtenerDocumentoPorSolicitud} from "../../../servicios/ServicioDocumentos";
 import { format } from "date-fns";
-import { LuSearchX } from "react-icons/lu";
 import { AiOutlineFileSearch } from "react-icons/ai";
 import { useSpinner } from "../../../context/spinnerContext";
 import { useParams } from "react-router-dom";
@@ -225,9 +224,7 @@ useEffect(() => {
                         width: "100%",
                       }}
                     >
-                      <p>Sin resultados que mostrar</p>
-                      <br />
-                      <LuSearchX className="me-2" size={50} />
+                      <img src="public/SinResultados.png" style={{width: '75%', height: '75%'}}/>
                     </div>
                   )}
                 </div>

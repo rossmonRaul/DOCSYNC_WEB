@@ -76,7 +76,7 @@ function CatalogoCriterioBusqueda() {
 
   // Función para inhabilitar un criterio
   const eliminar = (row: any) => {
-    openConfirm("Está seguro que desea inactivar?", async () => {
+    openConfirm("¿Está seguro que desea cambiar el estado?", async () => {
       try {
         setShowSpinner(true);
         const data = {
@@ -700,6 +700,7 @@ function CatalogoCriterioBusqueda() {
                     value: x.idTipoValidacion,
                     label: x.validacion,
                   }))}
+                  noOptionsMessage={() => "Opción no encontrada"}
                 />
               </Form.Group>
             </Col>
@@ -757,7 +758,7 @@ function CatalogoCriterioBusqueda() {
         title={"Importar registros"}
         showSubmitButton={false}
       >
-        {/* Importar personas */}
+        {/* Importar */}
         <Container className="d-Grid align-content-center">
           <Form>
             <Form.Group controlId="file">

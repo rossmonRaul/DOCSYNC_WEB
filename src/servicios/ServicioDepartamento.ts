@@ -21,3 +21,8 @@ export const EliminarDepartamento = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarDepartamento`;
     return await ProcesarDatosApi('PUT', url, data);
 }
+
+export const CargaMasivaDepartamento = async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/CargaMasivaDepartamento`;
+    return await ProcesarDatosApi('POST', url, data);
+}

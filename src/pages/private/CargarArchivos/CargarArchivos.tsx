@@ -70,7 +70,7 @@ function CargarArchivos() {
     const response = await ObtenerTiposDocumentos();
     setShowSpinner(false);
     if (response) {
-      setTipoDocumento(response);
+      setTipoDocumento(response.filter((x: any) => x.estado));
     } else {
       setShowAlert(true);
       setMensajeRespuesta({

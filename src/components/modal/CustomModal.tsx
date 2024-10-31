@@ -1,8 +1,7 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
-import { AiOutlineClose } from "react-icons/ai";
 import { MdCancel } from "react-icons/md";
-import { RiRestartLine, RiSaveFill } from "react-icons/ri";
+import { RiMailSendFill, RiRestartLine, RiSaveFill} from "react-icons/ri";
 
 interface CustomModalProps {
   show: boolean;
@@ -12,6 +11,7 @@ interface CustomModalProps {
   size?: "sm" | "lg" | "xl"; // Tamaños opcionales del Modal
   showSubmitButton?: boolean;
   isPassReset?: boolean;
+  isEmailSend?: boolean;
   submitButtonLabel?: string;
   formId?: string;
 }
@@ -26,6 +26,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
   formId = "customFormId",
   submitButtonLabel = "Guardar",
   isPassReset = false,
+  isEmailSend = false
 }) => {
   return (
     <Modal show={show} centered onHide={onHide} size={size}>
@@ -66,10 +67,17 @@ const CustomModal: React.FC<CustomModalProps> = ({
               alignItems: "center",
             }}
           >
+
             {isPassReset ? (
               <RiRestartLine className="me-2" size={24} />
             ) : (
-              <RiSaveFill className="me-2" size={24} />
+              isEmailSend ? (
+                <RiMailSendFill className="me-2" size={24} />
+              )
+              : 
+              (
+                <RiSaveFill className="me-2" size={24} />
+              )
             )}
 
             {submitButtonLabel}

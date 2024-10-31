@@ -1,22 +1,18 @@
-import { useState, ChangeEvent, FormEvent, lazy, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form, Placeholder, Row, Tooltip } from "react-bootstrap";
+import { Button, Col, Form, Row } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
 import { FaClipboardList, FaSearch, FaEyeSlash, FaEye, FaFileDownload } from "react-icons/fa";
-import { LuSearchX } from "react-icons/lu";
 import Select, { SingleValue } from "react-select"
 import CustomModal from "../../../components/modal/CustomModal";
 import { ObtenerHistorial } from "../../../servicios/ServiceHistorial";
 import { ObtenerUsuarios } from "../../../servicios/ServicioUsuario";
 import { useSpinner } from "../../../context/spinnerContext";
 import { exportToExcel } from '../../../utilities/exportReportToExcel';
-
-
-//import BootstrapSwitchButton from "bootstrap-switch-button-react";
 import { format } from "date-fns";
 
 interface UsuarioOption {
@@ -522,6 +518,7 @@ function Historial() {
                           fontSize: "16px",
                         }),
                       }}
+                      noOptionsMessage={() => "Opción no encontrada"}
                     />
                   </Form.Group>
                 </div>
@@ -631,9 +628,7 @@ function Historial() {
                       className="content row justify-content-center align-items-center"
                       style={{ marginLeft: 10, textAlign: "center", width: "100%" }}
                     >
-                      <p>Sin resultados que mostrar</p>
-                      <br />
-                      <LuSearchX className="me-2" size={50} />
+                      <img src="public/SinResultados.png" style={{width: '75%', height: '75%'}}/>
                     </div>
                   )}
               </div>

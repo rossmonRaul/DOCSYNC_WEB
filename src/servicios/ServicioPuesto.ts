@@ -21,3 +21,8 @@ export const EliminarPuesto = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarPuesto`;
     return await ProcesarDatosApi('PUT', url, data);
 }
+
+export const CargaMasivaPuesto = async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/CargaMasivaPuesto`;
+    return await ProcesarDatosApi('POST', url, data);
+}

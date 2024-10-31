@@ -85,7 +85,7 @@ function CatalogoUsuarios() {
 
   // Función para inhabilitar un usuario
   const eliminar = async (usuario: any) => {
-    openConfirm("¿Está seguro que desea eliminar?", async () => {
+    openConfirm("¿Está seguro que desea cambiar el estado del usuario?", async () => {
       try {
         const identificacionUsuario = localStorage.getItem(
           "identificacionUsuario"
@@ -388,6 +388,7 @@ function CatalogoUsuarios() {
                       value: cat.idPersona,
                       label: cat.nombreCompleto,
                     }))}
+                    noOptionsMessage={() => "Opción no encontrada"}     
                   />
                 </Form.Group>
               </Col>
@@ -419,6 +420,7 @@ function CatalogoUsuarios() {
                       value: cat.idRol,
                       label: cat.rol,
                     }))}
+                    noOptionsMessage={() => "Opción no encontrada"}     
                   />
                 </Form.Group>
               </Col>

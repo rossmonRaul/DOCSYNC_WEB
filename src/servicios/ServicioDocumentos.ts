@@ -24,6 +24,11 @@ export const ObtenerDocumento = async (data: any) => {
   return await ProcesarDatosApi("POST", url, data);
 };
 
+export const ObtenerCantDocumentos = async (data: any) => {
+  const url = `${API_BASE_URL}/${controlador}/ObtenerCantDocumentos`;
+  return await ProcesarDatosApi("POST", url, data);
+};
+
 export const ObtenerDocumentosDescarga = async (data: any) => {
   const url = `${API_BASE_URL_DESCARGA}/${controlador}/ObtenerDocumentosDescarga`;
   return await ProcesarDatosApi("POST", url, data);
@@ -42,4 +47,9 @@ export const ExtraerContenido = async (data: any) => {
 export const ObtenerDocumentoPorSolicitud = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/ObtenerDocumentoPorSolicitud`;
   return await ProcesarDatosApi("POST", url, data);
+};
+
+export const EnviarArchivoPorCorreo = (data: any) => {
+  const url = `${API_BASE_URL}/${controlador}/EnviarArchivoPorCorreo`;
+  return ProcesarDatosApi("POST", url, data, true, true);
 };
