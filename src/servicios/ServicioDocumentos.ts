@@ -49,7 +49,7 @@ export const ObtenerDocumentoPorSolicitud = async (data: any) => {
   return await ProcesarDatosApi("POST", url, data);
 };
 
-export const EnviarArchivoPorCorreo = (data: any) => {
+export const EnviarArchivoPorCorreo = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/EnviarArchivoPorCorreo`;
-  return ProcesarDatosApi("POST", url, data, true, true);
+  return await ProcesarDatosApi("POST", url, data, true, true);
 };

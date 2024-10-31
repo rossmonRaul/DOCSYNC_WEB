@@ -783,13 +783,13 @@ function BuscarArchivos() {
 
   // Envío por correo
   const handleModalCorreo = (archivo?: any) => {
-    setNomArchivo(archivo.nomDocumento)
+    setNomArchivo(archivo?.nomDocumento ?? '')
     setShowModalCorreo(!showModalCorreo);
     setCorreo("");
     setListaCorreos([]);
     setEmailDest(""); 
-    setIdDocEnviar(archivo.idDocumento);
-    setArchivoEnviar(archivo.nomDocumento);
+    setIdDocEnviar(archivo?.idDocumento ?? '');
+    setArchivoEnviar(archivo?.nomDocumento ?? '');
   }
 
   const handleEnviaPorCorreo = async (e: React.FormEvent) => {
@@ -812,7 +812,14 @@ function BuscarArchivos() {
         const responseArchivo = await ObtenerDocumentosDescarga(idDocs);
         setShowSpinner(false);
 
-        if(responseArchivo.datos.length > 0){
+        if(!responseArchivo){
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 1,
+            mensaje: "No se pudo obtener el archivo para enviar por correo",
+          });
+        }
+        else if(responseArchivo.datos.length > 0){
           if (responseArchivo.indicador === 1) {
             setMensajeRespuesta({
               indicador: responseArchivo.indicador,
@@ -851,9 +858,10 @@ function BuscarArchivos() {
             } else {
               setShowAlert(true);
               setMensajeRespuesta({
-                indicador: 1,
-                mensaje: "Ocurrió un error al enviar el archivo por correo electrónico"
+                indicador: 0,
+                mensaje: 'Archivo enviado correctamente a los correos indicados'
               });
+              handleModalCorreo();
             }
           }
         }
