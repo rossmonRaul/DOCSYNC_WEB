@@ -2,11 +2,17 @@ import { useState, useEffect } from "react";
 import "../../../css/general.css";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
-import { ObtenerTiposDocumentos, CrearTipoDocumento, EliminarTipoDocumento, ActualizarTipoDocumento, ImportarTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
+import {
+  ObtenerTiposDocumentos,
+  CrearTipoDocumento,
+  EliminarTipoDocumento,
+  ActualizarTipoDocumento,
+  ImportarTiposDocumentos,
+} from "../../../servicios/ServicioTiposDocumentos";
 import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
-import CustomModal from "../../../components/modal/CustomModal"; 
+import CustomModal from "../../../components/modal/CustomModal";
 import { AlertDismissible } from "../../../components/alert/alert";
 import { useSpinner } from "../../../context/spinnerContext";
 import { RiSaveFill } from "react-icons/ri";
@@ -17,16 +23,19 @@ import { useConfirm } from "../../../context/confirmContext";
 
 // Interfaz para la información del tipo de documento
 interface TipoDocumento {
-    idTipoDocumento: string;
-    numCaracteres: number;
-    codigo: string;
-    descripcion: string;
-    usuarioCreacion: string;
-    usuarioModificacion: string;
-    estado: boolean;
-  }
-  
-  // Definición de tipos para la respuesta
+  idTipoDocumento: string;
+  fraseBusqInicio: string;
+  fraseBusqFin: string;
+  imagen: boolean;
+  contieneNumSoli: boolean;
+  codigo: string;
+  descripcion: string;
+  usuarioCreacion: string;
+  usuarioModificacion: string;
+  estado: boolean;
+}
+
+// Definición de tipos para la respuesta
 interface ErrorResponse {
   indicador: number;
   mensaje: string;
@@ -34,22 +43,25 @@ interface ErrorResponse {
 
 // Componente principal
 function CatalogoTiposDocumentos() {
-  
   const { openConfirm } = useConfirm();
   const { setShowSpinner } = useSpinner();
   const [listaTiposDocumentos, setListaTiposDocumentos] = useState<
     TipoDocumento[]
   >([]);
   const [showModal, setShowModal] = useState(false);
-const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
-  idTipoDocumento: "0",
-  codigo: "",
-  numCaracteres: 0,
-  descripcion: "",
-  usuarioCreacion: "",
-  usuarioModificacion: "",
-  estado: false
-});
+  const [palabraClaveFin, setPalabraClaveFin] = useState("");
+  const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
+    idTipoDocumento: "0",
+    codigo: "",
+    fraseBusqInicio: "",
+    fraseBusqFin: "",
+    imagen: false,
+    contieneNumSoli: false,
+    descripcion: "",
+    usuarioCreacion: "",
+    usuarioModificacion: "",
+    estado: true,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({
@@ -120,6 +132,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
 
   // Función para abrir el modal y editar un tipo de documento
   const editarTipoDocumento = (tipoDocumento: TipoDocumento) => {
+    console.log(tipoDocumento);
     setNuevoTipoDocumento(tipoDocumento);
     setIsEditing(true);
     setShowModal(true);
@@ -132,12 +145,16 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
     setNuevoTipoDocumento({
       idTipoDocumento: "0",
       codigo: "",
-      numCaracteres: 0,
+      fraseBusqInicio: "",
+      fraseBusqFin: "",
+      imagen: false,
+      contieneNumSoli: false,
       descripcion: "",
       usuarioCreacion: "",
       usuarioModificacion: "",
-      estado: false
+      estado: true,
     });
+    setPalabraClaveFin("");
   };
 
   // Maneja los cambios en el formulario del modal
@@ -231,15 +248,6 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
       },
     },
     {
-      id: "numCaracteres",
-      name: "Número de Caracteres",
-      selector: (row: TipoDocumento) => row.numCaracteres,
-      sortable: true,
-      style: {
-        fontSize: "1.2em",
-      },
-    },
-    {
       id: "descripcion",
       name: "Descripción",
       selector: (row: TipoDocumento) => row.descripcion,
@@ -272,9 +280,10 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
           <Button
             size="sm"
             onClick={() => eliminarTipoDocumento(row)}
-            className="bg-secondary">
+            className="bg-secondary"
+          >
             {row.estado ? <FaBan /> : <FaRedo />}
-          </Button>      
+          </Button>
         </>
       ),
       width: "120px",
@@ -346,8 +355,7 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
             // Asignar valores al objeto TipoDocumento
             obj.idTipoDocumento = "0" as string;
             if (property === "Código") obj.codigo = value as string;
-            if (property === "Número de Caracteres")
-              obj.numCaracteres = value as number;
+
             if (property === "Descripción") obj.descripcion = value as string;
             obj.usuarioCreacion = identificacionUsuario
               ? identificacionUsuario
@@ -371,14 +379,10 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
         const errores: string[] = [];
 
         // Validar que todos los campos son correctos
-        formattedData.forEach(({ codigo, numCaracteres, descripcion }) => {
+        formattedData.forEach(({ codigo, descripcion }) => {
           if (typeof codigo !== "string" || codigo === null)
             errores.push("Código");
           if (codigo.length > 10) errores.push("Código (máximo 10 caracteres)");
-          if (typeof numCaracteres !== "number" || numCaracteres === null)
-            errores.push("Número de Caracteres");
-          if (numCaracteres > 999999999)
-            errores.push("Número de Caracteres (mayor a 999999999)");
           if (typeof descripcion !== "string" || descripcion === null)
             errores.push("Descripción");
         });
@@ -438,15 +442,6 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
       },
     },
     {
-      id: "numCaracteres",
-      name: "Número de Caracteres",
-      selector: (row: TipoDocumento) => row.numCaracteres,
-      sortable: true,
-      style: {
-        fontSize: "1.2em",
-      },
-    },
-    {
       id: "descripcion",
       name: "Descripción",
       selector: (row: TipoDocumento) => row.descripcion,
@@ -464,7 +459,6 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
       return {
         idTipoDocumento: item.idTipoDocumento,
         codigo: item.codigo,
-        numCaracteres: item.numCaracteres,
         descripcion: item.descripcion,
         usuarioCreacion: item.usuarioCreacion,
         usuarioModificacion: "",
@@ -581,19 +575,6 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
               </Form.Group>
             </Col>
             <Col md={6}>
-              <Form.Group controlId="formNumCaracteres">
-                <Form.Label>Número de caracteres</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="numCaracteres"
-                  value={nuevoTipoDocumento.numCaracteres}
-                  onChange={handleChange}
-                  required
-                  min={1}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
               <Form.Group controlId="formDescripcionTipoDocumento">
                 <Form.Label>Descripción</Form.Label>
                 <Form.Control
@@ -605,6 +586,129 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
                 />
               </Form.Group>
             </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formNumSoli">
+                <div
+                  style={{
+                    display: "flex",
+                    alignContent: "start",
+                    alignItems: "start",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Form.Label style={{ marginTop: "3%" }}>
+                    ¿Contiene número de solicitud?
+                  </Form.Label>
+                  <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={nuevoTipoDocumento.contieneNumSoli === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;"
+                      onChange={(checked) =>
+                        setNuevoTipoDocumento({
+                          ...nuevoTipoDocumento,
+                          contieneNumSoli: checked,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formImagen">
+                <div
+                  style={{
+                    display: "flex",
+                    alignContent: "start",
+                    alignItems: "start",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Form.Label style={{ marginTop: "3%" }}>
+                    ¿Es imagen?
+                  </Form.Label>
+                  <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={nuevoTipoDocumento.imagen === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;"
+                      onChange={(checked) =>
+                        setNuevoTipoDocumento({
+                          ...nuevoTipoDocumento,
+                          imagen: checked,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </Form.Group>
+            </Col>
+          </Row>
+          {nuevoTipoDocumento.contieneNumSoli && (
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId="formBusInicio">
+                  <Form.Label>Frase de búsqueda inicio</Form.Label>
+                  <Form.Control
+                    name="fraseBusqInicio"
+                    value={nuevoTipoDocumento.fraseBusqInicio}
+                    onChange={handleChange}
+                    required
+                    min={1}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId="formBusqFin">
+                  <Form.Label>Frase de búsqueda Fin</Form.Label>
+                  <Form.Select
+                    name="fraseBusqFin"
+                    value={nuevoTipoDocumento.fraseBusqFin}
+                    onChange={(selected) => {
+                      setNuevoTipoDocumento({
+                        ...nuevoTipoDocumento,
+                        fraseBusqFin: selected.target.value,
+                      });
+                      setPalabraClaveFin("");
+                    }}
+                    required={nuevoTipoDocumento.fraseBusqFin === ""}
+                  >
+                    <option value="">Seleccione una opción</option>
+                    <option value="eeb">Al primer espacio en blanco</option>
+                    <option value="sdl">Al primer salto de línea</option>
+                    <option value="eebosdl">
+                      Al primer espacio o salto de línea
+                    </option>
+                    <option value="otro">Otro</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+          )}
+          <Row>
+            {nuevoTipoDocumento.fraseBusqFin === "otro" && (
+              <Col md={6}>
+                <Form.Group controlId="formBusInicio">
+                  <Form.Label>Palabra o símbolo clave fin</Form.Label>
+                  <Form.Control
+                    name="fraseInicio"
+                    value={palabraClaveFin}
+                    onChange={(e) => setPalabraClaveFin(e.target.value)}
+                    required
+                    min={1}
+                  />
+                </Form.Group>
+              </Col>
+            )}
             <Col md={6}>
               <Form.Group controlId="formEstado">
                 <div
@@ -626,7 +730,9 @@ const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
                       offlabel="No"
                       offstyle="danger"
                       style="w-100 mx-3;"
-                      onChange={(checked) => nuevoTipoDocumento.estado = checked}
+                      onChange={(checked) =>
+                        (nuevoTipoDocumento.estado = checked)
+                      }
                     />
                   </div>
                 </div>

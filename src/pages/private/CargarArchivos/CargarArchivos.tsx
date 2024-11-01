@@ -87,8 +87,8 @@ function CargarArchivos() {
   //Informacion general del paquete
   const encabezadoArchivo = [
     {
-      id: "Seleccionar",
-      name: "Seleccionar",
+      id: "Seleccione",
+      name: "Seleccione",
       cell: (row: Archivo) => (
         <Form.Check
           type="checkbox"
@@ -96,9 +96,9 @@ function CargarArchivos() {
           onChange={() => handleFilaSeleccionada(row)}
         />
       ),
-      head: "Seleccionar",
+      head: "Seleccione",
       sortable: false,
-      width: "150px",
+      width: "140px",
       center: "true",
     },
     {
@@ -115,7 +115,22 @@ function CargarArchivos() {
       style: {
         fontSize: "1.5em",
       },
-      width: documentoVer ? "250px" : "400px",
+      width: documentoVer ? "250px" : "420px",
+    },
+    {
+      id: "peso",
+      name: "Peso",
+      selector: ({ archivo }: Archivo) => {
+        const sizeInKB = archivo.size / 1024;
+        return parseFloat(sizeInKB.toFixed(2))+" KB";
+      },
+      head: "Nombre",
+      sortable: true,
+      width: "120px",
+      style: {
+        fontSize: "1.5em",
+      },
+      omit: documentoVer != null,
     },
     {
       id: "tipo",
@@ -141,7 +156,7 @@ function CargarArchivos() {
       style: {
         fontSize: "1.5em",
       },
-      width: documentoVer ? "100px" : "400px",
+      width: documentoVer ? "100px" : "360px",
       omit: documentoVer != null,
     },
     {
