@@ -628,7 +628,7 @@ function Historial() {
                       className="content row justify-content-center align-items-center"
                       style={{ marginLeft: 10, textAlign: "center", width: "100%" }}
                     >
-                      <img src="public/SinResultados.png" style={{width: '75%', height: '75%'}}/>
+                      <img src="/SinResultados.png" style={{width: '75%', height: '75%'}}/>
                     </div>
                   )}
               </div>

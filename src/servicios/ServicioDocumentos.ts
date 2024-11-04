@@ -1,7 +1,6 @@
 import { ProcesarDatosApi } from "./ApiFetch";
 const controlador = "Documento";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
 const API_BASE_URL_DESCARGA = import.meta.env.VITE_API_BASE_URL_DESCARGA;
 
 export const ObtenerDocumentosPorContenido = async (data: any) => {
