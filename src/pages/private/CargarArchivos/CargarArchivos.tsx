@@ -332,7 +332,6 @@ function CargarArchivos() {
         //extraer el num de solicitud
         const formData = new FormData();
         archivosAux.forEach((a: Archivo, index: number) => {
-          console.log(a)
           formData.append(`entity[${index}].Id`, a.id + "");
           formData.append(`entity[${index}].NomDocumento`, a.nomDocumento);
           formData.append(`entity[${index}].Archivo`, a.archivo);
@@ -586,7 +585,6 @@ function CargarArchivos() {
                             fraseBusqFin: tipoSeleccionado?.fraseBusqFin,
                             esImagen: tipoSeleccionado?.imagen,
                           });
-                          console.log(tipoSeleccionado)
                         }}
                       >
                         <option value="">-- Selecciona una opción --</option>
