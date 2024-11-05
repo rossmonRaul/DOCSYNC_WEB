@@ -3,15 +3,13 @@ import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaCheckSquare, FaEdit, FaUpload } from "react-icons/fa";
+import { FaCheckSquare, FaUpload } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
 import { useWorker } from "../../../context/workerContext";
 import { cargarDocumentosWorker } from "./cargaDocumentosWorker";
-import BootstrapSwitchButton from "bootstrap-switch-button-react";
-import { FaCheckCircle } from "react-icons/fa";
 import { recortarTexto } from "../../../utils/utils";
 import { ObtenerTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
 import { useSpinner } from "../../../context/spinnerContext";
@@ -22,6 +20,9 @@ import { ExtraerContenido } from "../../../servicios/ServicioDocumentos";
 interface TipoDocumento {
   idTipoDocumento: string;
   descripcion: string;
+  esImagen: boolean;
+  fraseBusqInicio: string;
+  fraseBusqFin: string;
 }
 
 interface Archivo {
@@ -50,7 +51,13 @@ function CargarArchivos() {
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
   const [tipoDocumentoSeleccionado, setTipoDocumentoSeleccionado] =
-    useState<TipoDocumento>({ idTipoDocumento: "", descripcion: "" });
+    useState<TipoDocumento>({
+      idTipoDocumento: "",
+      descripcion: "",
+      esImagen: false,
+      fraseBusqInicio: "",
+      fraseBusqFin: "",
+    });
   const [tipoDocumento, setTipoDocumento] = useState<any>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
   const { startWorker, setTaskTitle, loading } = useWorker();
@@ -122,7 +129,7 @@ function CargarArchivos() {
       name: "Peso",
       selector: ({ archivo }: Archivo) => {
         const sizeInKB = archivo.size / 1024;
-        return parseFloat(sizeInKB.toFixed(2))+" KB";
+        return parseFloat(sizeInKB.toFixed(2)) + " KB";
       },
       head: "Nombre",
       sortable: true,
@@ -207,6 +214,11 @@ function CargarArchivos() {
     rowId: any
   ) => {
     const selectedValue = e.target.value;
+    const tipoSeleccionado = tipoDocumento?.filter(
+      (t: TipoDocumento) =>
+        t.idTipoDocumento.toString() === selectedValue.toString()
+    )[0];
+
     const selectedText = e.target.options[e.target.selectedIndex].text;
     setListaArchivosTabla((prevData) =>
       prevData.map((row) =>
@@ -216,6 +228,9 @@ function CargarArchivos() {
               tipoDocumento: {
                 idTipoDocumento: selectedValue,
                 descripcion: selectedText,
+                fraseBusqInicio: tipoSeleccionado?.fraseBusqInicio,
+                fraseBusqFin: tipoSeleccionado?.fraseBusqFin,
+                esImagen: tipoSeleccionado?.esImagen,
               },
             }
           : row
@@ -327,6 +342,18 @@ function CargarArchivos() {
           formData.append(
             `entity[${index}].DescripcionDoc`,
             a.tipoDocumento.descripcion
+          );
+          formData.append(
+            `entity[${index}].esImagen`,
+            a.tipoDocumento.esImagen === true ? "1" : "0"
+          );
+          formData.append(
+            `entity[${index}].fraseBusqInicio`,
+            a.tipoDocumento.fraseBusqInicio
+          );
+          formData.append(
+            `entity[${index}].fraseBusqFin`,
+            a.tipoDocumento.fraseBusqFin
           );
           formData.append(`entity[${index}].FechaCreacion`, a.fechaCreacion);
           formData.append(
@@ -544,11 +571,19 @@ function CargarArchivos() {
                         value={tipoDocumentoSeleccionado?.idTipoDocumento}
                         onChange={(e) => {
                           const selectedValue = e.target.value;
+                          const tipoSeleccionado = tipoDocumento?.filter(
+                            (t: TipoDocumento) =>
+                              t.idTipoDocumento.toString() ===
+                              selectedValue.toString()
+                          )[0];
                           const selectedText =
                             e.target.options[e.target.selectedIndex].text;
                           setTipoDocumentoSeleccionado({
                             idTipoDocumento: selectedValue,
                             descripcion: selectedText,
+                            fraseBusqInicio: tipoSeleccionado?.fraseBusqInicio,
+                            fraseBusqFin: tipoSeleccionado?.fraseBusqFin,
+                            esImagen: tipoSeleccionado?.imagen,
                           });
                         }}
                       >

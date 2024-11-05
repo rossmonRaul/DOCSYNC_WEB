@@ -132,7 +132,10 @@ function CatalogoTiposDocumentos() {
 
   // Función para abrir el modal y editar un tipo de documento
   const editarTipoDocumento = (tipoDocumento: TipoDocumento) => {
-    console.log(tipoDocumento);
+    if (!["eeb", "sdl", "eebosdl"].includes(tipoDocumento.fraseBusqFin)) {
+      setPalabraClaveFin(tipoDocumento.fraseBusqFin);
+      tipoDocumento.fraseBusqFin = "otro";
+    }
     setNuevoTipoDocumento(tipoDocumento);
     setIsEditing(true);
     setShowModal(true);
@@ -168,6 +171,10 @@ function CatalogoTiposDocumentos() {
   // Maneja el envío del formulario para agregar o editar un tipo de dotcumento
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let palabraFin = nuevoTipoDocumento.fraseBusqFin;
+    if (nuevoTipoDocumento.fraseBusqFin === "otro") {
+      palabraFin = palabraClaveFin;
+    }
 
     if (isEditing) {
       // Editar tipo de dotcumento
@@ -175,6 +182,7 @@ function CatalogoTiposDocumentos() {
         setShowSpinner(true);
         const tipoDocumentoActualizar = {
           ...nuevoTipoDocumento,
+          fraseBusqFin: palabraFin,
           usuarioModificacion: identificacionUsuario,
           fechaModificacion: new Date().toISOString(),
         };
@@ -207,6 +215,7 @@ function CatalogoTiposDocumentos() {
         const tipoDocumentoACrear = {
           ...nuevoTipoDocumento,
           idTipoDocumento: "0",
+          fraseBusqFin: palabraFin,
           usuarioCreacion: identificacionUsuario,
           fechaCreacion: new Date().toISOString(),
         };
@@ -327,7 +336,6 @@ function CatalogoTiposDocumentos() {
           | string
           | number
         )[][];
-        //console.log("jsonData:" + jsonData);
         // Obtener nombres de propiedades desde la primera fila
         const properties: (string | number)[] = jsonData[0];
         let FormatoValido = true;
@@ -539,10 +547,10 @@ function CatalogoTiposDocumentos() {
           selectableRows={false}
           botonesAccion={[
             {
-              condicion: true,
-              accion: handleModalImportar,
-              icono: <FaFileCirclePlus className="me-2" size={24} />,
-              texto: "Importar",
+             // condicion: true,
+              //accion: handleModalImportar,
+              //icono: <FaFileCirclePlus className="me-2" size={24} />,
+              //texto: "Importar",
             },
           ]}
         ></Grid>
