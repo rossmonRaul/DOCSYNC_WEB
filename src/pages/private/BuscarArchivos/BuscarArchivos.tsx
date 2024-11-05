@@ -429,7 +429,6 @@ function BuscarArchivos() {
         }
       }
     }
-
     setShowSpinner(false);
   };
 
