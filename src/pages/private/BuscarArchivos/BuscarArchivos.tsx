@@ -59,7 +59,8 @@ interface Archivo {
 function BuscarArchivos() {
   const [showAlert, setShowAlert] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [showObservacionesEliminar, setShowObservacionesEliminar] = useState(false);
+  const [showObservacionesEliminar, setShowObservacionesEliminar] =
+    useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
@@ -81,11 +82,11 @@ function BuscarArchivos() {
   const [showModalCorreo, setShowModalCorreo] = useState(false);
   const [emailDest, setEmailDest] = useState("");
   const { openConfirm } = useConfirm();
-  const [idDocEnviar, setIdDocEnviar] = useState('');
-  const [archivoEnviar, setArchivoEnviar] = useState('');
+  const [idDocEnviar, setIdDocEnviar] = useState("");
+  const [nombreBuscar, setNombreBuscar] = useState("");
+  const [archivoEnviar, setArchivoEnviar] = useState("");
   const [esEnvioMasivo, setEsEnvioMasivo] = useState(false);
   const nombreArchivoMasivo = "Documentos.zip";
-
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
@@ -93,10 +94,12 @@ function BuscarArchivos() {
     indicador: 0,
     mensaje: "",
   });
-  
+
   const [observacionEliminacion, setObservacionEliminacion] = useState("");
   const { setShowSpinner } = useSpinner();
-  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(null);
+  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(
+    null
+  );
   const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
   const [contenido, setContenido] = useState("");
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
@@ -105,6 +108,10 @@ function BuscarArchivos() {
   useEffect(() => {
     obtenerCriteriosBusqueda();
   }, []);
+
+  useEffect(() => {
+    handleBuscarClick();
+  }, [nombreBuscar]);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -178,7 +185,7 @@ function BuscarArchivos() {
       sortable: true,
       style: {
         fontSize: "1.5em",
-      },      
+      },
       omit: documentoVer != null,
       width: "14%",
     },
@@ -216,7 +223,13 @@ function BuscarArchivos() {
     },
   ];
 
+  const onBuscarDocNombre = async (e: any) => {
+    e.preventDefault();
+    setNombreBuscar(e.target.value);
+  };
+
   const handleBuscarClick = async () => {
+    console.log(nombreBuscar);
     setPendiente(true);
     setListaArchivosTabla([]);
     setListaArchivosTablaSeleccionados([]);
@@ -225,7 +238,7 @@ function BuscarArchivos() {
     const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
     const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
 
-    if(fechaInicio && fechaFin){
+    if (fechaInicio && fechaFin) {
       // Validar que la fecha final no sea menor que la fecha inicial
       if (new Date(fechaFin) < new Date(fechaInicio)) {
         setShowAlert(true);
@@ -239,23 +252,26 @@ function BuscarArchivos() {
     }
 
     // Validar que se haya ingresado un parámetro búsqueda si eligió un criterio
-    if(paramBusqueda.trim() === '' && criterioBusquedaText !== ''){
+    if (paramBusqueda.trim() === "" && criterioBusquedaText !== "") {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: 'Debe ingresar un parámetro de búsqueda válido'
+        mensaje: "Debe ingresar un parámetro de búsqueda válido",
       });
       setPendiente(false);
       return;
     }
 
-    if(paramBusqueda.trim() !== ''){      
+    if (paramBusqueda.trim() !== "") {
       // Validar que el parámetro de búsqueda cumpla con la expresión regular del tipo de validación
-      if(!regExp.test(paramBusqueda)){
+      if (!regExp.test(paramBusqueda)) {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: 'El parámetro ingresado no cumple con el tipo de validación: "'+tipoValidacion+'"'
+          mensaje:
+            'El parámetro ingresado no cumple con el tipo de validación: "' +
+            tipoValidacion +
+            '"',
         });
         setPendiente(false);
         return;
@@ -264,25 +280,25 @@ function BuscarArchivos() {
 
     // Validar cual método de API llamar
     setShowSpinner(true);
-    if (criterioBusquedaText.trim().toLowerCase() === 'solicitud') {      
+    if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
       setShowAlert(false);
-      
+
       const filtro = {
+        nomDocumento: nombreBuscar,
         numSolicitud: paramBusqueda,
         fechaFiltroInicial:
           fechaFiltroInicial === null ? null : fechaFiltroInicial,
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
-		    tamannoPagina: tamPag === 0 ? 10 : tamPag,
+        tamannoPagina: tamPag === 0 ? 10 : tamPag,
         numeroPagina: numPag === 0 ? 1 : numPag,
-        usuarioBusqueda: identificacionUsuario					  
+        usuarioBusqueda: identificacionUsuario,
       };
 
       setFiltros(filtro);
 
       const cantRegistros = await ObtenerCantDocumentos(filtro);
 
-      if(cantRegistros > 0){
-
+      if (cantRegistros > 0) {
         setCantRegs(cantRegistros);
 
         const resultadosObtenidos = await ObtenerDocumento(filtro);
@@ -292,35 +308,58 @@ function BuscarArchivos() {
         setContenido("");
 
         setMostrarBusqueda(!mostrarBusqueda);
-      }
-      else{
+      } else {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 2,
           mensaje: "No hay registros con los parámetros indicados",
         });
         setPendiente(false);
-      }	 
+      }
     } else {
       setShowAlert(false);
 
       const filtro = {
         fechaInicio: fechaInicio,
         fechaFinal: fechaFin,
-        nombreApoderado: criterioBusquedaText.toLowerCase().trim() === "apoderado" ? paramBusqueda : null,
-        nombreSolicitante: criterioBusquedaText.toLowerCase().trim() === "solicitante" ? paramBusqueda: null,
-        rtnSolicitante: criterioBusquedaText.toLowerCase().trim() === "id/rtn" ? paramBusqueda : null,
-        numeroExpediente: criterioBusquedaText.toLowerCase().trim() === "expediente" ? paramBusqueda : undefined,
-        codigoCertificado: criterioBusquedaText.toLowerCase().trim() === "certificado" ? paramBusqueda : null,
-        codigoPermiso: criterioBusquedaText.toLowerCase().trim() === "permiso" ? paramBusqueda : null,
-        placa: criterioBusquedaText.toLowerCase().trim() === "placa" ? paramBusqueda : null,
+        nombreApoderado:
+          criterioBusquedaText.toLowerCase().trim() === "apoderado"
+            ? paramBusqueda
+            : null,
+        nombreSolicitante:
+          criterioBusquedaText.toLowerCase().trim() === "solicitante"
+            ? paramBusqueda
+            : null,
+        rtnSolicitante:
+          criterioBusquedaText.toLowerCase().trim() === "id/rtn"
+            ? paramBusqueda
+            : null,
+        numeroExpediente:
+          criterioBusquedaText.toLowerCase().trim() === "expediente"
+            ? paramBusqueda
+            : undefined,
+        codigoCertificado:
+          criterioBusquedaText.toLowerCase().trim() === "certificado"
+            ? paramBusqueda
+            : null,
+        codigoPermiso:
+          criterioBusquedaText.toLowerCase().trim() === "permiso"
+            ? paramBusqueda
+            : null,
+        placa:
+          criterioBusquedaText.toLowerCase().trim() === "placa"
+            ? paramBusqueda
+            : null,
         //placaIngresa: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null, // Validar
         //preforma: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null,
-        codigoGea: criterioBusquedaText.toLowerCase().trim() === "gea" ? paramBusqueda : null,
+        codigoGea:
+          criterioBusquedaText.toLowerCase().trim() === "gea"
+            ? paramBusqueda
+            : null,
         // regional: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
         // solicitudAnterior: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
-        usuarioBusqueda: identificacionUsuario
-      };	
+        usuarioBusqueda: identificacionUsuario,
+      };
 
       var response = await BusquedaSolicitudIHTT(filtro);
 
@@ -351,21 +390,21 @@ function BuscarArchivos() {
         });
 
         const filtroDocs = {
+          nomDocumento: nombreBuscar,
           numSolicitud: solics,
           fechaFiltroInicial:
             fechaFiltroInicial === null ? null : fechaFiltroInicial,
           fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
           tamannoPagina: tamPag === 0 ? 10 : tamPag,
           numeroPagina: numPag === 0 ? 1 : numPag,
-          usuarioBusqueda: identificacionUsuario	   												
+          usuarioBusqueda: identificacionUsuario,
         };
 
         setFiltros(filtroDocs);
 
         const cantRegistros = await ObtenerCantDocumentos(filtroDocs);
 
-        if(cantRegistros > 0){
-
+        if (cantRegistros > 0) {
           setCantRegs(cantRegistros);
 
           const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
@@ -373,17 +412,16 @@ function BuscarArchivos() {
           setListaArchivosTabla(resultadosObtenidos);
           setPendiente(false);
           setContenido("");
-		   
+
           setMostrarBusqueda(!mostrarBusqueda);
-        }
-        else{
+        } else {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
-            mensaje: "No hay registros con los parámetros indicados"
+            mensaje: "No hay registros con los parámetros indicados",
           });
           setPendiente(false);
-        }        
+        }
       }
     }
 
@@ -473,7 +511,6 @@ function BuscarArchivos() {
     );
     setShowSpinner(true);
 
-    
     try {
       const response = await ObtenerDocumentosDescarga(idDocumentosDescargar);
       setShowSpinner(false);
@@ -490,14 +527,15 @@ function BuscarArchivos() {
         if (response.datos.length > 0) {
           try {
             const archivos = response.datos;
-            var idS = '';
+            var idS = "";
 
             if (archivos.length > 1) {
               descargarArchivosZip(archivos);
-              
+
               // Se toman ids de los documentos para guardar en bitácora
               archivos.forEach((element: any) => {
-                idS += idS === '' ? element.idDocumento : ", " + element.idDocumento;
+                idS +=
+                  idS === "" ? element.idDocumento : ", " + element.idDocumento;
               });
             } else {
               const archivo = archivos[0];
@@ -524,11 +562,10 @@ function BuscarArchivos() {
             // Se agrega registro en bitácora de la descarga realizada
             InsertarRegistroBitacora({
               idAccion: 5,
-              descripcion: 'Se descargan los documentos con id: ' + idS,
-              fecha: (new Date()).toISOString(),
-              usuario: identificacionUsuario
+              descripcion: "Se descargan los documentos con id: " + idS,
+              fecha: new Date().toISOString(),
+              usuario: identificacionUsuario,
             });
-
           } catch (error) {
             descripcionError = "Error al descargar archivo";
             if (error instanceof Error) {
@@ -618,12 +655,12 @@ function BuscarArchivos() {
 
   const crearZipCorreo = async (archivos: any[]): Promise<Blob> => {
     const zip = new JSZip();
-  
+
     archivos.forEach((archivo: any) => {
       const byteArray = base64ToUint8Array(archivo.bytesArchivo);
       zip.file(archivo.nombre, byteArray, { binary: true });
     });
-  
+
     try {
       const content = await zip.generateAsync({ type: "blob" });
       return content;
@@ -671,11 +708,10 @@ function BuscarArchivos() {
 
     InsertarRegistroBitacora({
       idAccion: 7,
-      descripcion: 'Se visualiza el documento ' + archivo.idDocumento,
-      fecha: (new Date()).toISOString(),
-      usuario: identificacionUsuario
+      descripcion: "Se visualiza el documento " + archivo.idDocumento,
+      fecha: new Date().toISOString(),
+      usuario: identificacionUsuario,
     });
-
   };
 
   // const handleInputChange = (e: any) => {
@@ -765,15 +801,17 @@ function BuscarArchivos() {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Ocurrió un error al obtener los criterios de búsqueda"
+        mensaje: "Ocurrió un error al obtener los criterios de búsqueda",
       });
-    } else {		 
+    } else {
       setCriteriosBusqueda(response);
     }
   };
 
   const handleCriterioBusqueda = (criterio: any) => {
-    const crit = criteriosBusqueda.filter((x: any) => x.idCriterioBusqueda === criterio)[0];
+    const crit = criteriosBusqueda.filter(
+      (x: any) => x.idCriterioBusqueda === criterio
+    )[0];
 
     const criterioText = crit.criterioBusqueda;
     const regularExp = crit.expresionRegular;
@@ -788,46 +826,44 @@ function BuscarArchivos() {
 
   // Paginación
   const fetchData = async (pag: any, tamPagina: any) => {
-    
-    const obtenerDocs = (pag !== numPag || tamPagina !== tamPag);
+    const obtenerDocs = pag !== numPag || tamPagina !== tamPag;
 
-    if(obtenerDocs && listaArchivosTabla.length > 0){
+    if (obtenerDocs && listaArchivosTabla.length > 0) {
       setTamPag(tamPagina);
       setNumPag(pag);
 
       filtros.numeroPagina = pag;
       filtros.tamannoPagina = tamPagina;
-  
+
       const response = await ObtenerDocumento(filtros);
-      
+
       setListaArchivosTabla(response);
     }
-    
-    return{
+
+    return {
       data: listaArchivosTabla,
-      total: cantRegs
-    }
+      total: cantRegs,
+    };
   };
 
   // Envío por correo
-  const handleModalCorreo = (archivo?: any, envioMasivo?: any) => {    
+  const handleModalCorreo = (archivo?: any, envioMasivo?: any) => {
     setShowModalCorreo(!showModalCorreo);
     setCorreo("");
     setListaCorreos([]);
-    setEmailDest(""); 
-    if(!envioMasivo){
-      setIdDocEnviar(archivo?.idDocumento ?? '');
-      setArchivoEnviar(archivo?.nomDocumento ?? '');
-      setNomArchivo(archivo?.nomDocumento ?? '')
-    }
-    else{
+    setEmailDest("");
+    if (!envioMasivo) {
+      setIdDocEnviar(archivo?.idDocumento ?? "");
+      setArchivoEnviar(archivo?.nomDocumento ?? "");
+      setNomArchivo(archivo?.nomDocumento ?? "");
+    } else {
       const idDocumentosDescargar = listaArchivosTablaSeleccionados.map(
         (a) => a.idDocumento
       );
-      var docs = '';
+      var docs = "";
 
       idDocumentosDescargar.forEach((x: any) => {
-        docs += docs === '' ? x : ',' + x
+        docs += docs === "" ? x : "," + x;
       });
 
       setIdDocEnviar(docs);
@@ -835,61 +871,59 @@ function BuscarArchivos() {
       setNomArchivo(nombreArchivoMasivo);
     }
     setEsEnvioMasivo(envioMasivo);
-  }
+  };
 
   const handleEnviaPorCorreo = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowAlert(false);
     try {
-
-      if(listaCorreos.length < 1){
+      if (listaCorreos.length < 1) {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 2,
-          mensaje: "Debe agregar al menos un destinatario para enviar el archivo por correo electrónico"
+          mensaje:
+            "Debe agregar al menos un destinatario para enviar el archivo por correo electrónico",
         });
-      }
-      else{
-        if(esEnvioMasivo){
+      } else {
+        if (esEnvioMasivo) {
           const idDocs = [] as any;
 
-          idDocEnviar.split(',').forEach((x: any) => {
-            idDocs.push(x); 
+          idDocEnviar.split(",").forEach((x: any) => {
+            idDocs.push(x);
           });
-          
+
           setShowSpinner(true);
           const responseArchivos = await ObtenerDocumentosDescarga(idDocs);
           setShowSpinner(false);
 
-          if(!responseArchivos){
+          if (!responseArchivos) {
             setShowAlert(true);
             setMensajeRespuesta({
               indicador: 1,
-              mensaje: 'Ocurrió un error conectar con el servicio de descarga'
+              mensaje: "Ocurrió un error conectar con el servicio de descarga",
             });
-          }
-          else if(responseArchivos.indicador === 1){
+          } else if (responseArchivos.indicador === 1) {
             setShowAlert(true);
             setMensajeRespuesta({
               indicador: 1,
-              mensaje: 'Ocurrió un error al obtener los archivos para enviar por correo'
+              mensaje:
+                "Ocurrió un error al obtener los archivos para enviar por correo",
             });
-          }
-          else if(responseArchivos.datos.length < 1){
+          } else if (responseArchivos.datos.length < 1) {
             setShowAlert(true);
             setMensajeRespuesta({
               indicador: 1,
-              mensaje: 'No encontraron los archivos seleccionados'
+              mensaje: "No encontraron los archivos seleccionados",
             });
-          }
-          else{          
+          } else {
             const archivos = responseArchivos.datos;
             const archivoZIP = await crearZipCorreo(archivos);
             var idS = "";
 
             // Se toman ids de los documentos para guardar en bitácora
             archivos.forEach((element: any) => {
-              idS += idS === '' ? element.idDocumento : ", " + element.idDocumento;
+              idS +=
+                idS === "" ? element.idDocumento : ", " + element.idDocumento;
             });
 
             setIdDocEnviar(idS);
@@ -897,7 +931,7 @@ function BuscarArchivos() {
             var correosDest = "";
 
             listaCorreos.forEach((x: any) => {
-              correosDest += correosDest === '' ? x : ',' + x;
+              correosDest += correosDest === "" ? x : "," + x;
             });
 
             const formData = new FormData();
@@ -906,29 +940,29 @@ function BuscarArchivos() {
             formData.append("IdDocumento", idDocEnviar);
             formData.append("NombreArchivo", archivoEnviar);
             formData.append("Fecha", new Date().toISOString());
-            formData.append("Usuario", identificacionUsuario ?? '');
-            
+            formData.append("Usuario", identificacionUsuario ?? "");
+
             setShowSpinner(true);
             const response = await EnviarArchivoPorCorreo(formData);
-            setShowSpinner(false);            
+            setShowSpinner(false);
 
             if (response.indicador === 1) {
               setShowAlert(true);
               setMensajeRespuesta({
                 indicador: response.indicador,
-                mensaje: response.mensaje
+                mensaje: response.mensaje,
               });
             } else {
               setShowAlert(true);
               setMensajeRespuesta({
                 indicador: 0,
-                mensaje: 'Archivo enviado correctamente a los correos indicados'
+                mensaje:
+                  "Archivo enviado correctamente a los correos indicados",
               });
               handleModalCorreo();
             }
           }
-        }
-        else{        
+        } else {
           const idDocs = [];
           idDocs.push(idDocEnviar);
 
@@ -936,61 +970,62 @@ function BuscarArchivos() {
           const responseArchivo = await ObtenerDocumentosDescarga(idDocs);
           setShowSpinner(false);
 
-          if(!responseArchivo){
+          if (!responseArchivo) {
             setShowAlert(true);
             setMensajeRespuesta({
               indicador: 1,
               mensaje: "No se pudo obtener el archivo para enviar por correo",
             });
-          }
-          else if(responseArchivo.datos.length > 0){
+          } else if (responseArchivo.datos.length > 0) {
             if (responseArchivo.indicador === 1) {
               setMensajeRespuesta({
                 indicador: responseArchivo.indicador,
-                mensaje: "Ocurrió un error al momento de obtener el archivo para enviar por correo",
+                mensaje:
+                  "Ocurrió un error al momento de obtener el archivo para enviar por correo",
               });
             } else {
               const archivos = responseArchivo.datos;
               const archivo = archivos[0];
               const byteArray = base64ToUint8Array(archivo.bytesArchivo);
-              const archivoSend = new Blob([byteArray], { type: archivo.formato });
+              const archivoSend = new Blob([byteArray], {
+                type: archivo.formato,
+              });
 
               var correosDest = "";
 
               listaCorreos.forEach((x: any) => {
-                correosDest += correosDest === '' ? x : ',' + x;
+                correosDest += correosDest === "" ? x : "," + x;
               });
 
               const formData = new FormData();
-              formData.append("Archivo", archivoSend, archivoEnviar ?? '');
+              formData.append("Archivo", archivoSend, archivoEnviar ?? "");
               formData.append("Correos", correosDest);
               formData.append("IdDocumento", idDocEnviar.toString());
-              formData.append("NombreArchivo", archivoEnviar ?? '');
+              formData.append("NombreArchivo", archivoEnviar ?? "");
               formData.append("Fecha", new Date().toISOString());
-              formData.append("Usuario", identificacionUsuario ?? '');
-              
+              formData.append("Usuario", identificacionUsuario ?? "");
+
               setShowSpinner(true);
               const response = await EnviarArchivoPorCorreo(formData);
-              setShowSpinner(false);            
+              setShowSpinner(false);
 
               if (response.indicador === 1) {
                 setShowAlert(true);
                 setMensajeRespuesta({
                   indicador: response.indicador,
-                  mensaje: response.mensaje
+                  mensaje: response.mensaje,
                 });
               } else {
                 setShowAlert(true);
                 setMensajeRespuesta({
                   indicador: 0,
-                  mensaje: 'Archivo enviado correctamente a los correos indicados'
+                  mensaje:
+                    "Archivo enviado correctamente a los correos indicados",
                 });
                 handleModalCorreo();
               }
             }
-          }
-          else
-          {
+          } else {
             setShowAlert(true);
             setMensajeRespuesta({
               indicador: 1,
@@ -1003,65 +1038,80 @@ function BuscarArchivos() {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Ocurrió un error al enviar el archivo por correo electrónico"
+        mensaje: "Ocurrió un error al enviar el archivo por correo electrónico",
       });
       console.error("Error:", error);
     }
   };
 
-  const agregarCorreo = () =>{
+  const agregarCorreo = () => {
     setShowAlert(false);
-    if(correo.trim() !== ''){
-      if(listaCorreos.filter((x: any) => x.toLowerCase() === correo.trim().toLowerCase()).length > 0){
+    if (correo.trim() !== "") {
+      if (
+        listaCorreos.filter(
+          (x: any) => x.toLowerCase() === correo.trim().toLowerCase()
+        ).length > 0
+      ) {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: "Este correo ya está en la lista de destinatarios"
+          mensaje: "Este correo ya está en la lista de destinatarios",
         });
-      }
-      else if(new RegExp('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').test(correo)){
+      } else if (
+        new RegExp("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$").test(
+          correo
+        )
+      ) {
         setListaCorreos((prev: any) => [...prev, correo.trim()]);
 
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 0,
-          mensaje: "Correo agregado a lista de destinatarios"
-        });        
-        
+          mensaje: "Correo agregado a lista de destinatarios",
+        });
+
         setCorreo("");
-      }
-      else
-      {
+      } else {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: "El correo electrónico no cumple con el formato, favor validar"
+          mensaje:
+            "El correo electrónico no cumple con el formato, favor validar",
         });
       }
-    }
-    else{
+    } else {
       setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 2,
-          mensaje: "Debe ingresar un correo electrónico válido"
-        });
-    }   
-  }
+      setMensajeRespuesta({
+        indicador: 2,
+        mensaje: "Debe ingresar un correo electrónico válido",
+      });
+    }
+  };
 
   const eliminarCorreo = (row: any) => {
-    openConfirm("¿Está seguro que desea eliminar al destinatario de la lista?", () => {
-      setListaCorreos(listaCorreos.filter((x: any) => x !== row));
+    openConfirm(
+      "¿Está seguro que desea eliminar al destinatario de la lista?",
+      () => {
+        setListaCorreos(listaCorreos.filter((x: any) => x !== row));
 
-      setShowAlert(true);
-      setMensajeRespuesta({indicador: 0, mensaje: 'Destinatario eliminado'}); 
-    }); 
-    
-  }
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 0,
+          mensaje: "Destinatario eliminado",
+        });
+      }
+    );
+  };
 
   const encabezadoTablaModal = [
-    { id: "categoria", name: "Correo electrónico", selector: (row: any) => row, sortable: true,style: {
+    {
+      id: "categoria",
+      name: "Correo electrónico",
+      selector: (row: any) => row,
+      sortable: true,
+      style: {
         fontSize: "1.2em",
-      }, 
+      },
     },
     {
       id: "acciones",
@@ -1070,12 +1120,14 @@ function BuscarArchivos() {
         <>
           <Button
             size="sm"
-             onClick={() => eliminarCorreo(row)}
-            className="bg-secondary">
+            onClick={() => eliminarCorreo(row)}
+            className="bg-secondary"
+          >
             <FaTrash />
-          </Button>      
+          </Button>
         </>
-      ), width:"120px",
+      ),
+      width: "120px",
     },
   ];
 
@@ -1239,14 +1291,14 @@ function BuscarArchivos() {
                         label: x.criterioBusqueda,
                       }))}
                       value={
-                        criterioBusquedaText !== ''
+                        criterioBusquedaText !== ""
                           ? {
                               value: criterioBusquedaId,
                               label: criterioBusquedaText,
                             }
                           : null
-                      }         
-                      noOptionsMessage={() => "Opción no encontrada"}             
+                      }
+                      noOptionsMessage={() => "Opción no encontrada"}
                     />
                   </Form.Group>
                 </div>
@@ -1267,14 +1319,13 @@ function BuscarArchivos() {
                       placeholder="Parámetro de búsqueda"
                       onChange={(e) => {
                         const value = e.target.value;
-                        
+
                         setParamBusqueda(value);
-                      }}                      
+                      }}
                     />
                   </Form.Group>
                 </div>
 
-				
                 <div
                   className="d-flex flex-column mt-auto p-3"
                   style={{ padding: "3px 10px", alignSelf: "flex-end" }}
@@ -1329,13 +1380,16 @@ function BuscarArchivos() {
                             condicion:
                               listaArchivosTablaSeleccionados.length > 1,
                             accion: () => handleModalCorreo(null, true),
-                            icono: <RiMailSendFill className="me-2" size={24} />,
+                            icono: (
+                              <RiMailSendFill className="me-2" size={24} />
+                            ),
                             texto: "Enviar archivos por correo",
                           },
                         ]}
                         gridHeading={encabezadoArchivo}
                         gridData={listaArchivosTabla}
                         selectableRows={false}
+                        onSearch={onBuscarDocNombre}
                         filterColumns={["nombre"]}
                         fetchData={fetchData}
                         totalRows={cantRegs}
@@ -1350,7 +1404,10 @@ function BuscarArchivos() {
                         width: "100%",
                       }}
                     >
-                      <img src="/SinResultados.png" style={{width: '75%', height: '75%'}}/>
+                      <img
+                        src="/SinResultados.png"
+                        style={{ width: "75%", height: "75%" }}
+                      />
                     </div>
                   )}
                 </div>
@@ -1383,8 +1440,11 @@ function BuscarArchivos() {
         <Form id="formEnviaCorreo" onSubmit={handleEnviaPorCorreo}>
           <Row>
             <Col md={10}>
-               <Form.Label>Nombre del archivo: <b>{nomArchivo}</b></Form.Label>
-                <br /><br />
+              <Form.Label>
+                Nombre del archivo: <b>{nomArchivo}</b>
+              </Form.Label>
+              <br />
+              <br />
               <Form.Label>Correo electrónico del destinatario</Form.Label>
               <Form.Control
                 type="text"
@@ -1395,29 +1455,31 @@ function BuscarArchivos() {
                 maxLength={50}
               />
             </Col>
-            <Col md={2}>        
-            <br /><br /><br />           
-              <Button  
-                type="button" 
+            <Col md={2}>
+              <br />
+              <br />
+              <br />
+              <Button
+                type="button"
                 className="mt-3 mb-0 btn-save"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  alignContent: 'center'
+                  display: "flex",
+                  alignItems: "center",
+                  alignContent: "center",
                 }}
                 onClick={() => agregarCorreo()}
               >
-                <RiAddLine className="me-2" size={24}/>
+                <RiAddLine className="me-2" size={24} />
                 Agregar
-              </Button>    
+              </Button>
             </Col>
-            <Col md={12} style={{marginTop: '3%'}}>
-            <Form.Label>Lista de destinatarios</Form.Label>
-                <Grid
-                  gridHeading={encabezadoTablaModal}
-                  gridData={listaCorreos}
-                  selectableRows={false}
-                ></Grid>
+            <Col md={12} style={{ marginTop: "3%" }}>
+              <Form.Label>Lista de destinatarios</Form.Label>
+              <Grid
+                gridHeading={encabezadoTablaModal}
+                gridData={listaCorreos}
+                selectableRows={false}
+              ></Grid>
             </Col>
           </Row>
         </Form>

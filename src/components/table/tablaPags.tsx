@@ -7,6 +7,7 @@ import { FaPlus } from "react-icons/fa";
 export const GridPags: React.FC<any> = ({
   gridHeading,
   fetchData,
+  onSearch,
   selectableRows,
   pending,
   setFilaSeleccionada,
@@ -16,7 +17,7 @@ export const GridPags: React.FC<any> = ({
   handle,
   buttonVisible,
   botonesAccion,
-  totalRows
+  totalRows,
 }) => {
   const [id, setId] = useState(-1);
   const [records, setRecords] = useState([]);
@@ -168,12 +169,22 @@ export const GridPags: React.FC<any> = ({
           </div>
 
           <div className={buttonVisible ? "" : "ms-auto"}>
-            <input
-              className="form-control"
-              type="search"
-              placeholder="Buscar"
-              onChange={handleFilter}
-            />
+            {onSearch && (
+              <input
+                className="form-control"
+                type="search"
+                placeholder="Buscar"
+                onBlur={onSearch}
+              />
+            )}
+            {!onSearch && (
+              <input
+                className="form-control"
+                type="search"
+                placeholder="Buscar"
+                onChange={handleFilter}
+              />
+            )}
           </div>
         </div>
       )}
