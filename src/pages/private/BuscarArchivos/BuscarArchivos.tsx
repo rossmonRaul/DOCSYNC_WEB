@@ -102,6 +102,7 @@ function BuscarArchivos() {
   );
   const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
   const [contenido, setContenido] = useState("");
+  const [primerCarga, setPrimerCarga] = useState(true);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
@@ -110,7 +111,11 @@ function BuscarArchivos() {
   }, []);
 
   useEffect(() => {
-    handleBuscarClick();
+    if (!primerCarga) {
+      handleBuscarClick();
+    } else {
+      setPrimerCarga(false);
+    }
   }, [nombreBuscar]);
 
   //Informacion general del paquete
