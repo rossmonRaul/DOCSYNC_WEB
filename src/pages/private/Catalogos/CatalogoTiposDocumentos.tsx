@@ -9,6 +9,7 @@ import {
   ActualizarTipoDocumento,
   ImportarTiposDocumentos,
 } from "../../../servicios/ServicioTiposDocumentos";
+import Select from "react-select";
 import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
@@ -20,13 +21,15 @@ import BootstrapSwitchButton from "bootstrap-switch-button-react";
 
 import * as XLSX from "xlsx";
 import { useConfirm } from "../../../context/confirmContext";
+import { ObtenerFormatoDocumento } from "../../../servicios/ServicioFormatoDocumento";
+import { ObtenerCriterioBusqueda } from "../../../servicios/ServicioCriterioBusqueda";
 
 // Interfaz para la información del tipo de documento
 interface TipoDocumento {
   idTipoDocumento: string;
   fraseBusqInicio: string;
   fraseBusqFin: string;
-  imagen: boolean;
+  idFormatoDocumento: string;
   contieneNumSoli: boolean;
   codigo: string;
   descripcion: string;
@@ -45,17 +48,23 @@ interface ErrorResponse {
 function CatalogoTiposDocumentos() {
   const { openConfirm } = useConfirm();
   const { setShowSpinner } = useSpinner();
+  const [paramBusqueda, setParamBusqueda] = useState("");
   const [listaTiposDocumentos, setListaTiposDocumentos] = useState<
     TipoDocumento[]
   >([]);
+  const [listaFormatoDocumento, setListaFormatoDocumento] = useState<any>([]);
   const [showModal, setShowModal] = useState(false);
   const [palabraClaveFin, setPalabraClaveFin] = useState("");
+  const [criteriosBusqueda, setCriteriosBusqueda] = useState<any[]>([]);
+  const [criterioBusquedaId, setCriterioBusquedaId] = useState("");
+  const [nombreFormato, setNombreFormato] = useState<any>();
+  const [tipoValidacion, setTipoValidacion] = useState("");
   const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
     idTipoDocumento: "0",
     codigo: "",
     fraseBusqInicio: "",
     fraseBusqFin: "",
-    imagen: false,
+    idFormatoDocumento: "",
     contieneNumSoli: false,
     descripcion: "",
     usuarioCreacion: "",
@@ -63,7 +72,9 @@ function CatalogoTiposDocumentos() {
     estado: true,
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [criterioBusquedaText, setCriterioBusquedaText] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  const [regExp, setRegExp] = useState<RegExp>(/.*/);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({
     indicador: 0,
     mensaje: "",
@@ -80,6 +91,8 @@ function CatalogoTiposDocumentos() {
 
   useEffect(() => {
     obtenerTiposDocumentos();
+    obtenerFormatoDocumento();
+    obtenerCriteriosBusqueda();
   }, []);
 
   // Función para obtener todas los tipos de documentos
@@ -88,6 +101,33 @@ function CatalogoTiposDocumentos() {
     try {
       const tiposDocumentos = await ObtenerTiposDocumentos();
       setListaTiposDocumentos(tiposDocumentos);
+    } catch (error) {
+      console.error("Error al obtener los tipos de documentos:", error);
+    } finally {
+      setShowSpinner(false);
+    }
+  };
+
+  const obtenerCriteriosBusqueda = async () => {
+    const response = await ObtenerCriterioBusqueda(true);
+
+    if (!response) {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ocurrió un error al obtener los criterios de búsqueda",
+      });
+    } else {
+      setCriteriosBusqueda(response);
+    }
+  };
+
+  const obtenerFormatoDocumento = async () => {
+    setShowSpinner(true);
+    try {
+      const formatosDocs = await ObtenerFormatoDocumento();
+      console.log(formatosDocs);
+      setListaFormatoDocumento(formatosDocs);
     } catch (error) {
       console.error("Error al obtener los tipos de documentos:", error);
     } finally {
@@ -150,7 +190,7 @@ function CatalogoTiposDocumentos() {
       codigo: "",
       fraseBusqInicio: "",
       fraseBusqFin: "",
-      imagen: false,
+      idFormatoDocumento: "",
       contieneNumSoli: false,
       descripcion: "",
       usuarioCreacion: "",
@@ -530,6 +570,24 @@ function CatalogoTiposDocumentos() {
     }
   };
 
+  const handleCriterioBusqueda = (criterio: any) => {
+    const crit = criteriosBusqueda.filter(
+      (x: any) => x.idCriterioBusqueda === criterio
+    )[0];
+    const criterioText = crit.criterioBusqueda;
+    /*
+    const regularExp = crit.expresionRegular;
+    const tipoV = crit.validacion;
+     setParamBusqueda("");
+
+    setTipoValidacion(tipoV);
+    setRegExp(new RegExp(regularExp));
+
+    */
+    setCriterioBusquedaText(criterioText);
+    setCriterioBusquedaId(criterio);
+  };
+
   return (
     <>
       <h1 className="title">Catálogo Tipos de Documentos</h1>
@@ -547,7 +605,7 @@ function CatalogoTiposDocumentos() {
           selectableRows={false}
           botonesAccion={[
             {
-             // condicion: true,
+              // condicion: true,
               //accion: handleModalImportar,
               //icono: <FaFileCirclePlus className="me-2" size={24} />,
               //texto: "Importar",
@@ -639,29 +697,30 @@ function CatalogoTiposDocumentos() {
                   }}
                 >
                   <Form.Label style={{ marginTop: "3%" }}>
-                    ¿Es imagen?
+                    Formato de documento
                   </Form.Label>
-                  <div className="w-100">
-                    <BootstrapSwitchButton
-                      checked={nuevoTipoDocumento.imagen === true}
-                      onlabel="Sí"
-                      onstyle="success"
-                      offlabel="No"
-                      offstyle="danger"
-                      style="w-100 mx-3;"
-                      onChange={(checked) =>
-                        setNuevoTipoDocumento({
-                          ...nuevoTipoDocumento,
-                          imagen: checked,
-                        })
-                      }
-                    />
-                  </div>
+                  <Form.Select
+                    name="idFormatoDocumento"
+                    value={nuevoTipoDocumento.idFormatoDocumento}
+                    onChange={(selected) => {
+                      setNuevoTipoDocumento({
+                        ...nuevoTipoDocumento,
+                        idFormatoDocumento: selected.target.value,
+                      });
+                      setNombreFormato(selected.target.selectedOptions[0].text);
+                    }}
+                    required={nuevoTipoDocumento.idFormatoDocumento === ""}
+                  >
+                    <option value="">Seleccione una opción</option>
+                    {listaFormatoDocumento.map((f: any) => (
+                      <option value={f.idFormato}>{f.nombre}</option>
+                    ))}
+                  </Form.Select>
                 </div>
               </Form.Group>
             </Col>
           </Row>
-          {nuevoTipoDocumento.contieneNumSoli && (
+          {nombreFormato !== "Imagen" && (
             <Row>
               <Col md={6}>
                 <Form.Group controlId="formBusInicio">
@@ -717,6 +776,39 @@ function CatalogoTiposDocumentos() {
                 </Form.Group>
               </Col>
             )}
+            <Col md={6}>
+              <Form.Group>
+                <Form.Label>Tipo de campo de búsqueda</Form.Label>
+                <Select
+                  onChange={(e: any) => handleCriterioBusqueda(e.value)}
+                  className="GrupoFiltro"
+                  required={criterioBusquedaId === ""}
+                  styles={{
+                    control: (provided) => ({
+                      ...provided,
+                      fontSize: "16px",
+                      padding: "2%",
+                      outline: "none",
+                      marginTop: "1%",
+                    }),
+                  }}
+                  placeholder="Seleccione"
+                  options={criteriosBusqueda.map((x: any) => ({
+                    value: x.idCriterioBusqueda,
+                    label: x.criterioBusqueda,
+                  }))}
+                  value={
+                    criterioBusquedaText !== ""
+                      ? {
+                          value: criterioBusquedaId,
+                          label: criterioBusquedaText,
+                        }
+                      : null
+                  }
+                  noOptionsMessage={() => "Opción no encontrada"}
+                />
+              </Form.Group>
+            </Col>
             <Col md={6}>
               <Form.Group controlId="formEstado">
                 <div
