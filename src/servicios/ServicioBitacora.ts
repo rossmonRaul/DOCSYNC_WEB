@@ -7,4 +7,9 @@ export const InsertarRegistroBitacora = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/InsertarRegistroBitacora`;
     return await ProcesarDatosApi('POST', url, data);
 }
+
+export const ObtenerBitacora= async (data: any) => {
+    const url = `${API_BASE_URL}/${controlador}/ObtenerBitacora`;
+    return await ProcesarDatosApi('POST', url, data);
+}
  

@@ -22,6 +22,6 @@ export const PrivateRoutes = {
     CATALOGODEPARTAMENTOS: 'catalogo-departamentos',
     CATALOGODEPUESTOS: 'catalogo-puestos',
     CATALOGOCRITERIOBUSQUEDA: 'catalogo-criterio-busqueda',
-    
+    BITACORA: 'bitacora',
 
 };
