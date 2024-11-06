@@ -32,6 +32,7 @@ import Historial from "./pages/private/Historial/Historial.tsx";
 import CatalogoCriterioBusqueda from "./pages/private/Catalogos/CatalogoCriterioBusqueda.tsx";
 import BuscarArchivosSolicitud from "./pages/private/BuscarArchivosSolicitud/BuscarArchivosSolicitud.tsx";
 import { ConfirmProvider } from "./context/confirmContext.tsx";
+import Bitacora from "./pages/private/Bitacora/Bitacora.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -65,6 +66,7 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGOPERSONAS}
           element={<CatalogoPersonas />}
         />
+         <Route path={PrivateRoutes.BITACORA} element={<Bitacora />} />  
         <Route
           path={PrivateRoutes.CATALOGOESTADOS}
           element={<CatalogoEstados />}

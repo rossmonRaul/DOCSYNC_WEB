@@ -107,6 +107,10 @@
   overflow: auto;
 }
 
+.grid {
+  width: 80%;
+}
+
 .h4Estilo{
   color: #9E0000;
     font-size: 24px;
