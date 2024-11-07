@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
+// @ts-ignore
 import FileViewer from "react-file-viewer";
-import DocViewer, { DocViewerRenderers } from "react-doc-viewer";
 import { AiOutlineClose } from "react-icons/ai";
 import {
   ObtenerArchivoDocumento,
@@ -125,10 +125,10 @@ export const VisorArchivos: React.FC<any> = ({
       {showAlert && (
         <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
       )}
-      <div>
+      <div style={{width: "100%", height: "100%", padding: "1%"}}>
         <div className="mb-2 d-flex justify-content-between align-items-center">
           <h4 className="mb-0">
-            {documento?.name || documentoDescarga?.nombre}
+            {documento?.name || documentoDescarga?.nomDocumento}
           </h4>
           <Button className="btn-cancel" onClick={() => cerrar()}>
             <AiOutlineClose />
@@ -136,9 +136,8 @@ export const VisorArchivos: React.FC<any> = ({
         </div>
         {error && <p>No se ha podido mostrar el archivo</p>}
         {tiposSoportados.includes(fileExtension) && fileURL && (
-          <div style={{ maxHeight: "100vh", overflow: "auto" }}>
+          <div style={{ maxHeight: "60vh", overflowY: "auto", width: "100%", height: "100%"}}>
             <FileViewer
-              style={{ overflowY: "hidden" }}
               key={documento?.id || documentoDescarga?.idDocumento}
               fileType={fileExtension}
               filePath={fileURL}

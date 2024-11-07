@@ -5,7 +5,7 @@ import CustomModal from "../../../components/modal/CustomModal";
 
 import { Grid } from "../../../components/table/tabla";
 import { ObtenerPersonas, CrearPersona, EliminarPersona, ActualizarPersona, ImportarPersonas } from "../../../servicios/ServicioPersonas";
-import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
+import { FaBan, FaDownload, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -753,6 +753,53 @@ function CatalogoPersonas() {
     nuevaPersona.puesto = e.value;
   }
 
+  // Descarga de catálogo
+  const descargaCatalogo = async () => {
+    setShowSpinner(true);
+    const nombreReporte = "Reporte de personas DocSync - " + new Date().toLocaleDateString() +".xlsx";
+    const nombreHoja = "Personas";
+
+    const columnsSelect = [
+      "identificacion",
+      "nombreCompleto",
+      "puesto",
+      "email",
+      "telefono",
+      "departamento",
+      "estado"
+    ];
+
+    const columnas = {
+      identificacion: "Identificación",
+      nombreCompleto: "Nombre",      
+      departamento: "Departamento",
+      puesto: "Puesto",
+      email: "Correo",
+      telefono: "Teléfono",
+      estado: "Estado"
+    } as any;
+
+    const datosFiltrados = listaPersonas.map((item: any) => {
+      const filteredItem: any = {};
+      columnsSelect.forEach((column: any) => {
+        if (column === "estado") {
+          filteredItem[columnas[column]] = item[column] ? "Activo" : "Inactivo";
+        } else {
+          filteredItem[columnas[column]] = item[column];
+        }
+      });
+      return filteredItem;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
+    
+    await XLSX.writeFile(workbook, nombreReporte);
+    setShowSpinner(false);
+  }
+
   return (
     <>
       <div className="container-fluid">
@@ -790,6 +837,12 @@ function CatalogoPersonas() {
               icono: <FaFileCirclePlus className="me-2" size={24} />,
               texto: "Importar",
             },
+            {
+              condicion: true,
+              accion: descargaCatalogo,
+              icono: <FaDownload className="me-2" size={24} />,
+              texto: "Descargar",
+            }
           ]}
         ></Grid>
       </div>

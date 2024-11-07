@@ -64,7 +64,7 @@ function BuscarArchivos() {
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
   const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
-  const [documentoEditado, setDocumentoEditado] = useState(false);
+  // const [documentoEditado, setDocumentoEditado] = useState(false);
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const [criterioBusquedaId, setCriterioBusquedaId] = useState("");
   const [criterioBusquedaText, setCriterioBusquedaText] = useState("");
@@ -80,13 +80,15 @@ function BuscarArchivos() {
   const [correo, setCorreo] = useState("");
   const [listaCorreos, setListaCorreos] = useState<any>([]);
   const [showModalCorreo, setShowModalCorreo] = useState(false);
-  const [emailDest, setEmailDest] = useState("");
   const { openConfirm } = useConfirm();
   const [idDocEnviar, setIdDocEnviar] = useState("");
   const [nombreBuscar, setNombreBuscar] = useState("");
   const [archivoEnviar, setArchivoEnviar] = useState("");
   const [esEnvioMasivo, setEsEnvioMasivo] = useState(false);
   const nombreArchivoMasivo = "Documentos.zip";
+  const [textoObservaciones, setTextoObservaciones] = useState("Eliminar seleccionados");
+  const [textoDescarga, setTextoDescarga] = useState("Descargar seleccionados");
+  const [textoCorreo, setTextoCorreo] = useState("Enviar archivos por correo");
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
@@ -101,7 +103,7 @@ function BuscarArchivos() {
     null
   );
   const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
-  const [contenido, setContenido] = useState("");
+  // const [contenido, setContenido] = useState("");
   const [primerCarga, setPrimerCarga] = useState(true);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -134,7 +136,7 @@ function BuscarArchivos() {
       ),
       head: "Seleccionar",
       sortable: false,
-      width: "12%",
+      width: documentoVer ? "25%" : "12%",
       center: "true",
     },
     {
@@ -148,7 +150,7 @@ function BuscarArchivos() {
       style: {
         fontSize: "1.5em",
       },
-      width: "35%",
+      width: documentoVer ? "50%" : "32%",
     },
     {
       id: "tipo",
@@ -162,7 +164,7 @@ function BuscarArchivos() {
         fontSize: "1.5em",
       },
       omit: documentoVer != null,
-      width: "10%",
+      width: "13%",
     },
     {
       id: "No.Solicitud",
@@ -200,7 +202,7 @@ function BuscarArchivos() {
       selector: (row: Archivo) => (
         <div style={{ paddingTop: "5px", paddingBottom: "5px" }}>
           <Button
-            onClick={() => abrirInformacionArchivo(row, true)}
+            onClick={() => abrirInformacionArchivo(row, /*true*/)}
             size="sm"
             className="bg-secondary me-2"
           >
@@ -224,7 +226,7 @@ function BuscarArchivos() {
       ),
       head: "Seleccionar",
       sortable: false,
-      width: "14%",
+      width: documentoVer ? "25%" : "14%",
     },
   ];
 
@@ -234,7 +236,6 @@ function BuscarArchivos() {
   };
 
   const handleBuscarClick = async () => {
-    console.log(nombreBuscar);
     setPendiente(true);
     setListaArchivosTabla([]);
     setListaArchivosTablaSeleccionados([]);
@@ -310,10 +311,11 @@ function BuscarArchivos() {
 
         setListaArchivosTabla(resultadosObtenidos);
         setPendiente(false);
-        setContenido("");
+        // setContenido("");
 
-        setMostrarBusqueda(!mostrarBusqueda);
-      } else {
+        setMostrarBusqueda(false);
+      }
+      else{
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 2,
@@ -416,10 +418,11 @@ function BuscarArchivos() {
 
           setListaArchivosTabla(resultadosObtenidos);
           setPendiente(false);
-          setContenido("");
-
-          setMostrarBusqueda(!mostrarBusqueda);
-        } else {
+          // setContenido("");
+		   
+          setMostrarBusqueda(false);
+        }
+        else{
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
@@ -705,10 +708,29 @@ function BuscarArchivos() {
 
   const handleVisor = () => {
     setDocumentoVer(undefined);
+
+    if(!mostrarBusqueda){
+      setTextoCorreo("Enviar archivos por correo");
+      setTextoDescarga("Descargar seleccionados");
+      setTextoObservaciones("Eliminar seleccionados");
+    }
+    else{
+      setTextoCorreo("");
+      setTextoDescarga("");
+      setTextoObservaciones("");
+    }
   };
 
   const handleVerArchivo = (archivo: Archivo) => {
+    console.log(archivo);
+
     setDocumentoVer(archivo);
+
+    setTextoCorreo("");
+    setTextoDescarga("");
+    setTextoObservaciones("");
+    
+    setMostrarBusqueda(false);
 
     InsertarRegistroBitacora({
       idAccion: 7,
@@ -786,16 +808,26 @@ function BuscarArchivos() {
   const handleModalEliminar = () => {
     setShowObservacionesEliminar(!showObservacionesEliminar);
   };
-  const abrirInformacionArchivo = (row: Archivo, editar = false) => {
+  const abrirInformacionArchivo = (row: Archivo/*, editar = false*/) => {
     setDocumentoSeleccionado(row);
     setShowModal(true);
-    setDocumentoEditado(editar);
+    // setDocumentoEditado(editar);
   };
-  const [mostrarDiv, setMostrarDiv] = useState(true);
 
   const toggleDiv = () => {
-    setMostrarDiv((prev) => !prev); // Alterna el estado
-    setMostrarBusqueda((prev) => !prev);
+    setMostrarBusqueda(!mostrarBusqueda);
+    handleVisor();
+
+    if(mostrarBusqueda){
+      setTextoCorreo("Enviar archivos por correo");
+      setTextoDescarga("Descargar seleccionados");
+      setTextoObservaciones("Eliminar seleccionados");
+    }
+    else{
+      setTextoCorreo("");
+      setTextoDescarga("");
+      setTextoObservaciones("");
+    }
   };
 
   const obtenerCriteriosBusqueda = async () => {
@@ -855,7 +887,6 @@ function BuscarArchivos() {
     setShowModalCorreo(!showModalCorreo);
     setCorreo("");
     setListaCorreos([]);
-    setEmailDest("");
     if (!envioMasivo) {
       setIdDocEnviar(archivo?.idDocumento ?? "");
       setArchivoEnviar(archivo?.nomDocumento ?? "");
@@ -1204,9 +1235,6 @@ function BuscarArchivos() {
                 )}
               </Button>
             }
-            {/* <button onClick={toggleDiv}>
-                {mostrarDiv ? 'Ocultar' : 'Mostrar'} Div
-              </button> */}
           </Col>
         </Row>
       </div>
@@ -1217,9 +1245,10 @@ function BuscarArchivos() {
             <div style={{ height: "100vh" }}>Cargando...</div>
           ) : (
             /*tabla donde se muestran los datos*/
+            
             <div style={{ display: "flex" }}>
               <div
-                className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}
+                className={`contenedorFiltro ${mostrarBusqueda ? "mostrar" : ""}`}
               >
                 <div
                   className="d-flex flex-column"
@@ -1361,7 +1390,6 @@ function BuscarArchivos() {
                   />
                 )}
                 <div>
-                  {/* {listaArchivosTabla.length > 0 ? ( */}
                   {cantRegs > 0 ? (
                     <div className="content">
                       <GridPags
@@ -1371,23 +1399,21 @@ function BuscarArchivos() {
                               listaArchivosTablaSeleccionados.length > 0,
                             accion: handleDescargarArchivos,
                             icono: <FaDownload className="me-2" size={24} />,
-                            texto: "Descargar seleccionados",
+                            texto: textoDescarga,                            
                           },
                           {
                             condicion:
                               listaArchivosTablaSeleccionados.length > 0,
                             accion: () => setShowObservacionesEliminar(true),
                             icono: <FaTrash className="me-2" size={24} />,
-                            texto: "Eliminar seleccionados",
+                            texto: textoObservaciones,
                           },
                           {
                             condicion:
                               listaArchivosTablaSeleccionados.length > 1,
                             accion: () => handleModalCorreo(null, true),
-                            icono: (
-                              <RiMailSendFill className="me-2" size={24} />
-                            ),
-                            texto: "Enviar archivos por correo",
+                            icono: <RiMailSendFill className="me-2" size={24} />,
+                            texto: textoCorreo,
                           },
                         ]}
                         gridHeading={encabezadoArchivo}
@@ -1410,14 +1436,14 @@ function BuscarArchivos() {
                     >
                       <img
                         src="/SinResultados.png"
-                        style={{ width: "75%", height: "75%" }}
+                        style={{ height: "20rem", width: '20rem'  }}
                       />
                     </div>
                   )}
                 </div>
               </div>
               {documentoVer && (
-                <div style={{ flex: 1, padding: "20px" }}>
+                <div style={{ flex: '1', overflow: "hidden"}}>
                   <VisorArchivos
                     key={documentoVer}
                     documentoDescarga={documentoVer}

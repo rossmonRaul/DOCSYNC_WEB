@@ -105,7 +105,7 @@ export const Grid: React.FC<any> = ({
     },
     pagination: {
       style: {
-        fontSize: "12px",
+        fontSize: "12px"
       },
     },
   };

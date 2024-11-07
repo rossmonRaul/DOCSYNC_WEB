@@ -10,7 +10,7 @@ import {
   ImportarTiposDocumentos,
 } from "../../../servicios/ServicioTiposDocumentos";
 import Select from "react-select";
-import { FaBan, FaRedo, FaUpload } from "react-icons/fa";
+import { FaBan, FaDownload, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal";
@@ -588,6 +588,45 @@ function CatalogoTiposDocumentos() {
     setCriterioBusquedaId(criterio);
   };
 
+  // Descarga de catálogo
+  const descargaCatalogo = async () => {
+    setShowSpinner(true);
+    const nombreReporte = "Reporte de tipos de documento DocSync - " + new Date().toLocaleDateString() +".xlsx";
+    const nombreHoja = "Tipos de documento";
+
+    const columnsSelect = [
+      "codigo",
+      "descripcion",
+      "estado"
+    ];
+
+    const columnas = {
+      codigo: "Código",
+      descripcion: "Descripción",
+      estado: "Estado"
+    } as any;
+
+    const datosFiltrados = listaTiposDocumentos.map((item: any) => {
+      const filteredItem: any = {};
+      columnsSelect.forEach((column: any) => {
+        if (column === "estado") {
+          filteredItem[columnas[column]] = item[column] ? "Activo" : "Inactivo";
+        } else {
+          filteredItem[columnas[column]] = item[column];
+        }
+      });
+      return filteredItem;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
+    
+    await XLSX.writeFile(workbook, nombreReporte);
+    setShowSpinner(false);
+  }
+
   return (
     <>
       <h1 className="title">Catálogo Tipos de Documentos</h1>
@@ -609,7 +648,13 @@ function CatalogoTiposDocumentos() {
               //accion: handleModalImportar,
               //icono: <FaFileCirclePlus className="me-2" size={24} />,
               //texto: "Importar",
-            },
+            },            
+            {
+              condicion: true,
+              accion: descargaCatalogo,
+              icono: <FaDownload className="me-2" size={24} />,
+              texto: "Descargar",
+            }
           ]}
         ></Grid>
       </div>
