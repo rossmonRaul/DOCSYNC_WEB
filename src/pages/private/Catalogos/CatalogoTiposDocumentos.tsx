@@ -29,8 +29,8 @@ interface TipoDocumento {
   idTipoDocumento: string;
   fraseBusqInicio: string;
   fraseBusqFin: string;
-  idFormatoDocumento: string;
-  idCriterioBusqueda?: number | null;
+  idFormatoDocumento?: any;
+  idCriterioBusqueda?: any;
   criterioBusqueda: string;
   contieneNumSoli: boolean;
   codigo: string;
@@ -68,7 +68,7 @@ function CatalogoTiposDocumentos() {
     fraseBusqFin: "",
     idCriterioBusqueda: null,
     criterioBusqueda: "",
-    idFormatoDocumento: "",
+    idFormatoDocumento: null,
     contieneNumSoli: false,
     descripcion: "",
     usuarioCreacion: "",
@@ -180,6 +180,7 @@ function CatalogoTiposDocumentos() {
       setPalabraClaveFin(tipoDocumento.fraseBusqFin);
       tipoDocumento.fraseBusqFin = "otro";
     }
+    console.log(tipoDocumento);
     setCriterioBusquedaId(tipoDocumento.idCriterioBusqueda);
     setCriterioBusquedaText(tipoDocumento.criterioBusqueda);
     setNuevoTipoDocumento(tipoDocumento);
@@ -269,6 +270,7 @@ function CatalogoTiposDocumentos() {
           usuarioCreacion: identificacionUsuario,
           fechaCreacion: new Date().toISOString(),
         };
+        console.log(tipoDocumentoACrear)
         const response = await CrearTipoDocumento(tipoDocumentoACrear);
 
         if (response) {
@@ -601,19 +603,18 @@ function CatalogoTiposDocumentos() {
   // Descarga de catálogo
   const descargaCatalogo = async () => {
     setShowSpinner(true);
-    const nombreReporte = "Reporte de tipos de documento DocSync - " + new Date().toLocaleDateString() +".xlsx";
+    const nombreReporte =
+      "Reporte de tipos de documento DocSync - " +
+      new Date().toLocaleDateString() +
+      ".xlsx";
     const nombreHoja = "Tipos de documento";
 
-    const columnsSelect = [
-      "codigo",
-      "descripcion",
-      "estado"
-    ];
+    const columnsSelect = ["codigo", "descripcion", "estado"];
 
     const columnas = {
       codigo: "Código",
       descripcion: "Descripción",
-      estado: "Estado"
+      estado: "Estado",
     } as any;
 
     const datosFiltrados = listaTiposDocumentos.map((item: any) => {
@@ -629,13 +630,13 @@ function CatalogoTiposDocumentos() {
     });
 
     const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
-    
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
-    
+
     await XLSX.writeFile(workbook, nombreReporte);
     setShowSpinner(false);
-  }
+  };
 
   return (
     <>
@@ -658,13 +659,13 @@ function CatalogoTiposDocumentos() {
               //accion: handleModalImportar,
               //icono: <FaFileCirclePlus className="me-2" size={24} />,
               //texto: "Importar",
-            },            
+            },
             {
               condicion: true,
               accion: descargaCatalogo,
               icono: <FaDownload className="me-2" size={24} />,
               texto: "Descargar",
-            }
+            },
           ]}
         ></Grid>
       </div>
@@ -726,11 +727,24 @@ function CatalogoTiposDocumentos() {
                     name="idFormatoDocumento"
                     value={nuevoTipoDocumento.idFormatoDocumento}
                     onChange={(selected) => {
-                      setNuevoTipoDocumento({
-                        ...nuevoTipoDocumento,
-                        idFormatoDocumento: selected.target.value,
-                      });
-                      setNombreFormato(selected.target.selectedOptions[0].text);
+                      const tipoText = selected.target.selectedOptions[0].text;
+
+                      setNombreFormato(tipoText);
+                      if (tipoText === "Imagen") {
+                        setCriterioBusquedaId(null);
+                        setCriterioBusquedaText("");
+                        setNuevoTipoDocumento({
+                          ...nuevoTipoDocumento,
+                          fraseBusqInicio: "",
+                          fraseBusqFin: "",
+                          idFormatoDocumento: selected.target.value,
+                        });
+                      } else {
+                        setNuevoTipoDocumento({
+                          ...nuevoTipoDocumento,
+                          idFormatoDocumento: selected.target.value,
+                        });
+                      }
                     }}
                     required={nuevoTipoDocumento.idFormatoDocumento === ""}
                   >
@@ -764,12 +778,14 @@ function CatalogoTiposDocumentos() {
                         offlabel="No"
                         offstyle="danger"
                         style="w-100 mx-3;"
-                        onChange={(checked) =>
+                        onChange={(checked) => {
                           setNuevoTipoDocumento({
                             ...nuevoTipoDocumento,
                             contieneNumSoli: checked,
-                          })
-                        }
+                          });
+                          setCriterioBusquedaId(null);
+                          setCriterioBusquedaText("");
+                        }}
                       />
                     </div>
                   </div>
@@ -841,7 +857,9 @@ function CatalogoTiposDocumentos() {
                     <Select
                       onChange={(e: any) => handleCriterioBusqueda(e.value)}
                       className="GrupoFiltro"
-                      required={criterioBusquedaId === ""}
+                      required={
+                        criterioBusquedaId === "" || criterioBusquedaId === null
+                      }
                       styles={{
                         control: (provided) => ({
                           ...provided,

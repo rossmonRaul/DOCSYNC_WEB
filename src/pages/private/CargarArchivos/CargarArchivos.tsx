@@ -23,6 +23,9 @@ interface TipoDocumento {
   esImagen: boolean;
   fraseBusqInicio: string;
   fraseBusqFin: string;
+  formatoDocumento: string;
+  criterioBusqueda: string;
+  contieneNumSoli: Boolean;
 }
 
 interface Archivo {
@@ -57,6 +60,9 @@ function CargarArchivos() {
       esImagen: false,
       fraseBusqInicio: "",
       fraseBusqFin: "",
+      formatoDocumento: "",
+      contieneNumSoli: true,
+      criterioBusqueda: "",
     });
   const [tipoDocumento, setTipoDocumento] = useState<any>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
@@ -231,6 +237,9 @@ function CargarArchivos() {
                 fraseBusqInicio: tipoSeleccionado?.fraseBusqInicio,
                 fraseBusqFin: tipoSeleccionado?.fraseBusqFin,
                 esImagen: tipoSeleccionado?.esImagen,
+                criterioBusqueda: tipoSeleccionado.criterioBusqueda,
+                formatoDocumento: tipoSeleccionado.formatoDocumento,
+                contieneNumSoli: tipoSeleccionado.contieneNumSoli,
               },
             }
           : row
@@ -329,61 +338,75 @@ function CargarArchivos() {
             }
           }
         });
-        //extraer el num de solicitud
-        const formData = new FormData();
-        archivosAux.forEach((a: Archivo, index: number) => {
-          formData.append(`entity[${index}].Id`, a.id + "");
-          formData.append(`entity[${index}].NomDocumento`, a.nomDocumento);
-          formData.append(`entity[${index}].Archivo`, a.archivo);
-          formData.append(
-            `entity[${index}].IdTipoDoc`,
-            a.tipoDocumento.idTipoDocumento
-          );
-          formData.append(
-            `entity[${index}].DescripcionDoc`,
-            a.tipoDocumento.descripcion
-          );
-          formData.append(
-            `entity[${index}].esImagen`,
-            a.tipoDocumento.esImagen === true ? "1" : "0"
-          );
-          formData.append(
-            `entity[${index}].fraseBusqInicio`,
-            a.tipoDocumento.fraseBusqInicio
-          );
-          formData.append(
-            `entity[${index}].fraseBusqFin`,
-            a.tipoDocumento.fraseBusqFin
-          );
-          formData.append(`entity[${index}].FechaCreacion`, a.fechaCreacion);
-          formData.append(
-            `entity[${index}].UsuarioCreacion`,
-            a.usuarioCreacion
-          );
-        });
-        setShowSpinner(true);
-        const response = await ExtraerContenido(formData);
-        setShowSpinner(false);
-        if (response) {
-          const docsConNumeroSolicitud = response?.datos;
-          const obtenerNumSolicitud = (nombre: any) => {
-            return docsConNumeroSolicitud?.find(
-              (item: any) => item.nomDocumento === nombre
-            )?.numSolicitud;
-          };
-          archivosAux.forEach((a) => {
-            a.numSolicitud = obtenerNumSolicitud(a.nomDocumento);
+        if (tipoDocumentoSeleccionado.formatoDocumento !== "Imagen") {
+          //extraer el num de solicitud
+          const formData = new FormData();
+          archivosAux.forEach((a: Archivo, index: number) => {
+            formData.append(`entity[${index}].Id`, a.id + "");
+            formData.append(`entity[${index}].NomDocumento`, a.nomDocumento);
+            formData.append(`entity[${index}].Archivo`, a.archivo);
+            formData.append(
+              `entity[${index}].IdTipoDoc`,
+              a.tipoDocumento.idTipoDocumento
+            );
+            formData.append(
+              `entity[${index}].DescripcionDoc`,
+              a.tipoDocumento.descripcion
+            );
+            formData.append(
+              `entity[${index}].esImagen`,
+              a.tipoDocumento.esImagen === true ? "1" : "0"
+            );
+            formData.append(
+              `entity[${index}].fraseBusqInicio`,
+              a.tipoDocumento.fraseBusqInicio
+            );
+            formData.append(
+              `entity[${index}].fraseBusqFin`,
+              a.tipoDocumento.fraseBusqFin
+            );
+            formData.append(
+              `entity[${index}].fraseBusqFin`,
+              a.tipoDocumento.fraseBusqFin
+            );
+            formData.append(
+              `entity[${index}].formatoDocumento`,
+              a.tipoDocumento.formatoDocumento
+            );
+            formData.append(
+              `entity[${index}].contieneNumSoli`,
+              a.tipoDocumento.contieneNumSoli === true ? "1" : "0"
+            );
+            formData.append(`entity[${index}].FechaCreacion`, a.fechaCreacion);
+            formData.append(
+              `entity[${index}].UsuarioCreacion`,
+              a.usuarioCreacion
+            );
           });
-          setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
-          setIdArchivoGenerado(consecutivo);
-          setFiles([]);
-        } else {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje:
-              "Error. Ha ocurrido un error al extraer número de solicitud.",
-          });
+          setShowSpinner(true);
+          const response = await ExtraerContenido(formData);
+          setShowSpinner(false);
+          if (response) {
+            const docsConNumeroSolicitud = response?.datos;
+            const obtenerNumSolicitud = (nombre: any) => {
+              return docsConNumeroSolicitud?.find(
+                (item: any) => item.nomDocumento === nombre
+              )?.numSolicitud;
+            };
+            archivosAux.forEach((a) => {
+              a.numSolicitud = obtenerNumSolicitud(a.nomDocumento);
+            });
+            setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
+            setIdArchivoGenerado(consecutivo);
+            setFiles([]);
+          } else {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje:
+                "Error. Ha ocurrido un error al extraer número de solicitud.",
+            });
+          }
         }
       }
     }
@@ -584,6 +607,9 @@ function CargarArchivos() {
                             fraseBusqInicio: tipoSeleccionado?.fraseBusqInicio,
                             fraseBusqFin: tipoSeleccionado?.fraseBusqFin,
                             esImagen: tipoSeleccionado?.imagen,
+                            formatoDocumento: tipoSeleccionado.formatoDocumento,
+                            criterioBusqueda: tipoSeleccionado.criterioBusqueda,
+                            contieneNumSoli: tipoSeleccionado.contieneNumSoli,
                           });
                         }}
                       >
