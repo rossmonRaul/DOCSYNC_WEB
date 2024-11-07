@@ -30,6 +30,8 @@ interface TipoDocumento {
   fraseBusqInicio: string;
   fraseBusqFin: string;
   idFormatoDocumento: string;
+  idCriterioBusqueda?: number | null;
+  criterioBusqueda: string;
   contieneNumSoli: boolean;
   codigo: string;
   descripcion: string;
@@ -56,7 +58,7 @@ function CatalogoTiposDocumentos() {
   const [showModal, setShowModal] = useState(false);
   const [palabraClaveFin, setPalabraClaveFin] = useState("");
   const [criteriosBusqueda, setCriteriosBusqueda] = useState<any[]>([]);
-  const [criterioBusquedaId, setCriterioBusquedaId] = useState("");
+  const [criterioBusquedaId, setCriterioBusquedaId] = useState<any>();
   const [nombreFormato, setNombreFormato] = useState<any>();
   const [tipoValidacion, setTipoValidacion] = useState("");
   const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
@@ -64,6 +66,8 @@ function CatalogoTiposDocumentos() {
     codigo: "",
     fraseBusqInicio: "",
     fraseBusqFin: "",
+    idCriterioBusqueda: null,
+    criterioBusqueda: "",
     idFormatoDocumento: "",
     contieneNumSoli: false,
     descripcion: "",
@@ -176,6 +180,8 @@ function CatalogoTiposDocumentos() {
       setPalabraClaveFin(tipoDocumento.fraseBusqFin);
       tipoDocumento.fraseBusqFin = "otro";
     }
+    setCriterioBusquedaId(tipoDocumento.idCriterioBusqueda);
+    setCriterioBusquedaText(tipoDocumento.criterioBusqueda);
     setNuevoTipoDocumento(tipoDocumento);
     setIsEditing(true);
     setShowModal(true);
@@ -190,6 +196,8 @@ function CatalogoTiposDocumentos() {
       codigo: "",
       fraseBusqInicio: "",
       fraseBusqFin: "",
+      idCriterioBusqueda: null,
+      criterioBusqueda: "",
       idFormatoDocumento: "",
       contieneNumSoli: false,
       descripcion: "",
@@ -222,6 +230,7 @@ function CatalogoTiposDocumentos() {
         setShowSpinner(true);
         const tipoDocumentoActualizar = {
           ...nuevoTipoDocumento,
+          idCriterioBusqueda: criterioBusquedaId,
           fraseBusqFin: palabraFin,
           usuarioModificacion: identificacionUsuario,
           fechaModificacion: new Date().toISOString(),
@@ -255,6 +264,7 @@ function CatalogoTiposDocumentos() {
         const tipoDocumentoACrear = {
           ...nuevoTipoDocumento,
           idTipoDocumento: "0",
+          idCriterioBusqueda: criterioBusquedaId,
           fraseBusqFin: palabraFin,
           usuarioCreacion: identificacionUsuario,
           fechaCreacion: new Date().toISOString(),
@@ -700,38 +710,6 @@ function CatalogoTiposDocumentos() {
           </Row>
           <Row>
             <Col md={6}>
-              <Form.Group controlId="formNumSoli">
-                <div
-                  style={{
-                    display: "flex",
-                    alignContent: "start",
-                    alignItems: "start",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Form.Label style={{ marginTop: "3%" }}>
-                    ¿Contiene número de solicitud?
-                  </Form.Label>
-                  <div className="w-100">
-                    <BootstrapSwitchButton
-                      checked={nuevoTipoDocumento.contieneNumSoli === true}
-                      onlabel="Sí"
-                      onstyle="success"
-                      offlabel="No"
-                      offstyle="danger"
-                      style="w-100 mx-3;"
-                      onChange={(checked) =>
-                        setNuevoTipoDocumento({
-                          ...nuevoTipoDocumento,
-                          contieneNumSoli: checked,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
               <Form.Group controlId="formImagen">
                 <div
                   style={{
@@ -764,6 +742,40 @@ function CatalogoTiposDocumentos() {
                 </div>
               </Form.Group>
             </Col>
+            {nombreFormato !== "Imagen" && (
+              <Col md={6}>
+                <Form.Group controlId="formNumSoli">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignContent: "start",
+                      alignItems: "start",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Form.Label style={{ marginTop: "3%" }}>
+                      ¿Contiene número de solicitud?
+                    </Form.Label>
+                    <div className="w-100">
+                      <BootstrapSwitchButton
+                        checked={nuevoTipoDocumento.contieneNumSoli === true}
+                        onlabel="Sí"
+                        onstyle="success"
+                        offlabel="No"
+                        offstyle="danger"
+                        style="w-100 mx-3;"
+                        onChange={(checked) =>
+                          setNuevoTipoDocumento({
+                            ...nuevoTipoDocumento,
+                            contieneNumSoli: checked,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </Form.Group>
+              </Col>
+            )}
           </Row>
           {nombreFormato !== "Imagen" && (
             <Row>
@@ -821,39 +833,42 @@ function CatalogoTiposDocumentos() {
                 </Form.Group>
               </Col>
             )}
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Tipo de campo de búsqueda</Form.Label>
-                <Select
-                  onChange={(e: any) => handleCriterioBusqueda(e.value)}
-                  className="GrupoFiltro"
-                  required={criterioBusquedaId === ""}
-                  styles={{
-                    control: (provided) => ({
-                      ...provided,
-                      fontSize: "16px",
-                      padding: "2%",
-                      outline: "none",
-                      marginTop: "1%",
-                    }),
-                  }}
-                  placeholder="Seleccione"
-                  options={criteriosBusqueda.map((x: any) => ({
-                    value: x.idCriterioBusqueda,
-                    label: x.criterioBusqueda,
-                  }))}
-                  value={
-                    criterioBusquedaText !== ""
-                      ? {
-                          value: criterioBusquedaId,
-                          label: criterioBusquedaText,
-                        }
-                      : null
-                  }
-                  noOptionsMessage={() => "Opción no encontrada"}
-                />
-              </Form.Group>
-            </Col>
+            {nombreFormato !== "Imagen" &&
+              nuevoTipoDocumento.contieneNumSoli === false && (
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Tipo de campo de búsqueda</Form.Label>
+                    <Select
+                      onChange={(e: any) => handleCriterioBusqueda(e.value)}
+                      className="GrupoFiltro"
+                      required={criterioBusquedaId === ""}
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          fontSize: "16px",
+                          padding: "2%",
+                          outline: "none",
+                          marginTop: "1%",
+                        }),
+                      }}
+                      placeholder="Seleccione"
+                      options={criteriosBusqueda.map((x: any) => ({
+                        value: x.idCriterioBusqueda,
+                        label: x.criterioBusqueda,
+                      }))}
+                      value={
+                        criterioBusquedaText !== ""
+                          ? {
+                              value: criterioBusquedaId,
+                              label: criterioBusquedaText,
+                            }
+                          : null
+                      }
+                      noOptionsMessage={() => "Opción no encontrada"}
+                    />
+                  </Form.Group>
+                </Col>
+              )}
             <Col md={6}>
               <Form.Group controlId="formEstado">
                 <div
