@@ -39,7 +39,7 @@ const Notification: React.FC = () => {
           ...notifications,
           {
             result,
-            fecha: new Date().toLocaleDateString(),
+            fecha: obtenerFechaConHora(),
             error,
           },
         ]);

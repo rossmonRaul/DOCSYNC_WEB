@@ -29,7 +29,7 @@ interface TipoDocumento {
   idTipoDocumento: string;
   fraseBusqInicio: string;
   fraseBusqFin: string;
-  idFormatoDocumento?: any;
+  idFormatoDocumento?: number;
   idCriterioBusqueda?: any;
   criterioBusqueda: string;
   contieneNumSoli: boolean;
@@ -180,7 +180,6 @@ function CatalogoTiposDocumentos() {
       setPalabraClaveFin(tipoDocumento.fraseBusqFin);
       tipoDocumento.fraseBusqFin = "otro";
     }
-    console.log(tipoDocumento);
     setCriterioBusquedaId(tipoDocumento.idCriterioBusqueda);
     setCriterioBusquedaText(tipoDocumento.criterioBusqueda);
     setNuevoTipoDocumento(tipoDocumento);
@@ -192,6 +191,8 @@ function CatalogoTiposDocumentos() {
   const handleModal = () => {
     setShowModal(!showModal);
     setIsEditing(false);
+    setCriterioBusquedaId(null);
+    setCriterioBusquedaText("")
     setNuevoTipoDocumento({
       idTipoDocumento: "0",
       codigo: "",
@@ -199,7 +200,7 @@ function CatalogoTiposDocumentos() {
       fraseBusqFin: "",
       idCriterioBusqueda: null,
       criterioBusqueda: "",
-      idFormatoDocumento: "",
+      idFormatoDocumento: -1,
       contieneNumSoli: false,
       descripcion: "",
       usuarioCreacion: "",
@@ -236,6 +237,7 @@ function CatalogoTiposDocumentos() {
           usuarioModificacion: identificacionUsuario,
           fechaModificacion: new Date().toISOString(),
         };
+        console.log(tipoDocumentoActualizar);
         const response = await ActualizarTipoDocumento(tipoDocumentoActualizar);
 
         if (response) {
@@ -270,7 +272,7 @@ function CatalogoTiposDocumentos() {
           usuarioCreacion: identificacionUsuario,
           fechaCreacion: new Date().toISOString(),
         };
-        console.log(tipoDocumentoACrear)
+        console.log(tipoDocumentoACrear);
         const response = await CrearTipoDocumento(tipoDocumentoACrear);
 
         if (response) {
@@ -737,16 +739,16 @@ function CatalogoTiposDocumentos() {
                           ...nuevoTipoDocumento,
                           fraseBusqInicio: "",
                           fraseBusqFin: "",
-                          idFormatoDocumento: selected.target.value,
+                          idFormatoDocumento: Number(selected.target.value),
                         });
                       } else {
                         setNuevoTipoDocumento({
                           ...nuevoTipoDocumento,
-                          idFormatoDocumento: selected.target.value,
+                          idFormatoDocumento: Number(selected.target.value),
                         });
                       }
                     }}
-                    required={nuevoTipoDocumento.idFormatoDocumento === ""}
+                    required={nuevoTipoDocumento.idFormatoDocumento === -1}
                   >
                     <option value="">Seleccione una opción</option>
                     {listaFormatoDocumento.map((f: any) => (
