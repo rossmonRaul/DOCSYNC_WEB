@@ -884,7 +884,7 @@ function CatalogoPersonas() {
               </Form.Group>
             </Col>
           </Row>
-          <Row>
+          <Row style={{marginTop: '1%'}}>
             <Col md={6}>
               <Form.Group controlId="formDepartamento">
                 <Form.Label>Departamento</Form.Label>
@@ -950,7 +950,7 @@ function CatalogoPersonas() {
               </Form.Group>
             </Col>
           </Row>
-          <Row>
+          <Row style={{marginTop: '1%'}}>
             <Col md={6}>
               <Form.Group controlId="formTelefono">
                 <Form.Label>Teléfono</Form.Label>
@@ -978,6 +978,8 @@ function CatalogoPersonas() {
                 />
               </Form.Group>
             </Col>
+          </Row>
+          <Row style={{marginTop: '1%'}}>
             <Col  md={{ span: 6, offset: 6 }}>
                 <Form.Group controlId="formEstado">
                   <div

@@ -575,10 +575,10 @@ function CatalogoPuestos() {
                     flexDirection: "column",
                   }}
                 >
-                  <Form.Label style={{ marginTop: "3%" }}>
+                  <Form.Label>
                     Puesto activo
                   </Form.Label>
-                  <div className="w-100">
+                  <div className="w-100" style={{marginTop: '1%'}}>
                     <BootstrapSwitchButton
                       checked={estado === true}
                       onlabel="Sí"

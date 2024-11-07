@@ -372,7 +372,7 @@ function AdministrarRoles() {
               <Col md={12}><br /></Col>
               <Col md={4}>
                 <Form.Group controlId="formPermAgregar">
-                    <Form.Label style={{marginTop: '5%'}}>Categoría</Form.Label>
+                    <Form.Label style={{marginTop: '1%'}}>Categoría</Form.Label>
                     <Select
                       onChange={(e: any) => handleCategoriaChange(e)}
                       className="GrupoFiltroAdmRoles"
@@ -393,7 +393,7 @@ function AdministrarRoles() {
               </Col>
               <Col md={4}>
                 <Form.Group controlId="formPermAgregar">
-                    <Form.Label style={{marginTop: '5%'}}>Opción</Form.Label>
+                    <Form.Label style={{marginTop: '1%'}}>Opción</Form.Label>
                     <Select
                       onChange={(e: any) => setOpcionSelected(e.value)}
                       className="GrupoFiltroAdmRoles"
@@ -412,7 +412,7 @@ function AdministrarRoles() {
                     /> 
                 </Form.Group>
               </Col>
-              <Col md={4} style={{marginTop: '3.8%', paddingRight: '0px', marginRight: '0px'}}>              
+              <Col md={4} style={{marginTop: '2.8%', paddingRight: '0px', marginRight: '0px'}}>              
                   <Button  
                     type="button" 
                     className="mt-3 mb-0 btn-save"
@@ -428,7 +428,6 @@ function AdministrarRoles() {
                   </Button>     
               </Col>
               <Col md={12}>
-              <br />
                 <Grid
                   gridHeading={encabezadoTablaModal}
                   gridData={opcionesRol}

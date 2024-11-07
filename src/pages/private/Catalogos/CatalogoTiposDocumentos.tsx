@@ -796,7 +796,7 @@ function CatalogoTiposDocumentos() {
             )}
           </Row>
           {nombreFormato !== "Imagen" && (
-            <Row>
+            <Row style={{ marginTop: "3%" }}>
               <Col md={6}>
                 <Form.Group controlId="formBusInicio">
                   <Form.Label>Frase de búsqueda inicio</Form.Label>
@@ -836,7 +836,7 @@ function CatalogoTiposDocumentos() {
               </Col>
             </Row>
           )}
-          <Row>
+          <Row style={{ marginTop: "3%" }}>
             {nuevoTipoDocumento.fraseBusqFin === "otro" && (
               <Col md={6}>
                 <Form.Group controlId="formBusInicio">
@@ -899,7 +899,7 @@ function CatalogoTiposDocumentos() {
                     flexDirection: "column",
                   }}
                 >
-                  <Form.Label style={{ marginTop: "3%" }}>
+                  <Form.Label>
                     Tipo de documento activo
                   </Form.Label>
                   <div className="w-100">

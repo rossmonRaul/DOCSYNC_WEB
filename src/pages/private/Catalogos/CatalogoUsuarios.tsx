@@ -149,19 +149,35 @@ function CatalogoUsuarios() {
         const identificacion = personas.filter(
           (x: any) => x.idPersona == idPersona
         )[0].identificacion;
+        const nombre = personas.filter(
+          (x: any) => x.idPersona == idPersona
+        )[0].nombreCompleto;
 
         setCorreoE(correoE);
         setIdentificacion(identificacion);
         setPersona(idPersona);
+        setNombrePersona(nombre);
       } else {
         setCorreoE("");
         setIdentificacion("");
         setPersona("");
+        setNombrePersona("");
       }
     };
 
     const handleRolChange = (e: any) => {
+      if (e.value !== "") {
+      const nombre = roles.filter(
+        (x: any) => x.idRol == e.value
+      )[0].rol;  
+
       setRol(e.value);
+      setRolTexto(nombre);
+      }
+      else{
+        setRol("");
+        setRolTexto("");
+      }
     };
 
     const handlePassChange = (e: any) => {

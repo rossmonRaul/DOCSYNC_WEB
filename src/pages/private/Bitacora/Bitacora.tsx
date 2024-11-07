@@ -269,7 +269,7 @@ function Bitacora() {
         showSubmitButton={false}
         show={showModal}
         onHide={handleModal}
-        title={"Bitacora"}
+        title={"Bitácora"}
       >
         <Form>
           <Row>

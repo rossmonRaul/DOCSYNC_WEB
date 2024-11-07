@@ -618,11 +618,15 @@ function Historial() {
                         gridData={listaHistorialTabla}
                         selectableRows={false}
                         filterColumns={["usuario", "accion", "estado", "descripcion", "fecha"]}
-                        nameButtonOpcion1={"Descargar"}
-                        visibleButtonOpcion1={true}
-                        handleButtonOpcion1={generarArchivoExcel}
-                        iconButtonOpcion1={<FaFileDownload className="me-2" size={24} />}
-                      />                   
+                        botonesAccion={[
+                          {
+                            condicion: true,
+                            accion: generarArchivoExcel,
+                            icono: <FaFileDownload className="me-2" size={24} />,
+                            texto: "Descargar",
+                          }
+                        ]}
+                      />     
                   ) : (
                     <div
                       className="content row justify-content-center align-items-center"
