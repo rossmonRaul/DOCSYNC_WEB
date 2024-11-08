@@ -1405,9 +1405,7 @@ function BuscarArchivos() {
                       }}
                     >
                       <img
-                        src="/SinResultados.png"
-                        style={{ height: "20rem", width: '20rem'  }}
-                      />
+                        src="/SinResultados.png" className="imgSinResultados"/>
                     </div>
                   )}
                 </div>

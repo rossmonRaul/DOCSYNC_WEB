@@ -28,6 +28,11 @@
     color: white;
     margin-top: 10px;
   }
+
+  .imgSinResultados{
+    height: 20rem;
+    width: 20rem;
+  }
   
   /* Estilos para el contenedor del filtro */
   .filtro-container {

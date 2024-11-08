@@ -224,7 +224,7 @@ useEffect(() => {
                         width: "100%",
                       }}
                     >
-                      <img src="/SinResultados.png" style={{ height: "20rem", width: '20rem'  }}/>
+                      <img src="/SinResultados.png" className="imgSinResultados"/>
                     </div>
                   )}
                 </div>
