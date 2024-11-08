@@ -253,7 +253,7 @@ function Bitacora() {
             reportName: `Bitácora`,
             data: listaFormateadaXLSX,
             columns: columnas,
-            userName: usuario || '',
+            userName: usuario || null,
             dynamicHeaders, 
         });
     }

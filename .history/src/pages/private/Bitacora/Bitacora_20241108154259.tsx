@@ -243,7 +243,7 @@ function Bitacora() {
         // columnas del reporte
         const columnas = [
             { key: 'Acción', header: 'Acción', width: 15 },
-            { key: 'Descripción', header: 'Descripción', width: 130 },
+            { key: 'Descripción', header: 'Descripción', width: 120 },
             { key: 'Usuario', header: 'Usuario', width: 30 },
             { key: 'Fecha', header: 'Fecha', width: 12 },
         ];
@@ -253,7 +253,7 @@ function Bitacora() {
             reportName: `Bitácora`,
             data: listaFormateadaXLSX,
             columns: columnas,
-            userName: usuario || '',
+            userName: usuario || ' ',
             dynamicHeaders, 
         });
     }

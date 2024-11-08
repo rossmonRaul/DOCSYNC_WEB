@@ -64,7 +64,7 @@ export const exportToExcel = ({ reportName, data, columns, userName, dynamicHead
         XLSX.utils.book_append_sheet(wb, ws, reportName); // nombre del tab
 
         const currentDate = getFormattedDateTime().slice(0, -9); // fecha actual
-        const fileName = `${reportName}_${userName}_${currentDate}.xlsx`;
+        const fileName = `${reportName}${userName?'_'+userName+'_':'_' }${currentDate}.xlsx`;
 
         XLSX.writeFile(wb, fileName); 
 
