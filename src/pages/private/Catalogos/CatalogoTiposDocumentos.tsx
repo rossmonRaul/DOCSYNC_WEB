@@ -68,7 +68,7 @@ function CatalogoTiposDocumentos() {
     fraseBusqFin: "",
     idCriterioBusqueda: null,
     criterioBusqueda: "",
-    idFormatoDocumento: null,
+    idFormatoDocumento: undefined,
     contieneNumSoli: false,
     descripcion: "",
     usuarioCreacion: "",

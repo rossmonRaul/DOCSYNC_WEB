@@ -326,45 +326,15 @@ function BuscarArchivos() {
     } else {
       setShowAlert(false);
 
+      const valorExt = criterioBusquedaText !== '' ?
+        criteriosBusqueda.filter((x: any) => x.criterioBusqueda === criterioBusquedaText)[0].valorExterno
+      : null;    
+
       const filtro = {
         fechaInicio: fechaInicio,
         fechaFinal: fechaFin,
-        nombreApoderado:
-          criterioBusquedaText.toLowerCase().trim() === "apoderado"
-            ? paramBusqueda
-            : null,
-        nombreSolicitante:
-          criterioBusquedaText.toLowerCase().trim() === "solicitante"
-            ? paramBusqueda
-            : null,
-        rtnSolicitante:
-          criterioBusquedaText.toLowerCase().trim() === "id/rtn"
-            ? paramBusqueda
-            : null,
-        numeroExpediente:
-          criterioBusquedaText.toLowerCase().trim() === "expediente"
-            ? paramBusqueda
-            : undefined,
-        codigoCertificado:
-          criterioBusquedaText.toLowerCase().trim() === "certificado"
-            ? paramBusqueda
-            : null,
-        codigoPermiso:
-          criterioBusquedaText.toLowerCase().trim() === "permiso"
-            ? paramBusqueda
-            : null,
-        placa:
-          criterioBusquedaText.toLowerCase().trim() === "placa"
-            ? paramBusqueda
-            : null,
-        //placaIngresa: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null, // Validar
-        //preforma: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null,
-        codigoGea:
-          criterioBusquedaText.toLowerCase().trim() === "gea"
-            ? paramBusqueda
-            : null,
-        // regional: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
-        // solicitudAnterior: criterioBusquedaText.toLowerCase().trim() === 'placa' ? paramBusqueda : null
+        valorExterno: valorExt,
+        valor: paramBusqueda,
         usuarioBusqueda: identificacionUsuario,
       };
 
