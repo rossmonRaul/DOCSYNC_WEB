@@ -3,10 +3,13 @@ import { FaRegBell } from "react-icons/fa";
 import "../../css/notificacions.css";
 import { useWorker } from "../../context/workerContext";
 import { obtenerFechaConHora } from "../../utils/utils";
+import { useNavigate } from "react-router-dom";
+import { IoEye } from "react-icons/io5";
 
 const Notification: React.FC = () => {
   const notificationRef = useRef<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   const { loading, result, error, taskTitle } = useWorker();
 
@@ -68,7 +71,23 @@ const Notification: React.FC = () => {
       {/* Mostrar las notificaciones si showNotifications es true */}
       {showNotifications && notifications.length >= 0 && (
         <div className="notification-list">
-          <h3>Notificaciones:</h3>
+          <div className="notifications-header">
+            <h5>Notificaciones</h5>
+            <IoEye
+              style={{
+                cursor: "pointer",
+                transition: "color 0.3s ease",
+                color: "#fff",
+              }}
+              onClick={() => {
+                navigate("/historial");
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "black")}
+              size={25}
+            />
+          </div>
+
           {notifications.length <= 0 && (
             <p style={{ color: "#000", margin: 10, marginLeft: 15 }}>
               Aún no hay notificaciones que mostrar.

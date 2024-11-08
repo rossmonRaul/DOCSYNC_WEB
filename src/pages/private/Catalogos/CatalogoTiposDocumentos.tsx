@@ -192,7 +192,7 @@ function CatalogoTiposDocumentos() {
     setShowModal(!showModal);
     setIsEditing(false);
     setCriterioBusquedaId(null);
-    setCriterioBusquedaText("")
+    setCriterioBusquedaText("");
     setNuevoTipoDocumento({
       idTipoDocumento: "0",
       codigo: "",
@@ -221,82 +221,86 @@ function CatalogoTiposDocumentos() {
   // Maneja el envío del formulario para agregar o editar un tipo de dotcumento
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let palabraFin = nuevoTipoDocumento.fraseBusqFin;
-    if (nuevoTipoDocumento.fraseBusqFin === "otro") {
-      palabraFin = palabraClaveFin;
-    }
+    openConfirm("¿Está seguro que desea guardar?", async () => {
+      let palabraFin = nuevoTipoDocumento.fraseBusqFin;
+      if (nuevoTipoDocumento.fraseBusqFin === "otro") {
+        palabraFin = palabraClaveFin;
+      }
 
-    if (isEditing) {
-      // Editar tipo de dotcumento
-      try {
-        setShowSpinner(true);
-        const tipoDocumentoActualizar = {
-          ...nuevoTipoDocumento,
-          idCriterioBusqueda: criterioBusquedaId,
-          fraseBusqFin: palabraFin,
-          usuarioModificacion: identificacionUsuario,
-          fechaModificacion: new Date().toISOString(),
-        };
-        console.log(tipoDocumentoActualizar);
-        const response = await ActualizarTipoDocumento(tipoDocumentoActualizar);
+      if (isEditing) {
+        // Editar tipo de dotcumento
+        try {
+          setShowSpinner(true);
+          const tipoDocumentoActualizar = {
+            ...nuevoTipoDocumento,
+            idCriterioBusqueda: criterioBusquedaId,
+            fraseBusqFin: palabraFin,
+            usuarioModificacion: identificacionUsuario,
+            fechaModificacion: new Date().toISOString(),
+          };
+          console.log(tipoDocumentoActualizar);
+          const response = await ActualizarTipoDocumento(
+            tipoDocumentoActualizar
+          );
 
-        if (response) {
-          setShowAlert(true);
-          setMensajeRespuesta(response);
-          obtenerTiposDocumentos();
-        } else {
+          if (response) {
+            setShowAlert(true);
+            setMensajeRespuesta(response);
+            obtenerTiposDocumentos();
+          } else {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Error al actualizar el tipo de documento",
+            });
+          }
+        } catch (error) {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
             mensaje: "Error al actualizar el tipo de documento",
           });
+        } finally {
+          setShowSpinner(false);
         }
-      } catch (error) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Error al actualizar el tipo de documento",
-        });
-      } finally {
-        setShowSpinner(false);
-      }
-    } else {
-      // Crear tipo de documento
-      try {
-        setShowSpinner(true);
-        const tipoDocumentoACrear = {
-          ...nuevoTipoDocumento,
-          idTipoDocumento: "0",
-          idCriterioBusqueda: criterioBusquedaId,
-          fraseBusqFin: palabraFin,
-          usuarioCreacion: identificacionUsuario,
-          fechaCreacion: new Date().toISOString(),
-        };
-        console.log(tipoDocumentoACrear);
-        const response = await CrearTipoDocumento(tipoDocumentoACrear);
+      } else {
+        // Crear tipo de documento
+        try {
+          setShowSpinner(true);
+          const tipoDocumentoACrear = {
+            ...nuevoTipoDocumento,
+            idTipoDocumento: "0",
+            idCriterioBusqueda: criterioBusquedaId,
+            fraseBusqFin: palabraFin,
+            usuarioCreacion: identificacionUsuario,
+            fechaCreacion: new Date().toISOString(),
+          };
+          console.log(tipoDocumentoACrear);
+          const response = await CrearTipoDocumento(tipoDocumentoACrear);
 
-        if (response) {
-          setShowAlert(true);
-          setMensajeRespuesta(response);
-          obtenerTiposDocumentos();
-        } else {
+          if (response) {
+            setShowAlert(true);
+            setMensajeRespuesta(response);
+            obtenerTiposDocumentos();
+          } else {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Error al crear el tipo de documento",
+            });
+          }
+        } catch (error) {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
             mensaje: "Error al crear el tipo de documento",
           });
+        } finally {
+          setShowSpinner(false);
         }
-      } catch (error) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Error al crear el tipo de documento",
-        });
-      } finally {
-        setShowSpinner(false);
       }
-    }
-    handleModal(); // Cierra el modal
+      handleModal(); // Cierra el modal
+    });
   };
 
   // Encabezados de la tabla con acciones
@@ -899,9 +903,7 @@ function CatalogoTiposDocumentos() {
                     flexDirection: "column",
                   }}
                 >
-                  <Form.Label>
-                    Tipo de documento activo
-                  </Form.Label>
+                  <Form.Label>Tipo de documento activo</Form.Label>
                   <div className="w-100">
                     <BootstrapSwitchButton
                       checked={nuevoTipoDocumento.estado === true}

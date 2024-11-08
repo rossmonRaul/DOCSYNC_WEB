@@ -354,10 +354,6 @@ function CargarArchivos() {
               a.tipoDocumento.descripcion
             );
             formData.append(
-              `entity[${index}].esImagen`,
-              a.tipoDocumento.esImagen === true ? "1" : "0"
-            );
-            formData.append(
               `entity[${index}].fraseBusqInicio`,
               a.tipoDocumento.fraseBusqInicio
             );
@@ -372,6 +368,14 @@ function CargarArchivos() {
             formData.append(
               `entity[${index}].formatoDocumento`,
               a.tipoDocumento.formatoDocumento
+            );
+            formData.append(
+              `entity[${index}].criterioBusqueda`,
+              a.tipoDocumento.criterioBusqueda
+            );
+            formData.append(
+              `entity[${index}].UsuarioModificacion`,
+              userState.nombre
             );
             formData.append(
               `entity[${index}].contieneNumSoli`,

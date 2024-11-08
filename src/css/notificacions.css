@@ -38,13 +38,14 @@
   z-index: 1000;
 }
 
-.notification-list h3 {
+.notifications-header {
   margin: 0;
   padding: 15px;
+  display: flex;
+  justify-content: space-between;
   background-color: #497494; 
   color: #fff;
   border-bottom: 1px solid #ddd;
-  font-size: 16px;
 }
 
 .notification-list ul {
