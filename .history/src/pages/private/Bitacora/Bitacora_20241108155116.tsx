@@ -54,6 +54,7 @@ function Bitacora() {
   }
 
   useEffect(() => {
+    setUsuario(localStorage.getItem('identificacionUsuario')?localStorage.getItem('identificacionUsuario'):'');
   }, []);
 
   //Encabezado tabla
@@ -253,7 +254,7 @@ function Bitacora() {
             reportName: `Bitácora`,
             data: listaFormateadaXLSX,
             columns: columnas,
-            userName: usuario || '',
+            userName: usuario || ' ',
             dynamicHeaders, 
         });
     }
