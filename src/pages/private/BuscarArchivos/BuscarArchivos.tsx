@@ -78,6 +78,7 @@ function BuscarArchivos() {
   const [filtros, setFiltros] = useState<any>({});
   const [nomArchivo, setNomArchivo] = useState("");
   const [correo, setCorreo] = useState("");
+  const [mensaje, setMensaje] = useState("");
   const [listaCorreos, setListaCorreos] = useState<any>([]);
   const [showModalCorreo, setShowModalCorreo] = useState(false);
   const { openConfirm } = useConfirm();
@@ -86,7 +87,9 @@ function BuscarArchivos() {
   const [archivoEnviar, setArchivoEnviar] = useState("");
   const [esEnvioMasivo, setEsEnvioMasivo] = useState(false);
   const nombreArchivoMasivo = "Documentos.zip";
-  const [textoObservaciones, setTextoObservaciones] = useState("Eliminar seleccionados");
+  const [textoObservaciones, setTextoObservaciones] = useState(
+    "Eliminar seleccionados"
+  );
   const [textoDescarga, setTextoDescarga] = useState("Descargar seleccionados");
   const [textoCorreo, setTextoCorreo] = useState("Enviar archivos por correo");
 
@@ -202,7 +205,7 @@ function BuscarArchivos() {
       selector: (row: Archivo) => (
         <div style={{ paddingTop: "5px", paddingBottom: "5px" }}>
           <Button
-            onClick={() => abrirInformacionArchivo(row, /*true*/)}
+            onClick={() => abrirInformacionArchivo(row /*true*/)}
             size="sm"
             className="bg-secondary me-2"
           >
@@ -314,8 +317,7 @@ function BuscarArchivos() {
         // setContenido("");
 
         setMostrarBusqueda(false);
-      }
-      else{
+      } else {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 2,
@@ -326,9 +328,12 @@ function BuscarArchivos() {
     } else {
       setShowAlert(false);
 
-      const valorExt = criterioBusquedaText !== '' ?
-        criteriosBusqueda.filter((x: any) => x.criterioBusqueda === criterioBusquedaText)[0].valorExterno
-      : null;    
+      const valorExt =
+        criterioBusquedaText !== ""
+          ? criteriosBusqueda.filter(
+              (x: any) => x.criterioBusqueda === criterioBusquedaText
+            )[0].valorExterno
+          : null;
 
       const filtro = {
         fechaInicio: fechaInicio,
@@ -389,10 +394,9 @@ function BuscarArchivos() {
           setListaArchivosTabla(resultadosObtenidos);
           setPendiente(false);
           // setContenido("");
-		   
+
           setMostrarBusqueda(false);
-        }
-        else{
+        } else {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
@@ -679,12 +683,11 @@ function BuscarArchivos() {
   const handleVisor = () => {
     setDocumentoVer(undefined);
 
-    if(!mostrarBusqueda){
+    if (!mostrarBusqueda) {
       setTextoCorreo("Enviar archivos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
-    }
-    else{
+    } else {
       setTextoCorreo("");
       setTextoDescarga("");
       setTextoObservaciones("");
@@ -699,7 +702,7 @@ function BuscarArchivos() {
     setTextoCorreo("");
     setTextoDescarga("");
     setTextoObservaciones("");
-    
+
     setMostrarBusqueda(false);
 
     InsertarRegistroBitacora({
@@ -778,7 +781,7 @@ function BuscarArchivos() {
   const handleModalEliminar = () => {
     setShowObservacionesEliminar(!showObservacionesEliminar);
   };
-  const abrirInformacionArchivo = (row: Archivo/*, editar = false*/) => {
+  const abrirInformacionArchivo = (row: Archivo /*, editar = false*/) => {
     setDocumentoSeleccionado(row);
     setShowModal(true);
     // setDocumentoEditado(editar);
@@ -788,12 +791,11 @@ function BuscarArchivos() {
     setMostrarBusqueda(!mostrarBusqueda);
     handleVisor();
 
-    if(mostrarBusqueda){
+    if (mostrarBusqueda) {
       setTextoCorreo("Enviar archivos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
-    }
-    else{
+    } else {
       setTextoCorreo("");
       setTextoDescarga("");
       setTextoObservaciones("");
@@ -856,6 +858,7 @@ function BuscarArchivos() {
   const handleModalCorreo = (archivo?: any, envioMasivo?: any) => {
     setShowModalCorreo(!showModalCorreo);
     setCorreo("");
+    setMensaje("");
     setListaCorreos([]);
     if (!envioMasivo) {
       setIdDocEnviar(archivo?.idDocumento ?? "");
@@ -924,13 +927,15 @@ function BuscarArchivos() {
             const archivos = responseArchivos.datos;
             const archivoZIP = await crearZipCorreo(archivos);
             var idS = "";
+            const nombreArchivos: any = [];
 
             // Se toman ids de los documentos para guardar en bitácora
             archivos.forEach((element: any) => {
+              nombreArchivos.push(element.nombre);
               idS +=
                 idS === "" ? element.idDocumento : ", " + element.idDocumento;
             });
-
+            console.log(nombreArchivos);
             setIdDocEnviar(idS);
 
             var correosDest = "";
@@ -943,7 +948,11 @@ function BuscarArchivos() {
             formData.append("Archivo", archivoZIP, nombreArchivoMasivo);
             formData.append("Correos", correosDest);
             formData.append("IdDocumento", idDocEnviar);
+            formData.append("MensajeBody", mensaje);
             formData.append("NombreArchivo", archivoEnviar);
+            nombreArchivos.forEach((documento: any) =>
+              formData.append("DocumentosEnviados", documento)
+            );
             formData.append("Fecha", new Date().toISOString());
             formData.append("Usuario", identificacionUsuario ?? "");
 
@@ -1008,6 +1017,11 @@ function BuscarArchivos() {
               formData.append("IdDocumento", idDocEnviar.toString());
               formData.append("NombreArchivo", archivoEnviar ?? "");
               formData.append("Fecha", new Date().toISOString());
+              formData.append(
+                "DocumentosEnviados",
+                archivoEnviar
+              );
+              formData.append("MensajeBody", mensaje);
               formData.append("Usuario", identificacionUsuario ?? "");
 
               setShowSpinner(true);
@@ -1215,10 +1229,12 @@ function BuscarArchivos() {
             <div style={{ height: "100vh" }}>Cargando...</div>
           ) : (
             /*tabla donde se muestran los datos*/
-            
+
             <div style={{ display: "flex" }}>
               <div
-                className={`contenedorFiltro ${mostrarBusqueda ? "mostrar" : ""}`}
+                className={`contenedorFiltro ${
+                  mostrarBusqueda ? "mostrar" : ""
+                }`}
               >
                 <div
                   className="d-flex flex-column"
@@ -1369,7 +1385,7 @@ function BuscarArchivos() {
                               listaArchivosTablaSeleccionados.length > 0,
                             accion: handleDescargarArchivos,
                             icono: <FaDownload className="me-2" size={24} />,
-                            texto: textoDescarga,                            
+                            texto: textoDescarga,
                           },
                           {
                             condicion:
@@ -1382,7 +1398,9 @@ function BuscarArchivos() {
                             condicion:
                               listaArchivosTablaSeleccionados.length > 1,
                             accion: () => handleModalCorreo(null, true),
-                            icono: <RiMailSendFill className="me-2" size={24} />,
+                            icono: (
+                              <RiMailSendFill className="me-2" size={24} />
+                            ),
                             texto: textoCorreo,
                           },
                         ]}
@@ -1405,13 +1423,15 @@ function BuscarArchivos() {
                       }}
                     >
                       <img
-                        src="/SinResultados.png" className="imgSinResultados"/>
+                        src="/SinResultados.png"
+                        className="imgSinResultados"
+                      />
                     </div>
                   )}
                 </div>
               </div>
               {documentoVer && (
-                <div style={{ flex: '1', overflow: "hidden"}}>
+                <div style={{ flex: "1", overflow: "hidden" }}>
                   <VisorArchivos
                     key={documentoVer}
                     documentoDescarga={documentoVer}
@@ -1471,6 +1491,7 @@ function BuscarArchivos() {
                 Agregar
               </Button>
             </Col>
+
             <Col md={12} style={{ marginTop: "3%" }}>
               <Form.Label>Lista de destinatarios</Form.Label>
               <Grid
@@ -1478,6 +1499,20 @@ function BuscarArchivos() {
                 gridData={listaCorreos}
                 selectableRows={false}
               ></Grid>
+            </Col>
+            <Col md={12}>
+              <Form.Label>Mensaje</Form.Label>
+              <Form.Control
+                type="text"
+                required
+                as={"textarea"}
+                value={mensaje}
+                rows={3}
+                placeholder="Mensaje"
+                onChange={(e: any) => setMensaje(e.target.value)}
+                maxLength={300}
+                style={{ resize: "none" }}
+              />
             </Col>
           </Row>
         </Form>
