@@ -239,7 +239,6 @@ function BuscarArchivos() {
   };
 
   const handleBuscarClick = async () => {
-    setPendiente(true);
     setListaArchivosTabla([]);
     setListaArchivosTablaSeleccionados([]);
 
@@ -255,7 +254,6 @@ function BuscarArchivos() {
           indicador: 1,
           mensaje: "La fecha final no puede ser menor que la fecha inicial.",
         });
-        setPendiente(false);
         return;
       }
     }
@@ -267,7 +265,6 @@ function BuscarArchivos() {
         indicador: 1,
         mensaje: "Debe ingresar un parámetro de búsqueda válido",
       });
-      setPendiente(false);
       return;
     }
 
@@ -282,7 +279,6 @@ function BuscarArchivos() {
             tipoValidacion +
             '"',
         });
-        setPendiente(false);
         return;
       }
     }
@@ -290,7 +286,6 @@ function BuscarArchivos() {
     // Validar cual método de API llamar
     setShowSpinner(true);
     if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
-      setShowAlert(false);
 
       const filtro = {
         nomDocumento: nombreBuscar,
@@ -313,7 +308,6 @@ function BuscarArchivos() {
         const resultadosObtenidos = await ObtenerDocumento(filtro);
 
         setListaArchivosTabla(resultadosObtenidos);
-        setPendiente(false);
         // setContenido("");
 
         setMostrarBusqueda(false);
@@ -323,10 +317,8 @@ function BuscarArchivos() {
           indicador: 2,
           mensaje: "No hay registros con los parámetros indicados",
         });
-        setPendiente(false);
       }
     } else {
-      setShowAlert(false);
 
       const valorExt =
         criterioBusquedaText !== ""
@@ -392,7 +384,6 @@ function BuscarArchivos() {
           const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
 
           setListaArchivosTabla(resultadosObtenidos);
-          setPendiente(false);
           // setContenido("");
 
           setMostrarBusqueda(false);
@@ -402,7 +393,6 @@ function BuscarArchivos() {
             indicador: 2,
             mensaje: "No hay registros con los parámetros indicados",
           });
-          setPendiente(false);
         }
       }
     }
@@ -783,6 +773,7 @@ function BuscarArchivos() {
   };
   const abrirInformacionArchivo = (row: Archivo /*, editar = false*/) => {
     setDocumentoSeleccionado(row);
+    console.log(row);
     setShowModal(true);
     // setDocumentoEditado(editar);
   };
@@ -1017,10 +1008,7 @@ function BuscarArchivos() {
               formData.append("IdDocumento", idDocEnviar.toString());
               formData.append("NombreArchivo", archivoEnviar ?? "");
               formData.append("Fecha", new Date().toISOString());
-              formData.append(
-                "DocumentosEnviados",
-                archivoEnviar
-              );
+              formData.append("DocumentosEnviados", archivoEnviar);
               formData.append("MensajeBody", mensaje);
               formData.append("Usuario", identificacionUsuario ?? "");
 
@@ -1159,7 +1147,91 @@ function BuscarArchivos() {
         title={recortarTexto(documentoSeleccionado?.nomDocumento, 50)}
         formId="formCargaArchivos"
       >
-        <Form id="formCargaArchivos"></Form>
+        <Form id="formCargaArchivos">
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Nombre:</Form.Label>
+                <Form.Control
+                  type="text"
+                  disabled
+                  name="observacionEliminacion"
+                  value={documentoSeleccionado?.nomDocumento}
+                  required={true}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>No. Solicitud:</Form.Label>
+                <Form.Control
+                  type="text"
+                  disabled
+                  name="observacionEliminacion"
+                  value={documentoSeleccionado?.numSolicitud}
+                  required={true}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Tipo de escrito:</Form.Label>
+                <Form.Control
+                  type="text"
+                  disabled
+                  name="observacionEliminacion"
+                  value={documentoSeleccionado?.descripcionTipo}
+                  required={true}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Creado por el usuario:</Form.Label>
+                <Form.Control
+                  type="text"
+                  disabled
+                  name="observacionEliminacion"
+                  value={documentoSeleccionado?.usuarioCreacion}
+                  required={true}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Guardado el:</Form.Label>
+                <Form.Control
+                  type="text"
+                  disabled
+                  name="observacionEliminacion"
+                  value={new Date(
+                    documentoSeleccionado?.fechaCreacion!!
+                  ).toLocaleString()}
+                  required={true}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={12}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Modificado el:</Form.Label>
+                <Form.Control
+                  type="text"
+                  disabled
+                  name="observacionEliminacion"
+                  value={
+                    documentoSeleccionado?.fechaModificacion &&
+                    new Date(
+                      documentoSeleccionado?.fechaModificacion!!
+                    ).toLocaleString()
+                  }
+                  required={true}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        </Form>
       </CustomModal>
 
       <CustomModal
@@ -1225,223 +1297,194 @@ function BuscarArchivos() {
       <hr></hr>
       <div className="container-fluid">
         <div className="position-relative">
-          {pendiente ? (
-            <div style={{ height: "100vh" }}>Cargando...</div>
-          ) : (
-            /*tabla donde se muestran los datos*/
-
-            <div style={{ display: "flex" }}>
-              <div
-                className={`contenedorFiltro ${
-                  mostrarBusqueda ? "mostrar" : ""
-                }`}
-              >
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <h4 className="h4Estilo">Filtro de búsqueda</h4>
-                </div>
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <label htmlFor="FechaFiltroInicial">
-                    <b>Fecha inicial</b>
-                  </label>
-                  <Form.Group>
-                    <DatePicker
-                      showIcon
-                      selected={fechaFiltroInicial}
-                      onChange={(date) => setFechaFiltroInicial(date)}
-                      dateFormat="dd/MM/yyyy"
-                      className="form-control"
-                      locale={es}
-                      placeholderText="Fecha inicial"
-                    />
-                  </Form.Group>
-                </div>
-
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <br />
-                  <label htmlFor="FechaFiltroFinal">
-                    <b>Fecha final</b>
-                  </label>
-                  <Form.Group>
-                    <DatePicker
-                      showIcon
-                      selected={fechaFiltroFinal}
-                      onChange={(date) => setFechaFiltroFinal(date)}
-                      dateFormat="dd/MM/yyyy"
-                      className="form-control"
-                      locale={es}
-                      placeholderText="Fecha final"
-                    />
-                  </Form.Group>
-                </div>
-
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <br />
-                  <label htmlFor="FechaFiltroFinal">
-                    <b>Criterio de búsqueda</b>
-                  </label>
-                  <Form.Group>
-                    <Select
-                      onChange={(e: any) => handleCriterioBusqueda(e.value)}
-                      className="GrupoFiltro"
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          fontSize: "16px",
-                          padding: "2%",
-                          outline: "none",
-                          marginTop: "1%",
-                        }),
-                      }}
-                      placeholder="Seleccione"
-                      options={criteriosBusqueda.map((x: any) => ({
-                        value: x.idCriterioBusqueda,
-                        label: x.criterioBusqueda,
-                      }))}
-                      value={
-                        criterioBusquedaText !== ""
-                          ? {
-                              value: criterioBusquedaId,
-                              label: criterioBusquedaText,
-                            }
-                          : null
-                      }
-                      noOptionsMessage={() => "Opción no encontrada"}
-                    />
-                  </Form.Group>
-                </div>
-
-                <div
-                  className="d-flex flex-column"
-                  style={{ padding: "0 10px" }}
-                >
-                  <br />
-                  <label htmlFor="FechaFiltroFinal">
-                    <b>Parámetro de búsqueda</b>
-                  </label>
-                  <Form.Group>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      type="text"
-                      value={paramBusqueda}
-                      placeholder="Parámetro de búsqueda"
-                      onChange={(e) => {
-                        const value = e.target.value;
-
-                        setParamBusqueda(value);
-                      }}
-                    />
-                  </Form.Group>
-                </div>
-
-                <div
-                  className="d-flex flex-column mt-auto p-3"
-                  style={{ padding: "3px 10px", alignSelf: "flex-end" }}
-                >
-                  <Button
-                    className="btn-save"
-                    variant="primary"
-                    onClick={handleBuscarClick}
-                    style={{ marginTop: "20px" }}
-                    disabled={areInputsEmpty()}
-                  >
-                    <FaSearch className="me-2" size={24} />
-                    Buscar
-                  </Button>
-                </div>
+          <div style={{ display: "flex" }}>
+            <div
+              className={`contenedorFiltro ${mostrarBusqueda ? "mostrar" : ""}`}
+            >
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <h4 className="h4Estilo">Filtro de búsqueda</h4>
               </div>
-              <div
-                style={{
-                  flex: 1,
-                  padding: "20px",
-                  borderRight: "1px solid #ddd",
-                }}
-              >
-                {showAlert && (
-                  <AlertDismissible
-                    indicador={0}
-                    mensaje={mensajeRespuesta}
-                    setShow={setShowAlert}
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <label htmlFor="FechaFiltroInicial">
+                  <b>Fecha inicial</b>
+                </label>
+                <Form.Group>
+                  <DatePicker
+                    showIcon
+                    selected={fechaFiltroInicial}
+                    onChange={(date) => setFechaFiltroInicial(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="form-control"
+                    locale={es}
+                    placeholderText="Fecha inicial"
                   />
-                )}
-                <div>
-                  {cantRegs > 0 ? (
-                    <div className="content">
-                      <GridPags
-                        botonesAccion={[
-                          {
-                            condicion:
-                              listaArchivosTablaSeleccionados.length > 0,
-                            accion: handleDescargarArchivos,
-                            icono: <FaDownload className="me-2" size={24} />,
-                            texto: textoDescarga,
-                          },
-                          {
-                            condicion:
-                              listaArchivosTablaSeleccionados.length > 0,
-                            accion: () => setShowObservacionesEliminar(true),
-                            icono: <FaTrash className="me-2" size={24} />,
-                            texto: textoObservaciones,
-                          },
-                          {
-                            condicion:
-                              listaArchivosTablaSeleccionados.length > 1,
-                            accion: () => handleModalCorreo(null, true),
-                            icono: (
-                              <RiMailSendFill className="me-2" size={24} />
-                            ),
-                            texto: textoCorreo,
-                          },
-                        ]}
-                        gridHeading={encabezadoArchivo}
-                        gridData={listaArchivosTabla}
-                        selectableRows={false}
-                        onSearch={onBuscarDocNombre}
-                        filterColumns={["nombre"]}
-                        fetchData={fetchData}
-                        totalRows={cantRegs}
-                      ></GridPags>
-                    </div>
-                  ) : (
-                    <div
-                      className="content row justify-content-center align-items-center"
-                      style={{
-                        marginLeft: 10,
-                        textAlign: "center",
-                        width: "100%",
-                      }}
-                    >
-                      <img
-                        src="/SinResultados.png"
-                        className="imgSinResultados"
-                      />
-                    </div>
-                  )}
-                </div>
+                </Form.Group>
               </div>
-              {documentoVer && (
-                <div style={{ flex: "1", overflow: "hidden" }}>
-                  <VisorArchivos
-                    key={documentoVer}
-                    documentoDescarga={documentoVer}
-                    cerrar={handleVisor}
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <br />
+                <label htmlFor="FechaFiltroFinal">
+                  <b>Fecha final</b>
+                </label>
+                <Form.Group>
+                  <DatePicker
+                    showIcon
+                    selected={fechaFiltroFinal}
+                    onChange={(date) => setFechaFiltroFinal(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="form-control"
+                    locale={es}
+                    placeholderText="Fecha final"
                   />
-                </div>
-              )}
+                </Form.Group>
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <br />
+                <label htmlFor="FechaFiltroFinal">
+                  <b>Criterio de búsqueda</b>
+                </label>
+                <Form.Group>
+                  <Select
+                    onChange={(e: any) => handleCriterioBusqueda(e.value)}
+                    className="GrupoFiltro"
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        fontSize: "16px",
+                        padding: "2%",
+                        outline: "none",
+                        marginTop: "1%",
+                      }),
+                    }}
+                    placeholder="Seleccione"
+                    options={criteriosBusqueda.map((x: any) => ({
+                      value: x.idCriterioBusqueda,
+                      label: x.criterioBusqueda,
+                    }))}
+                    value={
+                      criterioBusquedaText !== ""
+                        ? {
+                            value: criterioBusquedaId,
+                            label: criterioBusquedaText,
+                          }
+                        : null
+                    }
+                    noOptionsMessage={() => "Opción no encontrada"}
+                  />
+                </Form.Group>
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <br />
+                <label htmlFor="FechaFiltroFinal">
+                  <b>Parámetro de búsqueda</b>
+                </label>
+                <Form.Group>
+                  <Form.Control
+                    className="GrupoFiltro"
+                    type="text"
+                    value={paramBusqueda}
+                    placeholder="Parámetro de búsqueda"
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setParamBusqueda(value);
+                    }}
+                  />
+                </Form.Group>
+              </div>
+
+              <div
+                className="d-flex flex-column mt-auto p-3"
+                style={{ padding: "3px 10px", alignSelf: "flex-end" }}
+              >
+                <Button
+                  className="btn-save"
+                  variant="primary"
+                  onClick={handleBuscarClick}
+                  style={{ marginTop: "20px" }}
+                  disabled={areInputsEmpty()}
+                >
+                  <FaSearch className="me-2" size={24} />
+                  Buscar
+                </Button>
+              </div>
             </div>
-            /* fin contenedor */
-          )}
+            <div
+              style={{
+                flex: 1,
+                padding: "20px",
+                borderRight: "1px solid #ddd",
+              }}
+            >
+              {showAlert && (
+                <AlertDismissible
+                  indicador={0}
+                  mensaje={mensajeRespuesta}
+                  setShow={setShowAlert}
+                />
+              )}
+              <div>
+                {cantRegs > 0 ? (
+                  <div className="content">
+                    <GridPags
+                      botonesAccion={[
+                        {
+                          condicion: listaArchivosTablaSeleccionados.length > 0,
+                          accion: handleDescargarArchivos,
+                          icono: <FaDownload className="me-2" size={24} />,
+                          texto: textoDescarga,
+                        },
+                        {
+                          condicion: listaArchivosTablaSeleccionados.length > 0,
+                          accion: () => setShowObservacionesEliminar(true),
+                          icono: <FaTrash className="me-2" size={24} />,
+                          texto: textoObservaciones,
+                        },
+                        {
+                          condicion: listaArchivosTablaSeleccionados.length > 1,
+                          accion: () => handleModalCorreo(null, true),
+                          icono: <RiMailSendFill className="me-2" size={24} />,
+                          texto: textoCorreo,
+                        },
+                      ]}
+                      gridHeading={encabezadoArchivo}
+                      gridData={listaArchivosTabla}
+                      selectableRows={false}
+                      onSearch={onBuscarDocNombre}
+                      filterColumns={["nombre"]}
+                      fetchData={fetchData}
+                      totalRows={cantRegs}
+                    ></GridPags>
+                  </div>
+                ) : (
+                  <div
+                    className="content row justify-content-center align-items-center"
+                    style={{
+                      marginLeft: 10,
+                      textAlign: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <img
+                      src="/SinResultados.png"
+                      className="imgSinResultados"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            {documentoVer && (
+              <div style={{ flex: "1", overflow: "hidden" }}>
+                <VisorArchivos
+                  key={documentoVer}
+                  documentoDescarga={documentoVer}
+                  cerrar={handleVisor}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1479,9 +1522,10 @@ function BuscarArchivos() {
               <br />
               <Button
                 type="button"
-                className="mt-3 mb-0 btn-save"
+                className="mt-3 mb-0 btn-crear"
                 style={{
                   display: "flex",
+
                   alignItems: "center",
                   alignContent: "center",
                 }}

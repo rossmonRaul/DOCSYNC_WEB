@@ -180,6 +180,7 @@ function CatalogoTiposDocumentos() {
       setPalabraClaveFin(tipoDocumento.fraseBusqFin);
       tipoDocumento.fraseBusqFin = "otro";
     }
+    setNombreFormato("");
     setCriterioBusquedaId(tipoDocumento.idCriterioBusqueda);
     setCriterioBusquedaText(tipoDocumento.criterioBusqueda);
     setNuevoTipoDocumento(tipoDocumento);
@@ -762,6 +763,36 @@ function CatalogoTiposDocumentos() {
                 </div>
               </Form.Group>
             </Col>
+            {nombreFormato === "Imagen" && (
+              <Col md={6}>
+                <Form.Group controlId="formEstado">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignContent: "start",
+                      alignItems: "start",
+                      margin:10,
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Form.Label>Tipo de documento activo</Form.Label>
+                    <div className="w-100">
+                      <BootstrapSwitchButton
+                        checked={nuevoTipoDocumento.estado === true}
+                        onlabel="Sí"
+                        onstyle="success"
+                        offlabel="No"
+                        offstyle="danger"
+                        style="w-100 mx-3;"
+                        onChange={(checked) =>
+                          (nuevoTipoDocumento.estado = checked)
+                        }
+                      />
+                    </div>
+                  </div>
+                </Form.Group>
+              </Col>
+            )}
             {nombreFormato !== "Imagen" && (
               <Col md={6}>
                 <Form.Group controlId="formNumSoli">
@@ -893,33 +924,35 @@ function CatalogoTiposDocumentos() {
                   </Form.Group>
                 </Col>
               )}
-            <Col md={6}>
-              <Form.Group controlId="formEstado">
-                <div
-                  style={{
-                    display: "flex",
-                    alignContent: "start",
-                    alignItems: "start",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Form.Label>Tipo de documento activo</Form.Label>
-                  <div className="w-100">
-                    <BootstrapSwitchButton
-                      checked={nuevoTipoDocumento.estado === true}
-                      onlabel="Sí"
-                      onstyle="success"
-                      offlabel="No"
-                      offstyle="danger"
-                      style="w-100 mx-3;"
-                      onChange={(checked) =>
-                        (nuevoTipoDocumento.estado = checked)
-                      }
-                    />
+            {nombreFormato !== "Imagen" && (
+              <Col md={6}>
+                <Form.Group controlId="formEstado">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignContent: "start",
+                      alignItems: "start",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Form.Label>Tipo de documento activo</Form.Label>
+                    <div className="w-100">
+                      <BootstrapSwitchButton
+                        checked={nuevoTipoDocumento.estado === true}
+                        onlabel="Sí"
+                        onstyle="success"
+                        offlabel="No"
+                        offstyle="danger"
+                        style="w-100 mx-3;"
+                        onChange={(checked) =>
+                          (nuevoTipoDocumento.estado = checked)
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-              </Form.Group>
-            </Col>
+                </Form.Group>
+              </Col>
+            )}
           </Row>
         </Form>
       </CustomModal>
