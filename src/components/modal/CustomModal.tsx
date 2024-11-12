@@ -61,6 +61,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
             form={formId}
             className="mt-3 mb-0 btn-save"
             style={{
+              width:"125px",
               display: "flex",
               justifyContent: "center",
               alignContent: "center",

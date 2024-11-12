@@ -64,6 +64,7 @@ function CatalogoDepartamentos() {
         const data = {
           idDepartamento: row.idDepartamento,
           usuarioModificacion: identificacionUsuario,
+          nombre: row.nombre,
           fechaModificacion: (new Date()).toISOString()
         };
 

@@ -63,6 +63,7 @@ function CatalogoPuestos() {
         setShowSpinner(true);
         const data = {
           idPuesto: row.idPuesto,
+          nombre: row.nombre,
           usuarioModificacion: identificacionUsuario,
           fechaModificacion: (new Date()).toISOString()
         };

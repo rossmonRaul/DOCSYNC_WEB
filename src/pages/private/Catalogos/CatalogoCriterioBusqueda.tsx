@@ -81,8 +81,9 @@ function CatalogoCriterioBusqueda() {
         setShowSpinner(true);
         const data = {
           idCriterioBusqueda: row.idCriterioBusqueda,
-          fechaModificacion: (new Date()).toISOString(),
-          usuarioModificacion: localStorage.getItem('identificacionUsuario')
+          criterioBusqueda: row.criterioBusqueda,
+          fechaModificacion: new Date().toISOString(),
+          usuarioModificacion: localStorage.getItem("identificacionUsuario"),
         };
 
         const response = await EliminarCriterioBusqueda(data);
@@ -124,96 +125,97 @@ function CatalogoCriterioBusqueda() {
   // Maneja el envío del formulario para agregar o editar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    openConfirm("¿Está seguro que desea guardar?", async () => {
+      setShowSpinner(true);
+      if (isEditing) {
+        try {
+          const identificacionUsuario = localStorage.getItem(
+            "identificacionUsuario"
+          );
 
-    setShowSpinner(true);
-    if (isEditing) {
-      try {
-        const identificacionUsuario = localStorage.getItem(
-          "identificacionUsuario"
-        );
-
-        if (nombreCriterio.trim() === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el nombre del criterio de búsqueda",
-          });
-        }
-        if (valorExterno.trim() === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el valor externo del criterio de búsqueda",
-          });
-        } else {
-          const obj = {
-            idCriterioBusqueda: idCriterio,
-            criterioBusqueda: nombreCriterio,
-            valorExterno: valorExterno,
-            idTipoValidacion: idTipoValidacion,
-            estado: estado,
-            usuarioModificacion: identificacionUsuario,
-            fechaModificacion: (new Date()).toISOString()
-          };
-
-          const response = await ActualizarCriterioBusqueda(obj);
-
-          if (response.indicador === 0) {
-            handleModal();
-            obtenerCriteriosBusqueda();
+          if (nombreCriterio.trim() === "") {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Ingrese el nombre del criterio de búsqueda",
+            });
           }
+          if (valorExterno.trim() === "") {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Ingrese el valor externo del criterio de búsqueda",
+            });
+          } else {
+            const obj = {
+              idCriterioBusqueda: idCriterio,
+              criterioBusqueda: nombreCriterio,
+              valorExterno: valorExterno,
+              idTipoValidacion: idTipoValidacion,
+              estado: estado,
+              usuarioModificacion: identificacionUsuario,
+              fechaModificacion: new Date().toISOString(),
+            };
 
-          setShowAlert(true);
-          setMensajeRespuesta(response);
-        }
-      } catch (error) {
-        console.error("Error al actualizar criterio de búsqueda:", error);
-      }
-    } else {
-      try {
-        const identificacionUsuario = localStorage.getItem(
-          "identificacionUsuario"
-        );
+            const response = await ActualizarCriterioBusqueda(obj);
 
-        if (nombreCriterio.trim() === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el nombre del criterio de búsqueda",
-          });
-        }
-        if (valorExterno.trim() === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el valor externo del criterio de búsqueda",
-          });
-        } else {
-          const obj = {
-            criterioBusqueda: nombreCriterio,
-            valorExterno: valorExterno,
-            idTipoValidacion: idTipoValidacion,
-            estado: estado,
-            usuarioCreacion: identificacionUsuario,
-            fechaCreacion: new Date().toISOString(),
-          };
+            if (response.indicador === 0) {
+              handleModal();
+              obtenerCriteriosBusqueda();
+            }
 
-          const response = await AgregarCriterioBusqueda(obj);
-
-          if (response.indicador === 0) {
-            handleModal(); // Cierra el modal
-            obtenerCriteriosBusqueda();
+            setShowAlert(true);
+            setMensajeRespuesta(response);
           }
-
-          setShowAlert(true);
-          setMensajeRespuesta(response);
+        } catch (error) {
+          console.error("Error al actualizar criterio de búsqueda:", error);
         }
-      } catch (error) {
-        console.error("Error al crear el criterio de búsqueda:", error);
-      }
-    }
+      } else {
+        try {
+          const identificacionUsuario = localStorage.getItem(
+            "identificacionUsuario"
+          );
 
-    setShowSpinner(false);
+          if (nombreCriterio.trim() === "") {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Ingrese el nombre del criterio de búsqueda",
+            });
+          }
+          if (valorExterno.trim() === "") {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Ingrese el valor externo del criterio de búsqueda",
+            });
+          } else {
+            const obj = {
+              criterioBusqueda: nombreCriterio,
+              valorExterno: valorExterno,
+              idTipoValidacion: idTipoValidacion,
+              estado: estado,
+              usuarioCreacion: identificacionUsuario,
+              fechaCreacion: new Date().toISOString(),
+            };
+
+            const response = await AgregarCriterioBusqueda(obj);
+
+            if (response.indicador === 0) {
+              handleModal(); // Cierra el modal
+              obtenerCriteriosBusqueda();
+            }
+
+            setShowAlert(true);
+            setMensajeRespuesta(response);
+          }
+        } catch (error) {
+          console.error("Error al crear el criterio de búsqueda:", error);
+        }
+      }
+
+      setShowSpinner(false);
+    });
   };
 
   // Encabezados de la tabla con acciones
@@ -603,21 +605,24 @@ function CatalogoCriterioBusqueda() {
   // Descarga de catálogo
   const descargaCatalogo = async () => {
     setShowSpinner(true);
-    const nombreReporte = "Reporte de criterios de búsqueda DocSync - " + new Date().toLocaleDateString() +".xlsx";
+    const nombreReporte =
+      "Reporte de criterios de búsqueda DocSync - " +
+      new Date().toLocaleDateString() +
+      ".xlsx";
     const nombreHoja = "Criterios de búsqueda";
 
     const columnsSelect = [
       "criterioBusqueda",
       "valorExterno",
       "validacion",
-      "estado"
+      "estado",
     ];
 
     const columnas = {
       criterioBusqueda: "Criterio búsqueda",
       valorExterno: "Valor externo",
       validacion: "Tipo de validación",
-      estado: "Estado"
+      estado: "Estado",
     } as any;
 
     const datosFiltrados = criterios.map((item: any) => {
@@ -633,13 +638,13 @@ function CatalogoCriterioBusqueda() {
     });
 
     const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
-    
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
-    
+
     await XLSX.writeFile(workbook, nombreReporte);
     setShowSpinner(false);
-  }
+  };
 
   return (
     <>
@@ -675,7 +680,7 @@ function CatalogoCriterioBusqueda() {
               accion: descargaCatalogo,
               icono: <FaDownload className="me-2" size={24} />,
               texto: "Descargar",
-            }
+            },
           ]}
         ></Grid>
       </div>
