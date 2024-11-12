@@ -81,6 +81,7 @@ function CatalogoCriterioBusqueda() {
         setShowSpinner(true);
         const data = {
           idCriterioBusqueda: row.idCriterioBusqueda,
+          criterioBusqueda: row.criterioBusqueda,
           fechaModificacion: new Date().toISOString(),
           usuarioModificacion: localStorage.getItem("identificacionUsuario"),
         };
