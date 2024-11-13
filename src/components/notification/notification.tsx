@@ -5,15 +5,28 @@ import { useWorker } from "../../context/workerContext";
 import { obtenerFechaConHora } from "../../utils/utils";
 import { useNavigate } from "react-router-dom";
 import { IoEye } from "react-icons/io5";
+import {
+  CrearNotificacion,
+  EliminarNotificacion,
+  ObtenerNotificaciones,
+} from "../../servicios/ServicioNotificaciones";
+import { AppStore } from "../../redux/Store";
+import { useSelector } from "react-redux";
 
 const Notification: React.FC = () => {
   const notificationRef = useRef<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
   const navigate = useNavigate();
+  const [showAlert, setShowAlert] = useState(false);
+  const [mensajeRespuesta, setMensajeRespuesta] = useState({
+    indicador: 0,
+    mensaje: "",
+  });
 
   const { loading, result, error, taskTitle } = useWorker();
 
   const [showNotifications, setShowNotifications] = useState(false);
+  const userState = useSelector((store: AppStore) => store.user);
 
   const toggleNotifications = () => {
     setShowNotifications(!showNotifications);
@@ -29,30 +42,83 @@ const Notification: React.FC = () => {
   };
 
   useEffect(() => {
+    obtenerNotificaciones();
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
+  const crearNotificacion = async (notificacion: any) => {
+    const response = await CrearNotificacion(notificacion);
+    if (!response) {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ocurrió un error emitir la notificación",
+      });
+    } else {
+      return response.info;
+    }
+    return -1;
+  };
+
+  const obtenerNotificaciones = async () => {
+    const response = await ObtenerNotificaciones({
+      usuarioCreacion: userState.nombre,
+    });
+    if (!response) {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ocurrió un error emitir la notificación",
+      });
+    } else {
+      console.log(response);
+      setNotifications(response);
+    }
+    return -1;
+  };
+
+  const eliminarNotificacionServicio = async (id: any) => {
+    const response = await EliminarNotificacion({ idNotificacion: id });
+    if (!response) {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ocurrió un error emitir la notificación",
+      });
+    }
+  };
+
   useEffect(() => {
     if (!loading) {
       if (result || error) {
-        setNotifications([
-          ...notifications,
-          {
-            result,
-            fecha: obtenerFechaConHora(),
-            error,
-          },
-        ]);
+        const notificacionObj = {
+          idNotificacion: -1,
+          descripcion: result,
+          usuarioCreacion: userState.nombre,
+          fechaCreacion: obtenerFechaConHora(),
+          error,
+        };
+        crearNotificacion(notificacionObj)
+          .then((resp: any) => {
+            console.log(resp);
+            notificacionObj.idNotificacion = resp;
+            setNotifications([...notifications, notificacionObj]);
+          })
+          .catch((error) => {
+            console.error("Error al crear notificacion:", error);
+          });
       }
     }
   }, [result, error]);
 
-  const eliminarNotificacion = (index: Number) => {
+  const eliminarNotificacion = (id: Number) => {
+    console.log(id);
+    eliminarNotificacionServicio(id);
     setNotifications((prevArreglo) =>
-      prevArreglo.filter((_, i) => i !== index)
+      prevArreglo.filter((obj, _) => obj.idNotificacion !== id)
     );
   };
 
@@ -102,13 +168,15 @@ const Notification: React.FC = () => {
               >
                 <div className="notification-content">
                   <p className="notification-small-text">
-                    {notification.fecha}
+                    {!isNaN(new Date(notification.fechaCreacion).getTime())
+                      ? new Date(notification.fechaCreacion).toLocaleString()
+                      : notification.fechaCreacion}
                   </p>
                   <br />
                   <strong>
                     {notification.error
                       ? notification.error
-                      : notification.result}
+                      : notification.descripcion}
                   </strong>
                   <br />
                 </div>
@@ -116,7 +184,7 @@ const Notification: React.FC = () => {
                   className="close-button"
                   onClick={(e) => {
                     e.preventDefault();
-                    eliminarNotificacion(index);
+                    eliminarNotificacion(notification.idNotificacion);
                   }}
                 >
                   &times;

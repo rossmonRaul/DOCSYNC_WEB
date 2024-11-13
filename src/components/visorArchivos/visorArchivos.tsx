@@ -125,7 +125,7 @@ export const VisorArchivos: React.FC<any> = ({
       {showAlert && (
         <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
       )}
-      <div style={{width: "100%", height: "100%", padding: "1%"}}>
+      <div style={{ width: "100%", height: "100%", padding: "1%" }}>
         <div className="mb-2 d-flex justify-content-between align-items-center">
           <h4 className="mb-0">
             {documento?.name || documentoDescarga?.nomDocumento}
@@ -136,7 +136,14 @@ export const VisorArchivos: React.FC<any> = ({
         </div>
         {error && <p>No se ha podido mostrar el archivo</p>}
         {tiposSoportados.includes(fileExtension) && fileURL && (
-          <div style={{ maxHeight: "60vh", overflowY: "auto", width: "100%", height: "100%"}}>
+          <div
+            style={{
+              maxHeight: "60vh",
+              overflowY: "auto",
+              width: "100%",
+              height: "100%",
+            }}
+          >
             <FileViewer
               key={documento?.id || documentoDescarga?.idDocumento}
               fileType={fileExtension}
@@ -147,20 +154,24 @@ export const VisorArchivos: React.FC<any> = ({
           </div>
         )}
         {!tiposSoportados.includes(fileExtension) &&
-          ["html", "xlsx", "sql", "txt"].includes(fileExtension) && (
+          !["html", "xlsx","txt","sql"].includes(fileExtension) && (
             <>
               <p style={{ color: "#9E0000" }}>
                 El archivo ha sido descargado ya que posee un formato no
                 soportado.
               </p>
-              <iframe
-                src={fileURL}
-                width="100%"
-                height="600px"
-                title="File Preview"
-              />
             </>
           )}
+        {!tiposSoportados.includes(fileExtension) && (
+          <>
+            <iframe
+              src={fileURL}
+              width="100%"
+              height="600px"
+              title="File Preview"
+            />
+          </>
+        )}
       </div>
     </>
   );
