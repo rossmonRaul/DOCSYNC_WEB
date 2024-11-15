@@ -339,78 +339,85 @@ function CargarArchivos() {
           }
         });
         if (tipoDocumentoSeleccionado.formatoDocumento !== "Imagen") {
-          //extraer el num de solicitud
-          const formData = new FormData();
-          archivosAux.forEach((a: Archivo, index: number) => {
-            formData.append(`entity[${index}].Id`, a.id + "");
-            formData.append(`entity[${index}].NomDocumento`, a.nomDocumento);
-            formData.append(`entity[${index}].Archivo`, a.archivo);
-            formData.append(
-              `entity[${index}].IdTipoDoc`,
-              a.tipoDocumento.idTipoDocumento
-            );
-            formData.append(
-              `entity[${index}].DescripcionDoc`,
-              a.tipoDocumento.descripcion
-            );
-            formData.append(
-              `entity[${index}].fraseBusqInicio`,
-              a.tipoDocumento.fraseBusqInicio
-            );
-            formData.append(
-              `entity[${index}].fraseBusqFin`,
-              a.tipoDocumento.fraseBusqFin
-            );
-            formData.append(
-              `entity[${index}].fraseBusqFin`,
-              a.tipoDocumento.fraseBusqFin
-            );
-            formData.append(
-              `entity[${index}].formatoDocumento`,
-              a.tipoDocumento.formatoDocumento
-            );
-            formData.append(
-              `entity[${index}].criterioBusqueda`,
-              a.tipoDocumento.criterioBusqueda
-            );
-            formData.append(
-              `entity[${index}].UsuarioModificacion`,
-              userState.nombre
-            );
-            formData.append(
-              `entity[${index}].contieneNumSoli`,
-              a.tipoDocumento.contieneNumSoli === true ? "1" : "0"
-            );
-            formData.append(`entity[${index}].FechaCreacion`, a.fechaCreacion);
-            formData.append(
-              `entity[${index}].UsuarioCreacion`,
-              a.usuarioCreacion
-            );
-          });
           setShowSpinner(true);
-          const response = await ExtraerContenido(formData);
-          setShowSpinner(false);
-          if (response) {
-            const docsConNumeroSolicitud = response?.datos;
+          const batchSize = 50; // Número de documentos por solicitud
+          const totalBatches = Math.ceil(archivosAux.length / batchSize);
+
+          let responses: any = []; // Arreglo para guardar las respuestas
+
+          for (let i = 0; i < totalBatches; i++) {
+            const batch = archivosAux.slice(i * batchSize, (i + 1) * batchSize);
+            const formData = new FormData();
+
+            batch.forEach((a, index) => {
+              formData.append(`entity[${index}].Id`, a.id + "");
+              formData.append(`entity[${index}].NomDocumento`, a.nomDocumento);
+              formData.append(`entity[${index}].Archivo`, a.archivo);
+
+              formData.append(
+                `entity[${index}].IdTipoDoc`,
+                a.tipoDocumento.idTipoDocumento
+              );
+              formData.append(
+                `entity[${index}].fraseBusqInicio`,
+                a.tipoDocumento.fraseBusqInicio
+              );
+              formData.append(
+                `entity[${index}].fraseBusqFin`,
+                a.tipoDocumento.fraseBusqFin
+              );
+              formData.append(
+                `entity[${index}].formatoDocumento`,
+                a.tipoDocumento.formatoDocumento
+              );
+              formData.append(
+                `entity[${index}].criterioBusqueda`,
+                a.tipoDocumento.criterioBusqueda
+              );
+              formData.append(
+                `entity[${index}].contieneNumSoli`,
+                a.tipoDocumento.contieneNumSoli === true ? "1" : "0"
+              );
+            });
+
+            try {
+              const response = await ExtraerContenido(formData);
+              if (!response) {
+                setShowAlert(true);
+                setShowSpinner(false);
+                setMensajeRespuesta({
+                  indicador: 1,
+                  mensaje:
+                    "Error. Ha ocurrido un error al extraer número de solicitud.",
+                });
+                return;
+              }
+
+              const result = await response.datos;
+              responses = [...responses, ...result];
+            } catch (error: any) {
+              console.error(`Error en el lote ${i + 1}:`, error);
+              responses.push({ error: true, message: error.message });
+            }
+          }
+          console.log(responses);
+          if (responses.length > 0) {
             const obtenerNumSolicitud = (nombre: any) => {
-              return docsConNumeroSolicitud?.find(
+              return responses?.find(
                 (item: any) => item.nomDocumento === nombre
               )?.numSolicitud;
             };
             archivosAux.forEach((a) => {
               a.numSolicitud = obtenerNumSolicitud(a.nomDocumento);
-            });
-            setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
+            })
+            setListaArchivosTabla([
+              ...listaArchivosTabla,
+              ...archivosAux,
+            ]);
             setIdArchivoGenerado(consecutivo);
             setFiles([]);
-          } else {
-            setShowAlert(true);
-            setMensajeRespuesta({
-              indicador: 1,
-              mensaje:
-                "Error. Ha ocurrido un error al extraer número de solicitud.",
-            });
           }
+          setShowSpinner(false);
         }
       }
     }

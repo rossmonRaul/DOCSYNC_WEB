@@ -46,7 +46,7 @@ export const ProcesarDatosApi = async (
       }
       return await response.json();
     } else {
-      return { indicador: 1, mensaje: "Ocurrió un error en el proceso!" };
+      return { indicador: 1, mensaje: response };
     }
   } catch (error) {
     console.log(error);

@@ -38,7 +38,14 @@ export const cargarDocumentosWorker = () => {
   };
 
   onmessage = async (e) => {
-    const { docs, urlCarga, urlMetadata, urlReversion, storedToken, urlHistorial} = e.data;
+    const {
+      docs,
+      urlCarga,
+      urlMetadata,
+      urlReversion,
+      storedToken,
+      urlHistorial,
+    } = e.data;
     const metadatosDocsEnviar = docs.map((a: any) => ({
       ...a,
       archivo: null,
@@ -71,7 +78,7 @@ export const cargarDocumentosWorker = () => {
         };
 
         const docsInsertados = dataMetadatos.datos.archivosCargados;
-        console.log(docsInsertados)
+        console.log(docsInsertados);
         //preparar datos para la peticion a mongo, mandar el id del doc junto con el doc
         docsInsertados.forEach((a: any, index: number) => {
           // Agrega el archivo al FormData
@@ -90,7 +97,9 @@ export const cargarDocumentosWorker = () => {
             Accept: "application/json",
           });
 
-        if (estadoArchivos !== 0) {
+        console.log("mama", dataArchivos);
+
+        if (estadoArchivos !== 0 || dataArchivos.indicador === 1) {
           //realizar rollback en BD metadata si el servicio de mongo no esta disponible
 
           const responseRollback = await enviarPeticion(
@@ -105,20 +114,20 @@ export const cargarDocumentosWorker = () => {
           console.log(docsInsertados);
 
           //Guarda en historial de errores (no se hace mediante el rollback para guardar la excepcion)
-           const responseHistorial = await procesarArchivosYEnviarHistorial(
+          const responseHistorial = await procesarArchivosYEnviarHistorial(
             docsInsertados,
             urlHistorial,
             storedToken,
-            "Error al carga archivo.",
-            "No se ha podido establecer conexión con el servidor de carga."// dataArchivos.detalleExcepcion
+            "Error al cargar archivo.",
+            dataArchivos.mensaje // dataArchivos.detalleExcepcion
           );
           console.log(responseHistorial.mensaje);
-           //
+          //
 
           postMessage({
             type: "Error",
             result:
-              "Error. No se ha podido establecer conexión con el servidor.",
+            dataArchivos.mensaje,
           });
         } else {
           //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
@@ -137,7 +146,7 @@ export const cargarDocumentosWorker = () => {
                 Accept: "application/json",
               }
             );
-          
+
             console.log(responseRollback);
             postMessage({ type: "Error", result: dataArchivos.mensaje });
           } else {
@@ -161,25 +170,26 @@ export const cargarDocumentosWorker = () => {
     }
   };
 
-
   // Función para mapear los archivos y hacer la petición
   async function procesarArchivosYEnviarHistorial(
-    archivos:any,
-    url="",
-    storedToken="",
+    archivos: any,
+    url = "",
+    storedToken = "",
     mensajeError = "",
     detalleExcepcion = ""
   ) {
     // Mapear los archivos al formato EntityHistorial
-    const historialData = archivos.map((archivo:any) => ({
+    const historialData = archivos.map((archivo: any) => ({
       IdDocumento: archivo.idDocumento,
       NombreDocumento: archivo.nomDocumento,
-      IdAccion: 4, 
-      Descripcion: archivo.descripcionError ? archivo.descripcionError : mensajeError, // Mensaje de error
-      DetalleError: detalleExcepcion ? detalleExcepcion : '', // Detalle de la excepción
-      Fecha: new Date(), 
-      Usuario: archivo.usuarioCreacion, 
-      Estado: "Error", 
+      IdAccion: 4,
+      Descripcion: archivo.descripcionError
+        ? archivo.descripcionError
+        : mensajeError, // Mensaje de error
+      DetalleError: detalleExcepcion ? detalleExcepcion : "", // Detalle de la excepción
+      Fecha: new Date(),
+      Usuario: archivo.usuarioCreacion,
+      Estado: "Error",
     }));
 
     // Enviar la petición con los datos mapeados
@@ -190,6 +200,4 @@ export const cargarDocumentosWorker = () => {
 
     return response;
   }
-
-
 };
