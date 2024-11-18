@@ -400,7 +400,6 @@ function CargarArchivos() {
               responses.push({ error: true, message: error.message });
             }
           }
-          console.log(responses);
           if (responses.length > 0) {
             const obtenerNumSolicitud = (nombre: any) => {
               return responses?.find(

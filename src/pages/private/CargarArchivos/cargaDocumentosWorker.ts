@@ -1,4 +1,69 @@
 export const cargarDocumentosWorker = () => {
+  const enviarPeticionArchivosLotes = async (
+    url: any,
+    token: any,
+    datosEnvio: any,
+    headersData: any = {}
+  ) => {
+    const respuesta: any = {
+      estado: 0,
+    };
+    try {
+      const batchSize = 50; // Número de documentos por solicitud
+      const totalBatches = Math.ceil(datosEnvio.length / batchSize);
+      let noCargados: any = [];
+      for (let i = 0; i < totalBatches; i++) {
+        const batch = datosEnvio.slice(i * batchSize, (i + 1) * batchSize);
+        const formData = new FormData();
+        batch.forEach((a: any, index: any) => {
+          // Agrega el archivo al FormData
+          formData.append(
+            `entityDocumento[${index}].IdDocumento`,
+            a.idDocumento
+          );
+          formData.append(`entityDocumento[${index}].Archivo`, a.archivo);
+        });
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            ...headersData,
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!response || !response.ok) {
+          respuesta.estado = -1;
+          console.error(response);
+          return respuesta;
+        } else {
+          const data = await response.json();
+          if (data.datos?.archivosNoCargados?.length > 0) {
+            noCargados = [...noCargados, ...data.datos.archivosNoCargados];
+          }
+          respuesta.data = data;
+        }
+      }
+      if (noCargados.length > 0) {
+        respuesta.data.mensaje = `Hubieron ${noCargados.length} de ${datosEnvio.length} documento(s) que no se pudieron cargar`;
+        respuesta.data.datos = { archivosNoCargados: noCargados };
+      } else {
+        if (datosEnvio.length > 1) {
+          respuesta.data.mensaje = `${datosEnvio.length} documento(s) registrados correctamente.`;
+        }
+      }
+    } catch (error) {
+      respuesta.estado = -1;
+      respuesta.error =
+        "Ocurrió un error al realizar la petición. Contacte con un administrador.";
+
+      console.error(error);
+    }
+
+    return respuesta;
+  };
+
   const enviarPeticion = async (
     url: any,
     token: any,
@@ -78,26 +143,24 @@ export const cargarDocumentosWorker = () => {
         };
 
         const docsInsertados = dataMetadatos.datos.archivosCargados;
-        console.log(docsInsertados);
+        let archivosSubir: any = [];
         //preparar datos para la peticion a mongo, mandar el id del doc junto con el doc
         docsInsertados.forEach((a: any, index: number) => {
-          // Agrega el archivo al FormData
-          formData.append(
-            `entityDocumento[${index}].IdDocumento`,
-            a.idDocumento
-          );
-          formData.append(
-            `entityDocumento[${index}].Archivo`,
-            obtenerArchivoPorNombre(a.nomDocumento)
-          );
+          archivosSubir.push({
+            idDocumento: a.idDocumento,
+            archivo: obtenerArchivoPorNombre(a.nomDocumento),
+          });
         });
 
         const { estado: estadoArchivos, data: dataArchivos } =
-          await enviarPeticion(urlCarga, storedToken, formData, {
-            Accept: "application/json",
-          });
-
-        console.log("mama", dataArchivos);
+          await enviarPeticionArchivosLotes(
+            urlCarga,
+            storedToken,
+            archivosSubir,
+            {
+              Accept: "application/json",
+            }
+          );
 
         if (estadoArchivos !== 0 || dataArchivos.indicador === 1) {
           //realizar rollback en BD metadata si el servicio de mongo no esta disponible
@@ -111,7 +174,6 @@ export const cargarDocumentosWorker = () => {
               Accept: "application/json",
             }
           );
-          console.log(docsInsertados);
 
           //Guarda en historial de errores (no se hace mediante el rollback para guardar la excepcion)
           const responseHistorial = await procesarArchivosYEnviarHistorial(
@@ -121,13 +183,11 @@ export const cargarDocumentosWorker = () => {
             "Error al cargar archivo.",
             dataArchivos.mensaje // dataArchivos.detalleExcepcion
           );
-          console.log(responseHistorial.mensaje);
           //
 
           postMessage({
             type: "Error",
-            result:
-            dataArchivos.mensaje,
+            result: dataArchivos.mensaje,
           });
         } else {
           //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
@@ -147,7 +207,6 @@ export const cargarDocumentosWorker = () => {
               }
             );
 
-            console.log(responseRollback);
             postMessage({ type: "Error", result: dataArchivos.mensaje });
           } else {
             postMessage({ type: "Success", result: dataArchivos.mensaje });

@@ -74,7 +74,6 @@ const Notification: React.FC = () => {
         mensaje: "Ocurrió un error emitir la notificación",
       });
     } else {
-      console.log(response);
       setNotifications(response);
     }
     return -1;
@@ -149,7 +148,7 @@ const Notification: React.FC = () => {
                 navigate("/historial");
               }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "black")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "black")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "white")}
               size={25}
             />
           </div>
