@@ -173,9 +173,22 @@ const Notification: React.FC = () => {
                   </p>
                   <br />
                   <strong>
-                    {notification.error
-                      ? notification.error
-                      : notification.descripcion}
+                    {notification.error ? (
+                      notification.error
+                    ) : (
+                      <a
+                        className="notificacion-description"
+                        style={{
+                          cursor: "pointer",
+                          color: notification.error ? "red" : "green",
+                        }}
+                        onClick={() => {
+                          navigate("/historial");
+                        }}
+                      >
+                        {notification.descripcion}
+                      </a>
+                    )}
                   </strong>
                   <br />
                 </div>

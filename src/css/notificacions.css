@@ -12,6 +12,15 @@
     transform: scale(1.1); /* Aumenta ligeramente el tamaño */
     color: #497494 !important; /* Color al pasar el cursor */
   }
+
+  .notificacion-description:hover{
+    text-decoration: underline; /* Subrayado al hacer hover */
+  }
+  
+  .notificacion-description{
+    text-decoration: none; /* Sin subrayado por defecto */
+  cursor: pointer; /* Muestra el cursor de mano */
+  }
   
 
 .notification-count {

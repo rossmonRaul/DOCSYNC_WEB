@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect, useRef } from "react";
 import "../../../css/general.css";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { Grid } from "../../../components/table/tabla";
@@ -77,6 +77,7 @@ function CargarArchivos() {
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
   const { setShowSpinner } = useSpinner();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const cargarTiposDocumentos = async () => {
     setShowSpinner(true);
@@ -408,11 +409,8 @@ function CargarArchivos() {
             };
             archivosAux.forEach((a) => {
               a.numSolicitud = obtenerNumSolicitud(a.nomDocumento);
-            })
-            setListaArchivosTabla([
-              ...listaArchivosTabla,
-              ...archivosAux,
-            ]);
+            });
+            setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
             setIdArchivoGenerado(consecutivo);
             setFiles([]);
           }
@@ -516,6 +514,9 @@ function CargarArchivos() {
     setListaArchivosTablaSeleccionados([]);
     setShowModalObservaciones(false);
     setObservacion("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const prepararCarga = async (event: FormEvent) => {
@@ -642,6 +643,7 @@ function CargarArchivos() {
                         </Form.Label>
                         <Form.Control
                           multiple
+                          ref={fileInputRef}
                           accept=".pdf,.doc,.html,.dot,.dotx,.htm,.odt,.ods,.odp,.sql,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.csv,.jpg,.jpeg,.png,.bmp,.gif,.tiff,.webp"
                           type="file"
                           onChange={handleFileChange}
