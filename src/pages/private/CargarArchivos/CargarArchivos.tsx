@@ -66,7 +66,7 @@ function CargarArchivos() {
     });
   const [tipoDocumento, setTipoDocumento] = useState<any>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
-  const { startWorker, setTaskTitle, loading } = useWorker();
+  const { startWorker, setTaskTitle, loading, error, result } = useWorker();
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const API_BASE_URL_BD = import.meta.env.VITE_API_BASE_URL;
   const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
@@ -97,6 +97,18 @@ function CargarArchivos() {
     setTaskTitle("Carga de archivos");
     cargarTiposDocumentos();
   }, []);
+
+  const limpiezaAsync = async () => {
+    await sleep(2000);
+    console.log("maaaa")
+    if (result && !error && !loading) {
+      setTimeout(limpiarEnviados, 1000);
+    }
+  };
+
+  useEffect(() => {
+    limpiezaAsync();
+  }, [loading]);
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -215,6 +227,19 @@ function CargarArchivos() {
       width: "150px",
     },
   ];
+
+  const limpiarEnviados = () => {
+    const archivosNoCargados = listaArchivosTabla.filter(
+      (a) => !listaArchivosTablaSeleccionados.some((s) => s.id === a.id)
+    );
+
+    setListaArchivosTabla(archivosNoCargados);
+    setListaArchivosTablaSeleccionados([]);
+    setObservacion("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleTipoChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
@@ -473,6 +498,8 @@ function CargarArchivos() {
     }
   };
 
+  const sleep = (ms: any) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const cargarArchivos = async (event: FormEvent, masivo: boolean = false) => {
     event.preventDefault();
     const formData = new FormData();
@@ -506,16 +533,11 @@ function CargarArchivos() {
       urlHistorial,
     });
 
-    const archivosNoCargados = listaArchivosTabla.filter(
-      (a) => !listaArchivosTablaSeleccionados.some((s) => s.id === a.id)
-    );
-
-    setListaArchivosTabla(archivosNoCargados);
-    setListaArchivosTablaSeleccionados([]);
     setShowModalObservaciones(false);
-    setObservacion("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    await sleep(1000);
+
+    if (!loading && !error) {
+      limpiarEnviados();
     }
   };
 
@@ -537,7 +559,24 @@ function CargarArchivos() {
     //return true;
     const valores = Object.entries(archivo);
     for (const [key, valor] of valores) {
-      if (key !== "observacion" && (valor === undefined || valor === "")) {
+      if (
+        key !== "observacion" &&
+        (valor === undefined || valor.toString().trim() === "")
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const validarContienenNumSoli = () => {
+    for (const a of listaArchivosTabla) {
+      if (!validarDatosCompletosArchivo(a)) {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: `No se ha colocado un número de solicitud para el archivo: ${a.archivo.name}`,
+        });
         return false;
       }
     }
@@ -678,9 +717,11 @@ function CargarArchivos() {
                               listaArchivosTabla.length !==
                               listaArchivosTablaSeleccionados.length,
                             accion: () => {
-                              setListaArchivosTablaSeleccionados(
-                                listaArchivosTabla
-                              );
+                              if (validarContienenNumSoli()) {
+                                setListaArchivosTablaSeleccionados(
+                                  listaArchivosTabla
+                                );
+                              }
                             },
                             icono: <FaCheckSquare className="me-2" size={24} />,
                             texto: "Seleccionar todos",

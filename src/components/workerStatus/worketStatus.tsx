@@ -5,6 +5,7 @@ import "../../css/workerStatus.css";
 import { FaEye } from "react-icons/fa";
 import { CiMinimize1 } from "react-icons/ci";
 import { IoClose } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const WorkerStatus: React.FC<any> = ({
   textoListo = "Listo!",
@@ -20,6 +21,7 @@ const WorkerStatus: React.FC<any> = ({
   } = useWorker();
   const [isVisible, setIsVisible] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
+  const navigate = useNavigate();
 
   const handleClose = () => {
     setIsVisible(false);
@@ -74,7 +76,9 @@ const WorkerStatus: React.FC<any> = ({
               {loading ? (
                 <p className="loading">{textoCargando}</p>
               ) : error ? (
-                <p className="error">{error}</p>
+                <p className="error" style={{cursor:"pointer"}} onClick={() => {
+                  navigate("/historial");
+                }}>{error}</p>
               ) : result !== null ? (
                 <>
                   <p className="result">{result}</p>

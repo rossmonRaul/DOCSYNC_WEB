@@ -46,8 +46,17 @@ export const cargarDocumentosWorker = () => {
         }
       }
       if (noCargados.length > 0) {
-        respuesta.data.mensaje = `Hubieron ${noCargados.length} de ${datosEnvio.length} documento(s) que no se pudieron cargar`;
-        respuesta.data.datos = { archivosNoCargados: noCargados };
+        let nombresDocumentosNoCargados = noCargados
+          .map((n: any) => n.nombre)
+          .join(", ");
+        if (nombresDocumentosNoCargados.length > 300) {
+          nombresDocumentosNoCargados =
+            nombresDocumentosNoCargados.substring(0, 300) + "...etc";
+        }
+        respuesta.data.mensaje = `Hubieron ${noCargados.length} de ${datosEnvio.length} documento(s) que no se pudieron cargar: ${nombresDocumentosNoCargados}`;
+        respuesta.data.datos = {
+          archivosNoCargados: noCargados,
+        };
       } else {
         if (datosEnvio.length > 1) {
           respuesta.data.mensaje = `${datosEnvio.length} documento(s) registrados correctamente.`;
@@ -161,8 +170,11 @@ export const cargarDocumentosWorker = () => {
               Accept: "application/json",
             }
           );
-
-        if (estadoArchivos !== 0 || dataArchivos.indicador === 1) {
+        console.log(estadoArchivos, dataArchivos);
+        if (
+          estadoArchivos !== 0 ||
+          (dataArchivos && dataArchivos?.indicador === 1)
+        ) {
           //realizar rollback en BD metadata si el servicio de mongo no esta disponible
 
           const responseRollback = await enviarPeticion(
@@ -181,13 +193,14 @@ export const cargarDocumentosWorker = () => {
             urlHistorial,
             storedToken,
             "Error al cargar archivo.",
-            dataArchivos.mensaje // dataArchivos.detalleExcepcion
+            dataArchivos?.mensaje // dataArchivos.detalleExcepcion
           );
           //
-
           postMessage({
             type: "Error",
-            result: dataArchivos.mensaje,
+            result:
+              dataArchivos?.mensaje ||
+              "Ha ocurrido un error al contactar con el servicio. Contacte con un administrador.",
           });
         } else {
           //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
@@ -205,6 +218,15 @@ export const cargarDocumentosWorker = () => {
                 "Content-type": "application/json;charset=UTF-8",
                 Accept: "application/json",
               }
+            );
+
+            //Guarda en historial de errores (no se hace mediante el rollback para guardar la excepcion)
+            const responseHistorial = await procesarArchivosYEnviarHistorial(
+              dataArchivos.datos.archivosNoCargados,
+              urlHistorial,
+              storedToken,
+              "Error al cargar archivo.",
+              dataArchivos.mensaje // dataArchivos.detalleExcepcion
             );
 
             postMessage({ type: "Error", result: dataArchivos.mensaje });
@@ -240,14 +262,16 @@ export const cargarDocumentosWorker = () => {
     // Mapear los archivos al formato EntityHistorial
     const historialData = archivos.map((archivo: any) => ({
       IdDocumento: archivo.idDocumento,
-      NombreDocumento: archivo.nomDocumento,
+      NombreDocumento: archivo?.nomDocumento
+        ? archivo?.nomDocumento
+        : archivo.nombre,
       IdAccion: 4,
       Descripcion: archivo.descripcionError
         ? archivo.descripcionError
         : mensajeError, // Mensaje de error
       DetalleError: detalleExcepcion ? detalleExcepcion : "", // Detalle de la excepción
       Fecha: new Date(),
-      Usuario: archivo.usuarioCreacion,
+      Usuario: archivo?.usuarioCreacion ? archivo?.usuarioCreacion : "",
       Estado: "Error",
     }));
 
