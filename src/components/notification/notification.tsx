@@ -102,13 +102,14 @@ const Notification: React.FC = () => {
         };
         crearNotificacion(notificacionObj)
           .then((resp: any) => {
-            console.log(resp);
-            notificacionObj.idNotificacion = resp;
-            setNotifications([...notifications, notificacionObj]);
+            obtenerNotificaciones();
+            //notificacionObj.idNotificacion = resp;
+            //setNotifications([...notifications, notificacionObj]);
           })
           .catch((error) => {
             console.error("Error al crear notificacion:", error);
           });
+         
       }
     }
   }, [result, error]);
