@@ -225,7 +225,7 @@ const Login: React.FC = () => {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 2,
-        mensaje: "Su sesión expiró, por favor inicie nuevamente"
+        mensaje: "Su sesión expiró, por favor ingrese nuevamente"
       });
     }
   }, []);
