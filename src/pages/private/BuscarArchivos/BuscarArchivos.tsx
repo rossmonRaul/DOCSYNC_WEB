@@ -94,7 +94,7 @@ function BuscarArchivos() {
   const [textoCorreo, setTextoCorreo] = useState("Enviar archivos por correo");
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
-  const [pendiente, setPendiente] = useState(false);
+  // const [pendiente, setPendiente] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({
     indicador: 0,
     mensaje: "",
@@ -343,7 +343,6 @@ function BuscarArchivos() {
           indicador: 1,
           mensaje: "Ocurrió un error al buscar solicitudes",
         });
-        setPendiente(false);
       }
 
       if (response.length === 0) {
@@ -352,7 +351,6 @@ function BuscarArchivos() {
           indicador: 2,
           mensaje: "No hay registros con los parámetros indicados",
         });
-        setPendiente(false);
       } else {
         var solics = "";
 
@@ -366,9 +364,8 @@ function BuscarArchivos() {
         const filtroDocs = {
           nomDocumento: nombreBuscar,
           numSolicitud: solics,
-          fechaFiltroInicial:
-            fechaFiltroInicial === null ? null : fechaFiltroInicial,
-          fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+          fechaFiltroInicial: null, // En este punto, ya no es necesario
+          fechaFiltroFinal: null, // En este punto, ya no es necesario
           tamannoPagina: tamPag === 0 ? 10 : tamPag,
           numeroPagina: numPag === 0 ? 1 : numPag,
           usuarioBusqueda: identificacionUsuario,
@@ -685,8 +682,6 @@ function BuscarArchivos() {
   };
 
   const handleVerArchivo = (archivo: Archivo) => {
-    console.log(archivo);
-
     setDocumentoVer(archivo);
 
     setTextoCorreo("");
@@ -773,7 +768,6 @@ function BuscarArchivos() {
   };
   const abrirInformacionArchivo = (row: Archivo /*, editar = false*/) => {
     setDocumentoSeleccionado(row);
-    console.log(row);
     setShowModal(true);
     // setDocumentoEditado(editar);
   };
@@ -926,7 +920,6 @@ function BuscarArchivos() {
               idS +=
                 idS === "" ? element.idDocumento : ", " + element.idDocumento;
             });
-            console.log(nombreArchivos);
             setIdDocEnviar(idS);
 
             var correosDest = "";
