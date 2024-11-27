@@ -70,12 +70,17 @@ const FormularioInicioSesion: React.FC<{
       identificacion: user
     }); 
 
-    setShowAlert(true);
-    setMensajeRespuesta(response);
+    if(response){
+      setShowAlert(true);
+      setMensajeRespuesta(response);
 
+      handleModalRecupera();
+    }
+    else{
+      setShowAlert(true);
+      setMensajeRespuesta({indicador: 1, mensaje: "Ocurrió un error al contactar con el servicio"});
+    }
     setShowSpinner(false);
-
-    handleModalRecupera();
   }
 
   return (
@@ -374,10 +379,16 @@ const Login: React.FC = () => {
       setShowAlert(true);
       setMensajeRespuesta(response);
 
-      if(response.indicador == "0")
-      {        
-        localStorage.setItem("token", '');
-        handleModal();
+      if(response){
+        if(response.indicador == "0")
+        {        
+          localStorage.setItem("token", '');
+          handleModal();
+        }
+      }
+      else{
+        setShowAlert(true);
+        setMensajeRespuesta({indicador: 1, mensaje: "Ocurrió un error al contactar con el servicio"});
       }
 
       setShowSpinner(false);

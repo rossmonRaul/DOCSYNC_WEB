@@ -302,20 +302,37 @@ function BuscarArchivos() {
 
       const cantRegistros = await ObtenerCantDocumentos(filtro);
 
-      if (cantRegistros > 0) {
-        setCantRegs(cantRegistros);
+      if(cantRegistros){
+        if (cantRegistros > 0) {
+          setCantRegs(cantRegistros);
 
-        const resultadosObtenidos = await ObtenerDocumento(filtro);
+          const resultadosObtenidos = await ObtenerDocumento(filtro);
 
-        setListaArchivosTabla(resultadosObtenidos);
-        // setContenido("");
+          if(resultadosObtenidos){
+            setListaArchivosTabla(resultadosObtenidos);           
 
-        setMostrarBusqueda(false);
-      } else {
+            setMostrarBusqueda(false);
+          }
+          else{
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: 'Ocurrió un error al contactar con el servicio'
+            });
+          }
+        } else {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "No hay registros con los parámetros indicados",
+          });
+        }
+      }
+      else{
         setShowAlert(true);
         setMensajeRespuesta({
-          indicador: 2,
-          mensaje: "No hay registros con los parámetros indicados",
+          indicador: 1,
+          mensaje: 'Ocurrió un error al contactar con el servicio'
         });
       }
     } else {
@@ -337,60 +354,61 @@ function BuscarArchivos() {
 
       var response = await BusquedaSolicitudIHTT(filtro);
 
-      if (response.indicador) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Ocurrió un error al buscar solicitudes",
-        });
-      }
-
-      if (response.length === 0) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 2,
-          mensaje: "No hay registros con los parámetros indicados",
-        });
-      } else {
-        var solics = "";
-
-        response.forEach((element: any) => {
-          solics +=
-            solics === ""
-              ? element.codigoSolicitud
-              : "," + element.codigoSolicitud;
-        });
-
-        const filtroDocs = {
-          nomDocumento: nombreBuscar,
-          numSolicitud: solics,
-          fechaFiltroInicial: null, // En este punto, ya no es necesario
-          fechaFiltroFinal: null, // En este punto, ya no es necesario
-          tamannoPagina: tamPag === 0 ? 10 : tamPag,
-          numeroPagina: numPag === 0 ? 1 : numPag,
-          usuarioBusqueda: identificacionUsuario,
-        };
-
-        setFiltros(filtroDocs);
-
-        const cantRegistros = await ObtenerCantDocumentos(filtroDocs);
-
-        if (cantRegistros > 0) {
-          setCantRegs(cantRegistros);
-
-          const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
-
-          setListaArchivosTabla(resultadosObtenidos);
-          // setContenido("");
-
-          setMostrarBusqueda(false);
-        } else {
+      if(response){     
+        if (response.length === 0) {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
             mensaje: "No hay registros con los parámetros indicados",
           });
+        } else {
+          var solics = "";
+
+          response.forEach((element: any) => {
+            solics +=
+              solics === ""
+                ? element.codigoSolicitud
+                : "," + element.codigoSolicitud;
+          });
+
+          const filtroDocs = {
+            nomDocumento: nombreBuscar,
+            numSolicitud: solics,
+            fechaFiltroInicial: null, // En este punto, ya no es necesario
+            fechaFiltroFinal: null, // En este punto, ya no es necesario
+            tamannoPagina: tamPag === 0 ? 10 : tamPag,
+            numeroPagina: numPag === 0 ? 1 : numPag,
+            usuarioBusqueda: identificacionUsuario,
+          };
+
+          setFiltros(filtroDocs);
+
+          const cantRegistros = await ObtenerCantDocumentos(filtroDocs);
+
+          if (cantRegistros > 0) {
+            setCantRegs(cantRegistros);
+
+            const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
+
+            setListaArchivosTabla(resultadosObtenidos);
+            // setContenido("");
+
+            setMostrarBusqueda(false);
+          } else {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 2,
+              mensaje: "No hay registros con los parámetros indicados",
+            });
+          }
         }
+      }
+      else{
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: 'Ocurrió un error al contactar con el servicio'
+        });
       }
     }
     setShowSpinner(false);
@@ -444,27 +462,36 @@ function BuscarArchivos() {
   const handleEliminarArchivos = async (e: any) => {
     e.preventDefault();
 
-    setShowSpinner(true);
-    const response = await EliminarDocumento({
-      observaciones: observacionEliminacion,
-      docs: listaArchivosTablaSeleccionados,
-      usuario: identificacionUsuario,
-    });
-    setShowSpinner(false);
-    setShowAlert(true);
-    if (response) {
-      setMensajeRespuesta({
-        indicador: response.indicador,
-        mensaje: response.mensaje,
-      });
-      setObservacionEliminacion("");
-      setShowObservacionesEliminar(false);
-      handleBuscarClick();
-    } else {
+    if(observacionEliminacion.trim() === ""){
+      setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: "Ha ocurrido un error inesperado al eliminar.",
+        mensaje: 'Favor ingresar una observación válida'
       });
+    }
+    else{
+      setShowSpinner(true);
+      const response = await EliminarDocumento({
+        observaciones: observacionEliminacion,
+        docs: listaArchivosTablaSeleccionados,
+        usuario: identificacionUsuario,
+      });
+      setShowSpinner(false);
+      setShowAlert(true);
+      if (response) {
+        setMensajeRespuesta({
+          indicador: response.indicador,
+          mensaje: response.mensaje,
+        });
+        setObservacionEliminacion("");
+        setShowObservacionesEliminar(false);
+        handleBuscarClick();
+      } else {
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Ha ocurrido un error inesperado al eliminar.",
+        });
+      }
     }
   };
 
@@ -909,55 +936,65 @@ function BuscarArchivos() {
               mensaje: "No encontraron los archivos seleccionados",
             });
           } else {
-            const archivos = responseArchivos.datos;
-            const archivoZIP = await crearZipCorreo(archivos);
-            var idS = "";
-            const nombreArchivos: any = [];
-
-            // Se toman ids de los documentos para guardar en bitácora
-            archivos.forEach((element: any) => {
-              nombreArchivos.push(element.nombre);
-              idS +=
-                idS === "" ? element.idDocumento : ", " + element.idDocumento;
-            });
-            setIdDocEnviar(idS);
-
-            var correosDest = "";
-
-            listaCorreos.forEach((x: any) => {
-              correosDest += correosDest === "" ? x : "," + x;
-            });
-
-            const formData = new FormData();
-            formData.append("Archivo", archivoZIP, nombreArchivoMasivo);
-            formData.append("Correos", correosDest);
-            formData.append("IdDocumento", idDocEnviar);
-            formData.append("MensajeBody", mensaje);
-            formData.append("NombreArchivo", archivoEnviar);
-            nombreArchivos.forEach((documento: any) =>
-              formData.append("DocumentosEnviados", documento)
-            );
-            formData.append("Fecha", new Date().toISOString());
-            formData.append("Usuario", identificacionUsuario ?? "");
-
-            setShowSpinner(true);
-            const response = await EnviarArchivoPorCorreo(formData);
-            setShowSpinner(false);
-
-            if (response.indicador === 1) {
+            if(mensaje.trim() === ""){
               setShowAlert(true);
               setMensajeRespuesta({
-                indicador: response.indicador,
-                mensaje: response.mensaje,
+                indicador: 1,
+                mensaje: 'Favor ingresar un mensaje válido'
               });
-            } else {
-              setShowAlert(true);
-              setMensajeRespuesta({
-                indicador: 0,
-                mensaje:
-                  "Archivo enviado correctamente a los correos indicados",
+            }
+            else{
+
+              const archivos = responseArchivos.datos;
+              const archivoZIP = await crearZipCorreo(archivos);
+              var idS = "";
+              const nombreArchivos: any = [];
+
+              // Se toman ids de los documentos para guardar en bitácora
+              archivos.forEach((element: any) => {
+                nombreArchivos.push(element.nombre);
+                idS +=
+                  idS === "" ? element.idDocumento : ", " + element.idDocumento;
               });
-              handleModalCorreo();
+              setIdDocEnviar(idS);
+
+              var correosDest = "";
+
+              listaCorreos.forEach((x: any) => {
+                correosDest += correosDest === "" ? x : "," + x;
+              });
+
+              const formData = new FormData();
+              formData.append("Archivo", archivoZIP, nombreArchivoMasivo);
+              formData.append("Correos", correosDest);
+              formData.append("IdDocumento", idDocEnviar);
+              formData.append("MensajeBody", mensaje);
+              formData.append("NombreArchivo", archivoEnviar);
+              nombreArchivos.forEach((documento: any) =>
+                formData.append("DocumentosEnviados", documento)
+              );
+              formData.append("Fecha", new Date().toISOString());
+              formData.append("Usuario", identificacionUsuario ?? "");
+
+              setShowSpinner(true);
+              const response = await EnviarArchivoPorCorreo(formData);
+              setShowSpinner(false);
+
+              if (response.indicador === 1) {
+                setShowAlert(true);
+                setMensajeRespuesta({
+                  indicador: response.indicador,
+                  mensaje: response.mensaje,
+                });
+              } else {
+                setShowAlert(true);
+                setMensajeRespuesta({
+                  indicador: 0,
+                  mensaje:
+                    "Archivo enviado correctamente a los correos indicados",
+                });
+                handleModalCorreo();
+              }
             }
           }
         } else {
@@ -982,47 +1019,56 @@ function BuscarArchivos() {
                   "Ocurrió un error al momento de obtener el archivo para enviar por correo",
               });
             } else {
-              const archivos = responseArchivo.datos;
-              const archivo = archivos[0];
-              const byteArray = base64ToUint8Array(archivo.bytesArchivo);
-              const archivoSend = new Blob([byteArray], {
-                type: archivo.formato,
-              });
-
-              var correosDest = "";
-
-              listaCorreos.forEach((x: any) => {
-                correosDest += correosDest === "" ? x : "," + x;
-              });
-
-              const formData = new FormData();
-              formData.append("Archivo", archivoSend, archivoEnviar ?? "");
-              formData.append("Correos", correosDest);
-              formData.append("IdDocumento", idDocEnviar.toString());
-              formData.append("NombreArchivo", archivoEnviar ?? "");
-              formData.append("Fecha", new Date().toISOString());
-              formData.append("DocumentosEnviados", archivoEnviar);
-              formData.append("MensajeBody", mensaje);
-              formData.append("Usuario", identificacionUsuario ?? "");
-
-              setShowSpinner(true);
-              const response = await EnviarArchivoPorCorreo(formData);
-              setShowSpinner(false);
-
-              if (response.indicador === 1) {
+              if(mensaje.trim() === ""){
                 setShowAlert(true);
                 setMensajeRespuesta({
-                  indicador: response.indicador,
-                  mensaje: response.mensaje,
+                  indicador: 1,
+                  mensaje: 'Favor ingresar un mensaje válido'
                 });
-              } else {
-                setShowAlert(true);
-                setMensajeRespuesta({
-                  indicador: 0,
-                  mensaje:
-                    "Archivo enviado correctamente a los correos indicados",
+              }
+              else{
+                const archivos = responseArchivo.datos;
+                const archivo = archivos[0];
+                const byteArray = base64ToUint8Array(archivo.bytesArchivo);
+                const archivoSend = new Blob([byteArray], {
+                  type: archivo.formato,
                 });
-                handleModalCorreo();
+
+                var correosDest = "";
+
+                listaCorreos.forEach((x: any) => {
+                  correosDest += correosDest === "" ? x : "," + x;
+                });
+
+                const formData = new FormData();
+                formData.append("Archivo", archivoSend, archivoEnviar ?? "");
+                formData.append("Correos", correosDest);
+                formData.append("IdDocumento", idDocEnviar.toString());
+                formData.append("NombreArchivo", archivoEnviar ?? "");
+                formData.append("Fecha", new Date().toISOString());
+                formData.append("DocumentosEnviados", archivoEnviar);
+                formData.append("MensajeBody", mensaje);
+                formData.append("Usuario", identificacionUsuario ?? "");
+
+                setShowSpinner(true);
+                const response = await EnviarArchivoPorCorreo(formData);
+                setShowSpinner(false);
+
+                if (response.indicador === 1) {
+                  setShowAlert(true);
+                  setMensajeRespuesta({
+                    indicador: response.indicador,
+                    mensaje: response.mensaje,
+                  });
+                } else {
+                  setShowAlert(true);
+                  setMensajeRespuesta({
+                    indicador: 0,
+                    mensaje:
+                      "Archivo enviado correctamente a los correos indicados",
+                  });
+                  handleModalCorreo();
+                }
               }
             }
           } else {
