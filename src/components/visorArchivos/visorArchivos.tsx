@@ -154,7 +154,7 @@ export const VisorArchivos: React.FC<any> = ({
           </div>
         )}
         {!tiposSoportados.includes(fileExtension) &&
-          !["html", "xlsx","txt","sql"].includes(fileExtension) && (
+          !["html","txt","sql"].includes(fileExtension) && (
             <>
               <p style={{ color: "#9E0000" }}>
                 El archivo ha sido descargado ya que posee un formato no
