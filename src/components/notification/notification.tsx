@@ -95,10 +95,8 @@ const Notification: React.FC = () => {
       if (result || error) {
         const notificacionObj = {
           idNotificacion: -1,
-          descripcion: result,
-          usuarioCreacion: userState.nombre,
-          fechaCreacion: obtenerFechaConHora(),
-          error,
+          descripcion: result || error,
+          usuarioCreacion: userState.nombre
         };
         crearNotificacion(notificacionObj)
           .then((resp: any) => {
@@ -109,7 +107,6 @@ const Notification: React.FC = () => {
           .catch((error) => {
             console.error("Error al crear notificacion:", error);
           });
-         
       }
     }
   }, [result, error]);
@@ -181,7 +178,7 @@ const Notification: React.FC = () => {
                         className="notificacion-description"
                         style={{
                           cursor: "pointer",
-                          color: notification.error ? "red" : "green",
+                          color: "#497494",
                         }}
                         onClick={() => {
                           navigate("/historial");

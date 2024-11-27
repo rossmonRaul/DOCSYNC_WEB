@@ -66,6 +66,7 @@ function CargarArchivos() {
     });
   const [tipoDocumento, setTipoDocumento] = useState<any>();
   const [documentoEditado, setDocumentoEditado] = useState(false);
+  const [primeraCarga, setPrimeraCarga] = useState(false);
   const { startWorker, setTaskTitle, loading, error, result } = useWorker();
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const API_BASE_URL_BD = import.meta.env.VITE_API_BASE_URL;
@@ -99,10 +100,10 @@ function CargarArchivos() {
   }, []);
 
   const limpiezaAsync = async () => {
-    await sleep(2000);
-    console.log("maaaa")
+    await sleep(1000);
+    console.log(result,error,loading)
     if (result && !error && !loading) {
-      setTimeout(limpiarEnviados, 1000);
+      limpiarEnviados();
     }
   };
 
@@ -534,11 +535,12 @@ function CargarArchivos() {
     });
 
     setShowModalObservaciones(false);
-    await sleep(1000);
+    /*await sleep(1000);
 
     if (!loading && !error) {
       limpiarEnviados();
     }
+      */
   };
 
   const prepararCarga = async (event: FormEvent) => {
