@@ -563,7 +563,7 @@ function CargarArchivos() {
     for (const [key, valor] of valores) {
       if (
         key !== "observacion" &&
-        (valor === undefined || valor.toString().trim() === "")
+        (valor === undefined ||valor === null || valor.toString().trim() === "")
       ) {
         return false;
       }
