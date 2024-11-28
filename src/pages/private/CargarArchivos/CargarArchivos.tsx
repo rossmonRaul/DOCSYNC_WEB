@@ -101,7 +101,6 @@ function CargarArchivos() {
 
   const limpiezaAsync = async () => {
     await sleep(1000);
-    console.log(result,error,loading)
     if (result && !error && !loading) {
       limpiarEnviados();
     }

@@ -170,7 +170,6 @@ export const cargarDocumentosWorker = () => {
               Accept: "application/json",
             }
           );
-        console.log(estadoArchivos, dataArchivos);
         if (
           estadoArchivos !== 0 ||
           (dataArchivos && dataArchivos?.indicador === 1)
@@ -193,7 +192,8 @@ export const cargarDocumentosWorker = () => {
             urlHistorial,
             storedToken,
             "Error al cargar archivo.",
-            dataArchivos?.mensaje // dataArchivos.detalleExcepcion
+            dataArchivos?.mensaje ||
+              "Ha ocurrido un error al contactar con el servicio. Contacte con un administrador."
           );
           //
           postMessage({

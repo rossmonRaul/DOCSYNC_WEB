@@ -286,7 +286,6 @@ function BuscarArchivos() {
     // Validar cual método de API llamar
     setShowSpinner(true);
     if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
-
       const filtro = {
         nomDocumento: nombreBuscar,
         numSolicitud: paramBusqueda,
@@ -302,22 +301,21 @@ function BuscarArchivos() {
 
       const cantRegistros = await ObtenerCantDocumentos(filtro);
 
-      if(cantRegistros){
+      if (cantRegistros) {
         if (cantRegistros > 0) {
           setCantRegs(cantRegistros);
 
           const resultadosObtenidos = await ObtenerDocumento(filtro);
 
-          if(resultadosObtenidos){
-            setListaArchivosTabla(resultadosObtenidos);           
+          if (resultadosObtenidos) {
+            setListaArchivosTabla(resultadosObtenidos);
 
             setMostrarBusqueda(false);
-          }
-          else{
+          } else {
             setShowAlert(true);
             setMensajeRespuesta({
               indicador: 1,
-              mensaje: 'Ocurrió un error al contactar con el servicio'
+              mensaje: "Ocurrió un error al contactar con el servicio",
             });
           }
         } else {
@@ -327,16 +325,14 @@ function BuscarArchivos() {
             mensaje: "No hay registros con los parámetros indicados",
           });
         }
-      }
-      else{
+      } else {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: 'Ocurrió un error al contactar con el servicio'
+          mensaje: "Ocurrió un error al contactar con el servicio",
         });
       }
     } else {
-
       const valorExt =
         criterioBusquedaText !== ""
           ? criteriosBusqueda.filter(
@@ -354,7 +350,7 @@ function BuscarArchivos() {
 
       var response = await BusquedaSolicitudIHTT(filtro);
 
-      if(response){     
+      if (response) {
         if (response.length === 0) {
           setShowAlert(true);
           setMensajeRespuesta({
@@ -402,12 +398,11 @@ function BuscarArchivos() {
             });
           }
         }
-      }
-      else{
+      } else {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: 'Ocurrió un error al contactar con el servicio'
+          mensaje: "Ocurrió un error al contactar con el servicio",
         });
       }
     }
@@ -462,14 +457,13 @@ function BuscarArchivos() {
   const handleEliminarArchivos = async (e: any) => {
     e.preventDefault();
 
-    if(observacionEliminacion.trim() === ""){
+    if (observacionEliminacion.trim() === "") {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: 'Favor ingresar una observación válida'
+        mensaje: "Favor ingresar una observación válida",
       });
-    }
-    else{
+    } else {
       setShowSpinner(true);
       const response = await EliminarDocumento({
         observaciones: observacionEliminacion,
@@ -522,15 +516,17 @@ function BuscarArchivos() {
         if (response.datos.length > 0) {
           try {
             const archivos = response.datos;
-            var idS = "";
+            let nombres = "";
 
             if (archivos.length > 1) {
               descargarArchivosZip(archivos);
 
               // Se toman ids de los documentos para guardar en bitácora
               archivos.forEach((element: any) => {
-                idS +=
-                  idS === "" ? element.idDocumento : ", " + element.idDocumento;
+                nombres +=
+                  nombres === ""
+                    ? element.nombre + "(" + element.idDocumento + ")"
+                    : ", " + element.nombre + "(" + element.idDocumento + ")";
               });
             } else {
               const archivo = archivos[0];
@@ -546,7 +542,7 @@ function BuscarArchivos() {
               window.URL.revokeObjectURL(url);
 
               // Se toma id del documento para guardar en bitácora
-              idS = archivo.idDocumento;
+              nombres = archivo.nombre + " con id: " + archivo.idDocumento;
             }
             setShowAlert(true);
             setMensajeRespuesta({
@@ -557,7 +553,7 @@ function BuscarArchivos() {
             // Se agrega registro en bitácora de la descarga realizada
             InsertarRegistroBitacora({
               idAccion: 5,
-              descripcion: "Se descargan los documentos con id: " + idS,
+              descripcion: "Se descargan los documentos: " + nombres,
               fecha: new Date().toISOString(),
               usuario: identificacionUsuario,
             });
@@ -719,7 +715,7 @@ function BuscarArchivos() {
 
     InsertarRegistroBitacora({
       idAccion: 7,
-      descripcion: "Se visualiza el documento " + archivo.idDocumento,
+      descripcion: `Se visualiza el documento ${archivo.nomDocumento} con id: ${archivo.idDocumento}`,
       fecha: new Date().toISOString(),
       usuario: identificacionUsuario,
     });
@@ -936,25 +932,25 @@ function BuscarArchivos() {
               mensaje: "No encontraron los archivos seleccionados",
             });
           } else {
-            if(mensaje.trim() === ""){
+            if (mensaje.trim() === "") {
               setShowAlert(true);
               setMensajeRespuesta({
                 indicador: 1,
-                mensaje: 'Favor ingresar un mensaje válido'
+                mensaje: "Favor ingresar un mensaje válido",
               });
-            }
-            else{
-
+            } else {
               const archivos = responseArchivos.datos;
               const archivoZIP = await crearZipCorreo(archivos);
-              var idS = "";
+              let idS = "";
               const nombreArchivos: any = [];
 
               // Se toman ids de los documentos para guardar en bitácora
               archivos.forEach((element: any) => {
                 nombreArchivos.push(element.nombre);
                 idS +=
-                  idS === "" ? element.idDocumento : ", " + element.idDocumento;
+                  idS === ""
+                    ? element.nombre + "(" + element.idDocumento + ")"
+                    : ", " + element.nombre + "(" + element.idDocumento + ")";
               });
               setIdDocEnviar(idS);
 
@@ -967,7 +963,7 @@ function BuscarArchivos() {
               const formData = new FormData();
               formData.append("Archivo", archivoZIP, nombreArchivoMasivo);
               formData.append("Correos", correosDest);
-              formData.append("IdDocumento", idDocEnviar);
+              formData.append("IdDocumento", idS);
               formData.append("MensajeBody", mensaje);
               formData.append("NombreArchivo", archivoEnviar);
               nombreArchivos.forEach((documento: any) =>
@@ -1019,14 +1015,13 @@ function BuscarArchivos() {
                   "Ocurrió un error al momento de obtener el archivo para enviar por correo",
               });
             } else {
-              if(mensaje.trim() === ""){
+              if (mensaje.trim() === "") {
                 setShowAlert(true);
                 setMensajeRespuesta({
                   indicador: 1,
-                  mensaje: 'Favor ingresar un mensaje válido'
+                  mensaje: "Favor ingresar un mensaje válido",
                 });
-              }
-              else{
+              } else {
                 const archivos = responseArchivo.datos;
                 const archivo = archivos[0];
                 const byteArray = base64ToUint8Array(archivo.bytesArchivo);
@@ -1043,7 +1038,7 @@ function BuscarArchivos() {
                 const formData = new FormData();
                 formData.append("Archivo", archivoSend, archivoEnviar ?? "");
                 formData.append("Correos", correosDest);
-                formData.append("IdDocumento", idDocEnviar.toString());
+                formData.append("IdDocumento", archivoEnviar.toString());
                 formData.append("NombreArchivo", archivoEnviar ?? "");
                 formData.append("Fecha", new Date().toISOString());
                 formData.append("DocumentosEnviados", archivoEnviar);
