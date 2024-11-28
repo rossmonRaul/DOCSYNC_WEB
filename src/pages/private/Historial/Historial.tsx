@@ -6,14 +6,21 @@ import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaClipboardList, FaSearch, FaEyeSlash, FaEye, FaFileDownload } from "react-icons/fa";
-import Select, { SingleValue } from "react-select"
+import {
+  FaClipboardList,
+  FaSearch,
+  FaEyeSlash,
+  FaEye,
+  FaFileDownload,
+} from "react-icons/fa";
+import Select, { SingleValue } from "react-select";
 import CustomModal from "../../../components/modal/CustomModal";
 import { ObtenerHistorial } from "../../../servicios/ServiceHistorial";
 import { ObtenerUsuarios } from "../../../servicios/ServicioUsuario";
 import { useSpinner } from "../../../context/spinnerContext";
-import { exportToExcel } from '../../../utilities/exportReportToExcel';
+import { exportToExcel } from "../../../utilities/exportReportToExcel";
 import { format } from "date-fns";
+import { useLocation, useParams } from "react-router-dom";
 
 interface UsuarioOption {
   value: string;
@@ -39,8 +46,11 @@ function Historial() {
 
   const [showAlert, setShowAlert] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [listaHistorialTabla, setListaHistorialTabla] = useState<Historial[]>([]);
-  const [historialSeleccionado, setHistorialSeleccionado] = useState<Historial>();
+  const [listaHistorialTabla, setListaHistorialTabla] = useState<Historial[]>(
+    []
+  );
+  const [historialSeleccionado, setHistorialSeleccionado] =
+    useState<Historial>();
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   const [pendiente, setPendiente] = useState(false);
@@ -54,29 +64,57 @@ function Historial() {
   const [opcionAccion, setOpcionAccion] = useState(""); //
   //const [estado, setEstado] = useState("");
   const [opcionEstado, setOpcionEstado] = useState("");
-  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(null);
+  const location = useLocation();
+  const [busquedaAutomaticaHistorial, setBusquedaAutomaticaHistorial] =
+    useState(false);
+  const fecha = location.state?.fecha; // Obtenido del estado de navegación
+  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(
+    null
+  );
   const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
   const [usuario, setUsuario] = useState("");
   //
   const [mostrarDiv, setMostrarDiv] = useState(true);
 
-  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<SingleValue<UsuarioOption>>(null);
-
+  const [usuarioSeleccionado, setUsuarioSeleccionado] =
+    useState<SingleValue<UsuarioOption>>(null);
 
   const toggleDiv = () => {
-    setMostrarDiv(prev => !prev); // Alterna el estado
-    setMostrarBusqueda(prev => !prev);
-  }
+    setMostrarDiv((prev) => !prev); // Alterna el estado
+    setMostrarBusqueda((prev) => !prev);
+  };
 
   useEffect(() => {
     obtenerDatos();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const fecha = params.get("fecha");
+    if (fecha) {
+      const convertirFecha = (fecha: string) => {
+        const [mes, dia, anioHora] = fecha.split("/");
+        const [anio, hora] = anioHora.split(" ");
+        return new Date(`${anio}-${mes}-${dia}T${'06:00:00'}`);
+      };
+
+      setFechaFiltroInicial(convertirFecha(fecha));
+      setFechaFiltroFinal(convertirFecha(fecha));
+      setBusquedaAutomaticaHistorial(true);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    if (busquedaAutomaticaHistorial) {
+      handleBuscarClick();
+    }
+  }, [busquedaAutomaticaHistorial]);
+
   const obtenerDatos = async () => {
     setShowSpinner(true);
     await obtenerUsuarios();
     setShowSpinner(false);
-  }
+  };
 
   const obtenerUsuarios = async () => {
     try {
@@ -147,7 +185,8 @@ function Historial() {
     {
       id: "Fecha",
       name: "Fecha",
-      selector: (row: Historial) => row.fecha ? format(row.fecha, "dd/MM/yyyy") : "",
+      selector: (row: Historial) =>
+        row.fecha ? format(row.fecha, "dd/MM/yyyy") : "",
       sortable: true,
       style: {
         fontSize: "1.5em",
@@ -158,7 +197,13 @@ function Historial() {
       id: "Acciones",
       name: "Acciones",
       selector: (row: Historial) => (
-        <div style={{ paddingTop: "5px", paddingBottom: "5px", textAlign: "center" }}>
+        <div
+          style={{
+            paddingTop: "5px",
+            paddingBottom: "5px",
+            textAlign: "center",
+          }}
+        >
           <Button
             onClick={() => abrirInformacionHistorial(row)}
             size="sm"
@@ -171,10 +216,9 @@ function Historial() {
       head: "Seleccionar",
       sortable: false,
       grow: 1,
-      center: 'true'
+      center: "true",
     },
   ];
-
 
   const handleBuscarClick = async () => {
     setShowSpinner(true);
@@ -197,10 +241,10 @@ function Historial() {
     }
 
     const filtro = {
-      usuario: usuario === '' ? null : usuario,
-      idAccion: opcionAccion === '' ? null : opcionAccion,
+      usuario: usuario === "" ? null : usuario,
+      idAccion: opcionAccion === "" ? null : opcionAccion,
       nombreDocumento: null,
-      estado: opcionEstado === '' ? null : opcionEstado,
+      estado: opcionEstado === "" ? null : opcionEstado,
       fechaFiltroInicial:
         fechaFiltroInicial === null ? null : fechaFiltroInicial,
       fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
@@ -252,10 +296,11 @@ function Historial() {
   };
 
   const handleOpcionUsuarioChange = (selectedOption: any) => {
-    selectedOption?setUsuario(selectedOption.value):setUsuarioSeleccionado(selectedOption);
+    selectedOption
+      ? setUsuario(selectedOption.value)
+      : setUsuarioSeleccionado(selectedOption);
     setUsuarioSeleccionado(selectedOption);
   };
-
 
   const handleOpcionEstado = (e: any) => {
     setOpcionEstado(e.target.value);
@@ -280,80 +325,82 @@ function Historial() {
     setShowModal(true);
   };
 
-
   const generarArchivoExcel = () => {
     setShowSpinner(true);
 
     if (listaHistorialTabla.length === 0 || listaHistorialTabla === null) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-            indicador: 0,
-            mensaje: "No hay datos para descargar.",
-        });
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 0,
+        mensaje: "No hay datos para descargar.",
+      });
     } else {
-        // datos para Excel
-        const listaFormateadaXLSX = listaHistorialTabla.map(historial => ({
-            Documento: historial.nombreDocumento,
-            Acción: historial.descripcionAccion,
-            Estado: historial.estado,
-            Descripción: historial.descripcion,
-            Error: historial.detalleError,
-            Usuario: historial.usuario,
-            Fecha: format(historial.fecha, "dd/MM/yyyy"),
-        }));
+      // datos para Excel
+      const listaFormateadaXLSX = listaHistorialTabla.map((historial) => ({
+        Documento: historial.nombreDocumento,
+        Acción: historial.descripcionAccion,
+        Estado: historial.estado,
+        Descripción: historial.descripcion,
+        Error: historial.detalleError,
+        Usuario: historial.usuario,
+        Fecha: format(historial.fecha, "dd/MM/yyyy"),
+      }));
 
-        //  acción
-        let cargaDescargar = 'Carga y Descarga';
-        if (opcionAccion == '4') {
-            cargaDescargar = 'Carga';
-        } else if (opcionAccion == '5') {
-            cargaDescargar = 'Descarga';
-        }
+      //  acción
+      let cargaDescargar = "Carga y Descarga";
+      if (opcionAccion == "4") {
+        cargaDescargar = "Carga";
+      } else if (opcionAccion == "5") {
+        cargaDescargar = "Descarga";
+      }
 
-        //  filtros seleccionados
-        const dynamicHeaders: string[][] = [];
-        if (usuario) {
-            dynamicHeaders.push(["Usuario: " + usuario]);
-        }
-        if (opcionAccion) {
-            dynamicHeaders.push(["Acción: " + cargaDescargar]);
-        }
-        if (opcionEstado) {
-            dynamicHeaders.push(["Estado: " + opcionEstado]);
-        }
-        if (fechaFiltroInicial) {
-            dynamicHeaders.push(['Fecha inicial: ' + new Date(fechaFiltroInicial).toLocaleDateString('es-ES')]);
-        }
-        if (fechaFiltroFinal) {
-            dynamicHeaders.push(['Fecha final: ' + new Date(fechaFiltroFinal).toLocaleDateString('es-ES')]);
-        }
+      //  filtros seleccionados
+      const dynamicHeaders: string[][] = [];
+      if (usuario) {
+        dynamicHeaders.push(["Usuario: " + usuario]);
+      }
+      if (opcionAccion) {
+        dynamicHeaders.push(["Acción: " + cargaDescargar]);
+      }
+      if (opcionEstado) {
+        dynamicHeaders.push(["Estado: " + opcionEstado]);
+      }
+      if (fechaFiltroInicial) {
+        dynamicHeaders.push([
+          "Fecha inicial: " +
+            new Date(fechaFiltroInicial).toLocaleDateString("es-ES"),
+        ]);
+      }
+      if (fechaFiltroFinal) {
+        dynamicHeaders.push([
+          "Fecha final: " +
+            new Date(fechaFiltroFinal).toLocaleDateString("es-ES"),
+        ]);
+      }
 
-        // columnas del reporte
-        const columnas = [
-            { key: 'Documento', header: 'Documento', width: 35 },
-            { key: 'Acción', header: 'Acción', width: 10 },
-            { key: 'Estado', header: 'Estado', width: 10 },
-            { key: 'Descripción', header: 'Descripción', width: 45 },
-            { key: 'Error', header: 'Error', width: 55 },
-            { key: 'Usuario', header: 'Usuario', width: 20 },
-            { key: 'Fecha', header: 'Fecha', width: 12 },
-        ];
+      // columnas del reporte
+      const columnas = [
+        { key: "Documento", header: "Documento", width: 35 },
+        { key: "Acción", header: "Acción", width: 10 },
+        { key: "Estado", header: "Estado", width: 10 },
+        { key: "Descripción", header: "Descripción", width: 45 },
+        { key: "Error", header: "Error", width: 55 },
+        { key: "Usuario", header: "Usuario", width: 20 },
+        { key: "Fecha", header: "Fecha", width: 12 },
+      ];
 
-        //  función exportToExcel 
-        exportToExcel({
-            reportName: `Historial de ${cargaDescargar}`,
-            data: listaFormateadaXLSX,
-            columns: columnas,
-            userName: usuario || 'Desconocido',
-            dynamicHeaders, 
-        });
+      //  función exportToExcel
+      exportToExcel({
+        reportName: `Historial de ${cargaDescargar}`,
+        data: listaFormateadaXLSX,
+        columns: columnas,
+        userName: usuario || "Desconocido",
+        dynamicHeaders,
+      });
     }
 
     setShowSpinner(false);
-};
-
-
-
+  };
 
   return (
     <>
@@ -380,7 +427,11 @@ function Historial() {
               <Form.Group controlId="formFecha">
                 <Form.Label>Fecha</Form.Label>
                 <DatePicker
-                  selected={historialSeleccionado?.fecha ? new Date(historialSeleccionado.fecha) : null}
+                  selected={
+                    historialSeleccionado?.fecha
+                      ? new Date(historialSeleccionado.fecha)
+                      : null
+                  }
                   onChange={handleInputChange}
                   dateFormat="dd/MM/yyyy"
                   showTimeSelect
@@ -457,7 +508,7 @@ function Historial() {
           </Row>
         </Form>
       </CustomModal>
-  
+
       <div className="container-fluid">
         <Row>
           <Col md={10} className="d-flex justify-content-start">
@@ -485,163 +536,168 @@ function Historial() {
           </Col>
         </Row>
       </div>
-  
+
       <hr />
-  
+
       <div className="container-fluid">
-          {pendiente ? (
-            <div>Cargando...</div>
-          ) : (
-            <div style={{ display: "flex"}}>
-              <div className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}>
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <h4 className="h4Estilo">Filtro de búsqueda</h4>
-                </div>
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <Form.Group className="mb-4">
-                    <label htmlFor="usuario">
-                      <b>Usuario</b>
-                    </label>
-                    <Select
-                      id="usuario"
-                      className="GrupoFiltro"
-                      value={usuarioSeleccionado}
-                      onChange={handleOpcionUsuarioChange}
-                      options={listaUsuarios.map((usuario: any) => ({
-                        value: usuario.nombreCompleto,
-                        label: usuario.nombreCompleto,
-                      }))}
-                      placeholder="Seleccione"
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          fontSize: "16px",
-                        }),
-                      }}
-                      noOptionsMessage={() => "Opción no encontrada"}
-                    />
-                  </Form.Group>
-                </div>
-  
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <Form.Group className="mb-4">
-                    <label htmlFor="accion">
-                      <b>Acción</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      as="select"
-                      value={opcionAccion}
-                      onChange={handleOpcionAccionChange}
-                    >
-                      <option value="">Seleccione</option>
-                      <option value="4">Carga</option>
-                      <option value="5">Descarga</option>
-                    </Form.Control>
-                  </Form.Group>
-                </div>
-  
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <Form.Group className="mb-4">
-                    <label htmlFor="estado">
-                      <b>Estado</b>
-                    </label>
-                    <Form.Control
-                      className="GrupoFiltro"
-                      as="select"
-                      value={opcionEstado}
-                      onChange={handleOpcionEstado}
-                    >
-                      <option value="">Seleccione</option>
-                      <option value="Error">Error</option>
-                      <option value="Exitoso">Exitoso</option>
-                    </Form.Control>
-                  </Form.Group>
-                </div>
-  
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <label htmlFor="FechaFiltroInicial">
-                    <b>Fecha inicial</b>
-                  </label>
-                  <Form.Group>
-                    <DatePicker
-                      selected={fechaFiltroInicial}
-                      onChange={(date) => setFechaFiltroInicial(date)}
-                      dateFormat="dd/MM/yyyy"
-                      className="form-control GrupoFiltro"
-                      locale={es}
-                    />
-                  </Form.Group>
-                </div>
-  
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <label htmlFor="FechaFiltroFinal">
-                    <b>Fecha final</b>
-                  </label>
-                  <Form.Group>
-                    <DatePicker
-                      selected={fechaFiltroFinal}
-                      onChange={(date) => setFechaFiltroFinal(date)}
-                      dateFormat="dd/MM/yyyy"
-                      className="form-control GrupoFiltro"
-                      locale={es}
-                    />
-                  </Form.Group>
-                </div>
-  
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <Button
-                    className="btn-save"
-                    variant="primary"
-                    onClick={handleBuscarClick}
-                    style={{ marginTop: "20px" }}
-                    disabled={areInputsEmpty()}
-                  >
-                    <FaSearch className="me-2" size={24} />
-                    Buscar
-                  </Button>
-                </div>
+        {pendiente ? (
+          <div>Cargando...</div>
+        ) : (
+          <div style={{ display: "flex" }}>
+            <div className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}>
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <h4 className="h4Estilo">Filtro de búsqueda</h4>
               </div>
-  
-              <div style={{ flex: 1, padding: "20px" }}>
-                {showAlert && (
-                  <AlertDismissible
-                    indicador={0}
-                    mensaje={mensajeRespuesta}
-                    setShow={setShowAlert}
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <Form.Group className="mb-4">
+                  <label htmlFor="usuario">
+                    <b>Usuario</b>
+                  </label>
+                  <Select
+                    id="usuario"
+                    className="GrupoFiltro"
+                    value={usuarioSeleccionado}
+                    onChange={handleOpcionUsuarioChange}
+                    options={listaUsuarios.map((usuario: any) => ({
+                      value: usuario.nombreCompleto,
+                      label: usuario.nombreCompleto,
+                    }))}
+                    placeholder="Seleccione"
+                    styles={{
+                      control: (provided) => ({
+                        ...provided,
+                        fontSize: "16px",
+                      }),
+                    }}
+                    noOptionsMessage={() => "Opción no encontrada"}
                   />
-                )}
-               
-                  {listaHistorialTabla.length > 0 ? (             
-                      <Grid
-                        gridHeading={encabezadoHistorial}
-                        gridData={listaHistorialTabla}
-                        selectableRows={false}
-                        filterColumns={["usuario", "accion", "estado", "descripcion", "fecha"]}
-                        botonesAccion={[
-                          {
-                            condicion: true,
-                            accion: generarArchivoExcel,
-                            icono: <FaFileDownload className="me-2" size={24} />,
-                            texto: "Descargar",
-                          }
-                        ]}
-                      />     
-                  ) : (
-                    <div
-                      className="content row justify-content-center align-items-center"
-                      style={{ marginLeft: 10, textAlign: "center", width: "100%" }}
-                    >
-                      <img src="/SinResultados.png" className="imgSinResultados"/>
-                    </div>
-                  )}
+                </Form.Group>
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <Form.Group className="mb-4">
+                  <label htmlFor="accion">
+                    <b>Acción</b>
+                  </label>
+                  <Form.Control
+                    className="GrupoFiltro"
+                    as="select"
+                    value={opcionAccion}
+                    onChange={handleOpcionAccionChange}
+                  >
+                    <option value="">Seleccione</option>
+                    <option value="4">Carga</option>
+                    <option value="5">Descarga</option>
+                  </Form.Control>
+                </Form.Group>
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <Form.Group className="mb-4">
+                  <label htmlFor="estado">
+                    <b>Estado</b>
+                  </label>
+                  <Form.Control
+                    className="GrupoFiltro"
+                    as="select"
+                    value={opcionEstado}
+                    onChange={handleOpcionEstado}
+                  >
+                    <option value="">Seleccione</option>
+                    <option value="Error">Error</option>
+                    <option value="Exitoso">Exitoso</option>
+                  </Form.Control>
+                </Form.Group>
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <label htmlFor="FechaFiltroInicial">
+                  <b>Fecha inicial</b>
+                </label>
+                <Form.Group>
+                  <DatePicker
+                    selected={fechaFiltroInicial}
+                    onChange={(date) => setFechaFiltroInicial(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="form-control GrupoFiltro"
+                    locale={es}
+                  />
+                </Form.Group>
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <label htmlFor="FechaFiltroFinal">
+                  <b>Fecha final</b>
+                </label>
+                <Form.Group>
+                  <DatePicker
+                    selected={fechaFiltroFinal}
+                    onChange={(date) => setFechaFiltroFinal(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="form-control GrupoFiltro"
+                    locale={es}
+                  />
+                </Form.Group>
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <Button
+                  className="btn-save"
+                  variant="primary"
+                  onClick={handleBuscarClick}
+                  style={{ marginTop: "20px" }}
+                  disabled={areInputsEmpty()}
+                >
+                  <FaSearch className="me-2" size={24} />
+                  Buscar
+                </Button>
               </div>
             </div>
-          )}
+
+            <div style={{ flex: 1, padding: "20px" }}>
+              {showAlert && (
+                <AlertDismissible
+                  indicador={0}
+                  mensaje={mensajeRespuesta}
+                  setShow={setShowAlert}
+                />
+              )}
+
+              {listaHistorialTabla.length > 0 ? (
+                <Grid
+                  gridHeading={encabezadoHistorial}
+                  gridData={listaHistorialTabla}
+                  selectableRows={false}
+                  filterColumns={[
+                    "usuario",
+                    "accion",
+                    "estado",
+                    "descripcion",
+                    "fecha",
+                  ]}
+                  botonesAccion={[
+                    {
+                      condicion: true,
+                      accion: generarArchivoExcel,
+                      icono: <FaFileDownload className="me-2" size={24} />,
+                      texto: "Descargar",
+                    },
+                  ]}
+                />
+              ) : (
+                <div
+                  className="content row justify-content-center align-items-center"
+                  style={{ marginLeft: 10, textAlign: "center", width: "100%" }}
+                >
+                  <img src="/SinResultados.png" className="imgSinResultados" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
-  
 }
 
 export default Historial;

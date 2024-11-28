@@ -96,7 +96,7 @@ const Notification: React.FC = () => {
         const notificacionObj = {
           idNotificacion: -1,
           descripcion: result || error,
-          usuarioCreacion: userState.nombre
+          usuarioCreacion: userState.nombre,
         };
         crearNotificacion(notificacionObj)
           .then((resp: any) => {
@@ -181,7 +181,9 @@ const Notification: React.FC = () => {
                           color: "#497494",
                         }}
                         onClick={() => {
-                          navigate("/historial");
+                          navigate(
+                            `/historial?fecha=${notification.fechaCreacion}`
+                          );
                         }}
                       >
                         {notification.descripcion}
