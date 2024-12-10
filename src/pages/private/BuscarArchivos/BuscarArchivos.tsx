@@ -14,6 +14,7 @@ import {
   FaDownload,
   FaTrash,
   FaEnvelope,
+  FaCheckSquare,
 } from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
@@ -106,8 +107,10 @@ function BuscarArchivos() {
     null
   );
   const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
+
   // const [contenido, setContenido] = useState("");
   const [primerCarga, setPrimerCarga] = useState(true);
+  const [seleccionaTodos, setSeleccionaTodos] = useState(false);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
 
@@ -122,6 +125,30 @@ function BuscarArchivos() {
       setPrimerCarga(false);
     }
   }, [nombreBuscar]);
+
+  useEffect(() => {
+    const existeEnAmbas = listaArchivosTablaSeleccionados.some((obj1) =>
+      listaArchivosTabla.some((obj2) => obj1.idDocumento === obj2.idDocumento)
+    );
+    if (existeEnAmbas) {
+      setSeleccionaTodos(true);
+    } else {
+      setSeleccionaTodos(false);
+    }
+  }, [listaArchivosTabla]);
+
+  useEffect(() => {
+    const existeEnAmbas = listaArchivosTablaSeleccionados.some((obj1) =>
+      listaArchivosTabla.some((obj2) => obj1.idDocumento === obj2.idDocumento)
+    );
+    if (existeEnAmbas) {
+      setSeleccionaTodos(true);
+    } else {
+      setSeleccionaTodos(false);
+    }
+  }, [listaArchivosTablaSeleccionados]);
+
+  //listaArchivosTablaSeleccionados.length
 
   //Informacion general del paquete
   const encabezadoArchivo = [
@@ -385,7 +412,172 @@ function BuscarArchivos() {
             setCantRegs(cantRegistros);
 
             const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
+            setListaArchivosTabla(resultadosObtenidos);
+            // setContenido("");
 
+            setMostrarBusqueda(false);
+          } else {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 2,
+              mensaje: "No hay registros con los parámetros indicados",
+            });
+          }
+        }
+      } else {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Ocurrió un error al contactar con el servicio",
+        });
+      }
+    }
+    setShowSpinner(false);
+  };
+  const SeleccionarTodosBusqueda = async () => {
+    // Convertir fechas vacías a null
+    const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
+    const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
+
+    if (fechaInicio && fechaFin) {
+      // Validar que la fecha final no sea menor que la fecha inicial
+      if (new Date(fechaFin) < new Date(fechaInicio)) {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "La fecha final no puede ser menor que la fecha inicial.",
+        });
+        return;
+      }
+    }
+
+    // Validar que se haya ingresado un parámetro búsqueda si eligió un criterio
+    if (paramBusqueda.trim() === "" && criterioBusquedaText !== "") {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Debe ingresar un parámetro de búsqueda válido",
+      });
+      return;
+    }
+
+    if (paramBusqueda.trim() !== "") {
+      // Validar que el parámetro de búsqueda cumpla con la expresión regular del tipo de validación
+      if (!regExp.test(paramBusqueda)) {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje:
+            'El parámetro ingresado no cumple con el tipo de validación: "' +
+            tipoValidacion +
+            '"',
+        });
+        return;
+      }
+    }
+
+    // Validar cual método de API llamar
+    setShowSpinner(true);
+    if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
+      const filtro = {
+        nomDocumento: nombreBuscar,
+        numSolicitud: paramBusqueda,
+        fechaFiltroInicial:
+          fechaFiltroInicial === null ? null : fechaFiltroInicial,
+        fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+        tamannoPagina: tamPag === 0 ? 10 : tamPag,
+        numeroPagina: numPag === 0 ? 1 : numPag,
+        usuarioBusqueda: identificacionUsuario,
+      };
+
+      setFiltros(filtro);
+
+      const cantRegistros = await ObtenerCantDocumentos(filtro);
+
+      if (cantRegistros) {
+        if (cantRegistros > 0) {
+          setCantRegs(cantRegistros);
+
+          const resultadosObtenidos = await ObtenerDocumento(filtro);
+
+          if (resultadosObtenidos) {
+            setListaArchivosTabla(resultadosObtenidos);
+
+            setMostrarBusqueda(false);
+          } else {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Ocurrió un error al contactar con el servicio",
+            });
+          }
+        } else {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "No hay registros con los parámetros indicados",
+          });
+        }
+      } else {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "Ocurrió un error al contactar con el servicio",
+        });
+      }
+    } else {
+      const valorExt =
+        criterioBusquedaText !== ""
+          ? criteriosBusqueda.filter(
+              (x: any) => x.criterioBusqueda === criterioBusquedaText
+            )[0].valorExterno
+          : null;
+
+      const filtro = {
+        fechaInicio: fechaInicio,
+        fechaFinal: fechaFin,
+        valorExterno: valorExt,
+        valor: paramBusqueda,
+        usuarioBusqueda: identificacionUsuario,
+      };
+
+      var response = await BusquedaSolicitudIHTT(filtro);
+
+      if (response) {
+        if (response.length === 0) {
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "No hay registros con los parámetros indicados",
+          });
+        } else {
+          var solics = "";
+
+          response.forEach((element: any) => {
+            solics +=
+              solics === ""
+                ? element.codigoSolicitud
+                : "," + element.codigoSolicitud;
+          });
+
+          const filtroDocs = {
+            nomDocumento: nombreBuscar,
+            numSolicitud: solics,
+            fechaFiltroInicial: null, // En este punto, ya no es necesario
+            fechaFiltroFinal: null, // En este punto, ya no es necesario
+            tamannoPagina: tamPag === 0 ? 10 : tamPag,
+            numeroPagina: numPag === 0 ? 1 : numPag,
+            usuarioBusqueda: identificacionUsuario,
+          };
+
+          setFiltros(filtroDocs);
+
+          const cantRegistros = await ObtenerCantDocumentos(filtroDocs);
+
+          if (cantRegistros > 0) {
+            setCantRegs(cantRegistros);
+
+            const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
             setListaArchivosTabla(resultadosObtenidos);
             // setContenido("");
 
@@ -852,7 +1044,6 @@ function BuscarArchivos() {
       filtros.tamannoPagina = tamPagina;
 
       const response = await ObtenerDocumento(filtros);
-
       setListaArchivosTabla(response);
     }
 
@@ -1464,6 +1655,35 @@ function BuscarArchivos() {
                   <div className="content">
                     <GridPags
                       botonesAccion={[
+                        {
+                          condicion: !seleccionaTodos,
+                          accion: () => {
+                            setListaArchivosTablaSeleccionados([
+                              ...listaArchivosTablaSeleccionados,
+                              ...listaArchivosTabla,
+                            ]);
+                            setSeleccionaTodos(true);
+                          },
+                          icono: <FaCheckSquare className="me-2" size={24} />,
+                          texto: "Seleccionar todos",
+                        },
+                        {
+                          condicion: seleccionaTodos,
+                          accion: () => {
+                            const resultado =
+                              listaArchivosTablaSeleccionados.filter(
+                                (obj1) =>
+                                  !listaArchivosTabla.some(
+                                    (obj2) =>
+                                      obj1.idDocumento === obj2.idDocumento
+                                  )
+                              );
+                            setListaArchivosTablaSeleccionados(resultado);
+                            setSeleccionaTodos(false);
+                          },
+                          icono: <FaCheckSquare className="me-2" size={24} />,
+                          texto: "Deseleccionar todos",
+                        },
                         {
                           condicion: listaArchivosTablaSeleccionados.length > 0,
                           accion: handleDescargarArchivos,
