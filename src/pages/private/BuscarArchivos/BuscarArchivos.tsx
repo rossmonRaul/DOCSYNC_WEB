@@ -86,6 +86,7 @@ function BuscarArchivos() {
   const [idDocEnviar, setIdDocEnviar] = useState("");
   const [nombreBuscar, setNombreBuscar] = useState("");
   const [archivoEnviar, setArchivoEnviar] = useState("");
+  const [viewMode, setViewMode] = useState("Lista");
   const [esEnvioMasivo, setEsEnvioMasivo] = useState(false);
   const nombreArchivoMasivo = "Documentos.zip";
   const [textoObservaciones, setTextoObservaciones] = useState(
@@ -147,6 +148,8 @@ function BuscarArchivos() {
       setSeleccionaTodos(false);
     }
   }, [listaArchivosTablaSeleccionados]);
+
+  const handleViewChange = (mode: any) => setViewMode(mode);
 
   //listaArchivosTablaSeleccionados.length
 
@@ -386,7 +389,7 @@ function BuscarArchivos() {
           });
         } else {
           var solics = "";
-
+          console.log(response)
           response.forEach((element: any) => {
             solics +=
               solics === ""
@@ -1653,64 +1656,160 @@ function BuscarArchivos() {
               <div>
                 {cantRegs > 0 ? (
                   <div className="content">
-                    <GridPags
-                      botonesAccion={[
-                        {
-                          condicion: !seleccionaTodos,
-                          accion: () => {
-                            setListaArchivosTablaSeleccionados([
-                              ...listaArchivosTablaSeleccionados,
-                              ...listaArchivosTabla,
-                            ]);
-                            setSeleccionaTodos(true);
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginBottom: "16px",
+                        }}
+                      >
+                        <div
+                          onClick={() =>
+                            setViewMode(
+                              viewMode === "Lista" ? "Mosaico" : "Lista"
+                            )
+                          }
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            width: "200px",
+                            height: "50px",
+                            background: "#e6e6e6",
+                            borderRadius: "25px",
+                            position: "relative",
+                            cursor: "pointer",
+                            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                            padding: "5px",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {/* Indicador */}
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "5px",
+                              left: viewMode === "Lista" ? "5px" : "100px",
+                              width: "100px",
+                              height: "40px",
+                              background: "#497494",
+                              borderRadius: "20px",
+                              transition:
+                                "left 0.3s ease, background 0.3s ease",
+                              zIndex: 1,
+                            }}
+                          ></div>
+
+                          {/* Texto Lista */}
+                          <span
+                            style={{
+                              zIndex: 2,
+                              color: viewMode === "Lista" ? "#fff" : "#555",
+                              fontWeight:
+                                viewMode === "Lista" ? "bold" : "normal",
+                              textAlign: "center",
+                              width: "50%",
+                              transition: "color 0.3s ease",
+                              fontSize: "16px",
+                            }}
+                          >
+                            Lista
+                          </span>
+
+                          {/* Texto Mosaico */}
+                          <span
+                            style={{
+                              zIndex: 2,
+                              color: viewMode === "Mosaico" ? "#fff" : "#555",
+                              fontWeight:
+                                viewMode === "Mosaico" ? "bold" : "normal",
+                              textAlign: "center",
+                              width: "50%",
+                              transition: "color 0.3s ease",
+                              fontSize: "16px",
+                            }}
+                          >
+                            Mosaico
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {viewMode === "Lista" ? (
+                      <GridPags
+                        botonesAccion={[
+                          {
+                            condicion: !seleccionaTodos,
+                            accion: () => {
+                              setListaArchivosTablaSeleccionados([
+                                ...listaArchivosTablaSeleccionados,
+                                ...listaArchivosTabla,
+                              ]);
+                              setSeleccionaTodos(true);
+                            },
+                            icono: <FaCheckSquare className="me-2" size={24} />,
+                            texto: "Seleccionar todos",
                           },
-                          icono: <FaCheckSquare className="me-2" size={24} />,
-                          texto: "Seleccionar todos",
-                        },
-                        {
-                          condicion: seleccionaTodos,
-                          accion: () => {
-                            const resultado =
-                              listaArchivosTablaSeleccionados.filter(
-                                (obj1) =>
-                                  !listaArchivosTabla.some(
-                                    (obj2) =>
-                                      obj1.idDocumento === obj2.idDocumento
-                                  )
-                              );
-                            setListaArchivosTablaSeleccionados(resultado);
-                            setSeleccionaTodos(false);
+                          {
+                            condicion: seleccionaTodos,
+                            accion: () => {
+                              const resultado =
+                                listaArchivosTablaSeleccionados.filter(
+                                  (obj1) =>
+                                    !listaArchivosTabla.some(
+                                      (obj2) =>
+                                        obj1.idDocumento === obj2.idDocumento
+                                    )
+                                );
+                              setListaArchivosTablaSeleccionados(resultado);
+                              setSeleccionaTodos(false);
+                            },
+                            icono: <FaCheckSquare className="me-2" size={24} />,
+                            texto: "Deseleccionar todos",
                           },
-                          icono: <FaCheckSquare className="me-2" size={24} />,
-                          texto: "Deseleccionar todos",
-                        },
-                        {
-                          condicion: listaArchivosTablaSeleccionados.length > 0,
-                          accion: handleDescargarArchivos,
-                          icono: <FaDownload className="me-2" size={24} />,
-                          texto: textoDescarga,
-                        },
-                        {
-                          condicion: listaArchivosTablaSeleccionados.length > 0,
-                          accion: () => setShowObservacionesEliminar(true),
-                          icono: <FaTrash className="me-2" size={24} />,
-                          texto: textoObservaciones,
-                        },
-                        {
-                          condicion: listaArchivosTablaSeleccionados.length > 1,
-                          accion: () => handleModalCorreo(null, true),
-                          icono: <RiMailSendFill className="me-2" size={24} />,
-                          texto: textoCorreo,
-                        },
-                      ]}
-                      gridHeading={encabezadoArchivo}
-                      gridData={listaArchivosTabla}
-                      selectableRows={false}
-                      onSearch={onBuscarDocNombre}
-                      filterColumns={["nombre"]}
-                      fetchData={fetchData}
-                      totalRows={cantRegs}
-                    ></GridPags>
+                          {
+                            condicion:
+                              listaArchivosTablaSeleccionados.length > 0,
+                            accion: handleDescargarArchivos,
+                            icono: <FaDownload className="me-2" size={24} />,
+                            texto: textoDescarga,
+                          },
+                          {
+                            condicion:
+                              listaArchivosTablaSeleccionados.length > 0,
+                            accion: () => setShowObservacionesEliminar(true),
+                            icono: <FaTrash className="me-2" size={24} />,
+                            texto: textoObservaciones,
+                          },
+                          {
+                            condicion:
+                              listaArchivosTablaSeleccionados.length > 1,
+                            accion: () => handleModalCorreo(null, true),
+                            icono: (
+                              <RiMailSendFill className="me-2" size={24} />
+                            ),
+                            texto: textoCorreo,
+                          },
+                        ]}
+                        gridHeading={encabezadoArchivo}
+                        gridData={listaArchivosTabla}
+                        selectableRows={false}
+                        onSearch={onBuscarDocNombre}
+                        filterColumns={["nombre"]}
+                        fetchData={fetchData}
+                        totalRows={cantRegs}
+                      ></GridPags>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                 ) : (
                   <div
