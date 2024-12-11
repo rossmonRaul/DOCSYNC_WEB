@@ -29,7 +29,7 @@ import {
 import { InsertarRegistrosHistorial } from "../../../servicios/ServiceHistorial";
 import { format } from "date-fns";
 import { AiOutlineFileSearch } from "react-icons/ai";
-import { recortarTexto } from "../../../utils/utils";
+import { getDocIcon, recortarTexto } from "../../../utils/utils";
 import { useSpinner } from "../../../context/spinnerContext";
 import Select from "react-select";
 import {
@@ -41,6 +41,7 @@ import { GridPags } from "../../../components/table/tablaPags";
 import { RiAddLine, RiMailSendFill } from "react-icons/ri";
 import { Grid } from "../../../components/table/tabla";
 import { useConfirm } from "../../../context/confirmContext";
+import { PaginatedCard } from "../../../components/PaginatedCards/PaginatedCards";
 
 interface Archivo {
   idDocumento: Number;
@@ -148,8 +149,6 @@ function BuscarArchivos() {
       setSeleccionaTodos(false);
     }
   }, [listaArchivosTablaSeleccionados]);
-
-  const handleViewChange = (mode: any) => setViewMode(mode);
 
   //listaArchivosTablaSeleccionados.length
 
@@ -315,11 +314,15 @@ function BuscarArchivos() {
 
     // Validar cual método de API llamar
     setShowSpinner(true);
-    if (criterioBusquedaText.trim().toLowerCase() === "solicitud" || criterioBusquedaText.trim() === "") {
+    if (
+      criterioBusquedaText.trim().toLowerCase() === "solicitud" ||
+      criterioBusquedaText.trim() === ""
+    ) {
       const filtro = {
         nomDocumento: nombreBuscar,
         numSolicitud: paramBusqueda,
-        fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+        fechaFiltroInicial:
+          fechaFiltroInicial === null ? null : fechaFiltroInicial,
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
         tamannoPagina: tamPag === 0 ? 10 : tamPag,
         numeroPagina: numPag === 0 ? 1 : numPag,
@@ -386,7 +389,7 @@ function BuscarArchivos() {
           });
         } else {
           var solics = "";
-          console.log(response)
+          console.log(response);
           response.forEach((element: any) => {
             solics +=
               solics === ""
@@ -397,8 +400,10 @@ function BuscarArchivos() {
           const filtroDocs = {
             nomDocumento: nombreBuscar,
             numSolicitud: solics,
-            fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
-            fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+            fechaFiltroInicial:
+              fechaFiltroInicial === null ? null : fechaFiltroInicial,
+            fechaFiltroFinal:
+              fechaFiltroFinal === null ? null : fechaFiltroFinal,
             tamannoPagina: tamPag === 0 ? 10 : tamPag,
             numeroPagina: numPag === 0 ? 1 : numPag,
             usuarioBusqueda: identificacionUsuario,
@@ -922,6 +927,7 @@ function BuscarArchivos() {
   // };
 
   const handleFilaSeleccionada = (row: Archivo) => {
+    console.log("clicked");
     seleccionarDocumento(row);
   };
 
@@ -1669,11 +1675,12 @@ function BuscarArchivos() {
                         }}
                       >
                         <div
-                          onClick={() =>
+                          onClick={() => {
                             setViewMode(
                               viewMode === "Lista" ? "Mosaico" : "Lista"
-                            )
-                          }
+                            );
+                            setListaArchivosTablaSeleccionados([])
+                          }}
                           style={{
                             display: "flex",
                             alignItems: "center",
@@ -1804,7 +1811,234 @@ function BuscarArchivos() {
                         totalRows={cantRegs}
                       ></GridPags>
                     ) : (
-                      <></>
+                      <>
+                        <PaginatedCard
+                          fetchData={fetchData}
+                          totalRows={cantRegs}
+                          onSearch={onBuscarDocNombre}
+                          filterColumns={["nombre"]}
+                          botonesAccion={[
+                            {
+                              condicion: !seleccionaTodos,
+                              accion: () => {
+                                setListaArchivosTablaSeleccionados([
+                                  ...listaArchivosTablaSeleccionados,
+                                  ...listaArchivosTabla,
+                                ]);
+                                setSeleccionaTodos(true);
+                              },
+                              icono: (
+                                <FaCheckSquare className="me-2" size={24} />
+                              ),
+                              texto: "Seleccionar todos",
+                            },
+                            {
+                              condicion: seleccionaTodos,
+                              accion: () => {
+                                const resultado =
+                                  listaArchivosTablaSeleccionados.filter(
+                                    (obj1) =>
+                                      !listaArchivosTabla.some(
+                                        (obj2) =>
+                                          obj1.idDocumento === obj2.idDocumento
+                                      )
+                                  );
+                                setListaArchivosTablaSeleccionados(resultado);
+                                setSeleccionaTodos(false);
+                              },
+                              icono: (
+                                <FaCheckSquare className="me-2" size={24} />
+                              ),
+                              texto: "Deseleccionar todos",
+                            },
+                            {
+                              condicion:
+                                listaArchivosTablaSeleccionados.length > 0,
+                              accion: handleDescargarArchivos,
+                              icono: <FaDownload className="me-2" size={24} />,
+                              texto: textoDescarga,
+                            },
+                            {
+                              condicion:
+                                listaArchivosTablaSeleccionados.length > 0,
+                              accion: () => setShowObservacionesEliminar(true),
+                              icono: <FaTrash className="me-2" size={24} />,
+                              texto: textoObservaciones,
+                            },
+                            {
+                              condicion:
+                                listaArchivosTablaSeleccionados.length > 1,
+                              accion: () => handleModalCorreo(null, true),
+                              icono: (
+                                <RiMailSendFill className="me-2" size={24} />
+                              ),
+                              texto: textoCorreo,
+                            },
+                          ]}
+                        >
+                          {listaArchivosTabla.map((doc: any) => {
+                            const fecha = doc.fechaModificacion
+                              ? doc.fechaModificacion
+                              : doc.fechaCreacion;
+                            const fechaFormato = fecha
+                              ? format(fecha, "dd/MM/yyyy")
+                              : "";
+                            return (
+                              <div
+                                key={doc.id}
+                                style={{
+                                  borderRadius: "12px",
+                                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                  padding: "20px",
+                                  width: "240px",
+                                  textAlign: "center",
+                                  border: `2.5px solid ${
+                                    listaArchivosTablaSeleccionados.some(
+                                      (r) => r.idDocumento === doc.idDocumento
+                                    )
+                                      ? "#9E0000"
+                                      : "#ccc"
+                                  }`, // Si está seleccionada, usa el color de borde rojo
+                                  backgroundColor: "#fff",
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  justifyContent: "space-between",
+                                  overflow: "hidden",
+                                  transition:
+                                    "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
+                                  cursor: "pointer",
+                                }}
+                                onClick={(e: any) => {
+                                  handleFilaSeleccionada(doc);
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform =
+                                    "scale(1.05)";
+                                  e.currentTarget.style.boxShadow =
+                                    "0 8px 12px rgba(0, 0, 0, 0.2)";
+
+                                  e.currentTarget.style.borderColor = "#9E0000";
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = "scale(1)";
+                                  e.currentTarget.style.boxShadow =
+                                    "0 4px 6px rgba(0, 0, 0, 0.1)";
+                                  if (
+                                    !listaArchivosTablaSeleccionados.some(
+                                      (r) => r.idDocumento === doc.idDocumento
+                                    )
+                                  ) {
+                                    e.currentTarget.style.borderColor =
+                                      "#497494";
+                                  }
+                                }}
+                              >
+                                {/* Ícono del Documento */}
+                                <div
+                                  style={{
+                                    fontSize: "64px",
+                                    marginBottom: "16px",
+                                    color: "#9E0000",
+                                  }}
+                                >
+                                  <img
+                                    src={getDocIcon(
+                                      doc.nomDocumento.split(".").pop()
+                                    )}
+                                    alt={`${doc.nomDocumento} icono`}
+                                    style={{
+                                      width: "130px",
+                                      height: "130px",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                </div>
+
+                                {/* Título */}
+                                <h3
+                                  style={{
+                                    fontSize: "18px",
+                                    fontWeight: "bold",
+                                    color: "#497494",
+                                    marginBottom: "12px",
+                                    wordWrap: "break-word",
+                                  }}
+                                >
+                                  {doc.nomDocumento}
+                                </h3>
+
+                                {/* Detalles */}
+                                <div
+                                  style={{
+                                    fontSize: "14px",
+                                    color: "#555",
+                                    lineHeight: "1.6",
+                                    marginBottom: "16px",
+                                  }}
+                                >
+                                  <p>
+                                    <strong style={{ color: "#497494" }}>
+                                      Tipo:
+                                    </strong>{" "}
+                                    {doc.descripcionTipo}
+                                  </p>
+                                  <p>
+                                    <strong style={{ color: "#497494" }}>
+                                      No. Solicitud:
+                                    </strong>{" "}
+                                    {doc.numSolicitud}
+                                  </p>
+                                  <p>
+                                    <strong style={{ color: "#497494" }}>
+                                      Fecha Carga:
+                                    </strong>{" "}
+                                    {fechaFormato}
+                                  </p>
+                                </div>
+
+                                {/* Botones de Acción */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-evenly",
+                                    alignItems: "center",
+                                    borderTop: "1px solid #e0e0e0",
+                                    paddingTop: "10px",
+                                    marginTop: "16px",
+                                  }}
+                                >
+                                  {/* Botón 1 */}
+                                  <Button
+                                    onClick={() =>
+                                      abrirInformacionArchivo(doc /*true*/)
+                                    }
+                                    size="sm"
+                                    style={{ background: "#9E0000" }}
+                                  >
+                                    <FaClipboardList />
+                                  </Button>
+                                  {/* Botón 2 */}
+                                  <Button
+                                    onClick={() => handleVerArchivo(doc)}
+                                    size="sm"
+                                    style={{ background: "#9E0000" }}
+                                  >
+                                    <FaEye />
+                                  </Button>
+                                  {/* Botón 3 */}
+                                  <Button
+                                    onClick={() => handleModalCorreo(doc)}
+                                    size="sm"
+                                    style={{ background: "#9E0000" }}
+                                  >
+                                    <FaEnvelope />
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </PaginatedCard>
+                      </>
                     )}
                   </div>
                 ) : (
