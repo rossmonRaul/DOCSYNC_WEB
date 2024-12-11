@@ -312,12 +312,11 @@ function BuscarArchivos() {
 
     // Validar cual método de API llamar
     setShowSpinner(true);
-    if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
+    if (criterioBusquedaText.trim().toLowerCase() === "solicitud" || criterioBusquedaText.trim() === "") {
       const filtro = {
         nomDocumento: nombreBuscar,
         numSolicitud: paramBusqueda,
-        fechaFiltroInicial:
-          fechaFiltroInicial === null ? null : fechaFiltroInicial,
+        fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
         tamannoPagina: tamPag === 0 ? 10 : tamPag,
         numeroPagina: numPag === 0 ? 1 : numPag,
@@ -368,8 +367,6 @@ function BuscarArchivos() {
           : null;
 
       const filtro = {
-        fechaInicio: fechaInicio,
-        fechaFinal: fechaFin,
         valorExterno: valorExt,
         valor: paramBusqueda,
         usuarioBusqueda: identificacionUsuario,
@@ -397,8 +394,8 @@ function BuscarArchivos() {
           const filtroDocs = {
             nomDocumento: nombreBuscar,
             numSolicitud: solics,
-            fechaFiltroInicial: null, // En este punto, ya no es necesario
-            fechaFiltroFinal: null, // En este punto, ya no es necesario
+            fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+            fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
             tamannoPagina: tamPag === 0 ? 10 : tamPag,
             numeroPagina: numPag === 0 ? 1 : numPag,
             usuarioBusqueda: identificacionUsuario,
@@ -579,7 +576,6 @@ function BuscarArchivos() {
 
             const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
             setListaArchivosTabla(resultadosObtenidos);
-            // setContenido("");
 
             setMostrarBusqueda(false);
           } else {
