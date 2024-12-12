@@ -28,8 +28,7 @@ import {
 } from "../../../servicios/ServicioDocumentos";
 import { InsertarRegistrosHistorial } from "../../../servicios/ServiceHistorial";
 import { format } from "date-fns";
-import { AiOutlineFileSearch } from "react-icons/ai";
-import { getDocIcon, recortarTexto } from "../../../utils/utils";
+import { AiOutlineFileSearch } from "react-icons/ai";																 
 import { useSpinner } from "../../../context/spinnerContext";
 import Select from "react-select";
 import {
@@ -41,6 +40,7 @@ import { GridPags } from "../../../components/table/tablaPags";
 import { RiAddLine, RiMailSendFill } from "react-icons/ri";
 import { Grid } from "../../../components/table/tabla";
 import { useConfirm } from "../../../context/confirmContext";
+import { getDocIcon, recortarTexto } from "../../../utils/utils";
 import { PaginatedCard } from "../../../components/PaginatedCards/PaginatedCards";
 
 interface Archivo {
@@ -86,8 +86,7 @@ function BuscarArchivos() {
   const { openConfirm } = useConfirm();
   const [idDocEnviar, setIdDocEnviar] = useState("");
   const [nombreBuscar, setNombreBuscar] = useState("");
-  const [archivoEnviar, setArchivoEnviar] = useState("");
-  const [viewMode, setViewMode] = useState("Lista");
+  const [archivoEnviar, setArchivoEnviar] = useState("");													
   const [esEnvioMasivo, setEsEnvioMasivo] = useState(false);
   const nombreArchivoMasivo = "Documentos.zip";
   const [textoObservaciones, setTextoObservaciones] = useState(
@@ -115,6 +114,7 @@ function BuscarArchivos() {
   const [seleccionaTodos, setSeleccionaTodos] = useState(false);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
+    const [viewMode, setViewMode] = useState("Lista");
 
   useEffect(() => {
     obtenerCriteriosBusqueda();
@@ -314,15 +314,13 @@ function BuscarArchivos() {
 
     // Validar cual método de API llamar
     setShowSpinner(true);
-    if (
-      criterioBusquedaText.trim().toLowerCase() === "solicitud" ||
-      criterioBusquedaText.trim() === ""
-    ) {
+		
+    if (criterioBusquedaText.trim().toLowerCase() === "solicitud" || criterioBusquedaText.trim() === "") {									
       const filtro = {
         nomDocumento: nombreBuscar,
         numSolicitud: paramBusqueda,
-        fechaFiltroInicial:
-          fechaFiltroInicial === null ? null : fechaFiltroInicial,
+        fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+																  
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
         tamannoPagina: tamPag === 0 ? 10 : tamPag,
         numeroPagina: numPag === 0 ? 1 : numPag,
@@ -333,7 +331,7 @@ function BuscarArchivos() {
 
       const cantRegistros = await ObtenerCantDocumentos(filtro);
 
-      if (cantRegistros) {
+      if (typeof cantRegistros === "number") {
         if (cantRegistros > 0) {
           setCantRegs(cantRegistros);
 
@@ -389,7 +387,7 @@ function BuscarArchivos() {
           });
         } else {
           var solics = "";
-          console.log(response);
+
           response.forEach((element: any) => {
             solics +=
               solics === ""
@@ -400,10 +398,8 @@ function BuscarArchivos() {
           const filtroDocs = {
             nomDocumento: nombreBuscar,
             numSolicitud: solics,
-            fechaFiltroInicial:
-              fechaFiltroInicial === null ? null : fechaFiltroInicial,
-            fechaFiltroFinal:
-              fechaFiltroFinal === null ? null : fechaFiltroFinal,
+            fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+            fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,					 																  
             tamannoPagina: tamPag === 0 ? 10 : tamPag,
             numeroPagina: numPag === 0 ? 1 : numPag,
             usuarioBusqueda: identificacionUsuario,
@@ -418,7 +414,6 @@ function BuscarArchivos() {
 
             const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
             setListaArchivosTabla(resultadosObtenidos);
-            // setContenido("");
 
             setMostrarBusqueda(false);
           } else {
@@ -439,6 +434,7 @@ function BuscarArchivos() {
     }
     setShowSpinner(false);
   };
+
   const SeleccionarTodosBusqueda = async () => {
     // Convertir fechas vacías a null
     const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
@@ -483,12 +479,11 @@ function BuscarArchivos() {
 
     // Validar cual método de API llamar
     setShowSpinner(true);
-    if (criterioBusquedaText.trim().toLowerCase() === "solicitud") {
+    if (criterioBusquedaText.trim().toLowerCase() === "solicitud" || criterioBusquedaText.trim() == "") {
       const filtro = {
         nomDocumento: nombreBuscar,
         numSolicitud: paramBusqueda,
-        fechaFiltroInicial:
-          fechaFiltroInicial === null ? null : fechaFiltroInicial,
+        fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
         tamannoPagina: tamPag === 0 ? 10 : tamPag,
         numeroPagina: numPag === 0 ? 1 : numPag,
@@ -499,7 +494,7 @@ function BuscarArchivos() {
 
       const cantRegistros = await ObtenerCantDocumentos(filtro);
 
-      if (cantRegistros) {
+      if (typeof cantRegistros === "number") {
         if (cantRegistros > 0) {
           setCantRegs(cantRegistros);
 
@@ -539,8 +534,6 @@ function BuscarArchivos() {
           : null;
 
       const filtro = {
-        fechaInicio: fechaInicio,
-        fechaFinal: fechaFin,
         valorExterno: valorExt,
         valor: paramBusqueda,
         usuarioBusqueda: identificacionUsuario,
@@ -568,8 +561,8 @@ function BuscarArchivos() {
           const filtroDocs = {
             nomDocumento: nombreBuscar,
             numSolicitud: solics,
-            fechaFiltroInicial: null, // En este punto, ya no es necesario
-            fechaFiltroFinal: null, // En este punto, ya no es necesario
+            fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+            fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
             tamannoPagina: tamPag === 0 ? 10 : tamPag,
             numeroPagina: numPag === 0 ? 1 : numPag,
             usuarioBusqueda: identificacionUsuario,
@@ -927,7 +920,7 @@ function BuscarArchivos() {
   // };
 
   const handleFilaSeleccionada = (row: Archivo) => {
-    console.log("clicked");
+						   
     seleccionarDocumento(row);
   };
 
@@ -1658,7 +1651,7 @@ function BuscarArchivos() {
               <div>
                 {cantRegs > 0 ? (
                   <div className="content">
-                    <div
+				  <div
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -1746,71 +1739,71 @@ function BuscarArchivos() {
                         </div>
                       </div>
                     </div>
-                    {viewMode === "Lista" ? (
-                      <GridPags
-                        botonesAccion={[
-                          {
-                            condicion: !seleccionaTodos,
-                            accion: () => {
-                              setListaArchivosTablaSeleccionados([
-                                ...listaArchivosTablaSeleccionados,
-                                ...listaArchivosTabla,
-                              ]);
-                              setSeleccionaTodos(true);
-                            },
-                            icono: <FaCheckSquare className="me-2" size={24} />,
-                            texto: "Seleccionar todos",
+                    {viewMode === "Lista" ? (	
+                    <GridPags
+                      botonesAccion={[
+                        {
+                          condicion: !seleccionaTodos,
+                          accion: () => {
+                            setListaArchivosTablaSeleccionados([
+                              ...listaArchivosTablaSeleccionados,
+                              ...listaArchivosTabla,
+                            ]);
+                            setSeleccionaTodos(true);
                           },
-                          {
-                            condicion: seleccionaTodos,
-                            accion: () => {
-                              const resultado =
-                                listaArchivosTablaSeleccionados.filter(
-                                  (obj1) =>
-                                    !listaArchivosTabla.some(
-                                      (obj2) =>
-                                        obj1.idDocumento === obj2.idDocumento
-                                    )
-                                );
-                              setListaArchivosTablaSeleccionados(resultado);
-                              setSeleccionaTodos(false);
-                            },
-                            icono: <FaCheckSquare className="me-2" size={24} />,
-                            texto: "Deseleccionar todos",
+                          icono: <FaCheckSquare className="me-2" size={24} />,
+                          texto: "Seleccionar todos",
+                        },
+                        {
+                          condicion: seleccionaTodos,
+                          accion: () => {
+                            const resultado =
+                              listaArchivosTablaSeleccionados.filter(
+                                (obj1) =>
+                                  !listaArchivosTabla.some(
+                                    (obj2) =>
+                                      obj1.idDocumento === obj2.idDocumento
+                                  )
+                              );
+                            setListaArchivosTablaSeleccionados(resultado);
+                            setSeleccionaTodos(false);
                           },
-                          {
-                            condicion:
-                              listaArchivosTablaSeleccionados.length > 0,
-                            accion: handleDescargarArchivos,
-                            icono: <FaDownload className="me-2" size={24} />,
-                            texto: textoDescarga,
-                          },
-                          {
-                            condicion:
-                              listaArchivosTablaSeleccionados.length > 0,
-                            accion: () => setShowObservacionesEliminar(true),
-                            icono: <FaTrash className="me-2" size={24} />,
-                            texto: textoObservaciones,
-                          },
-                          {
-                            condicion:
-                              listaArchivosTablaSeleccionados.length > 1,
-                            accion: () => handleModalCorreo(null, true),
-                            icono: (
-                              <RiMailSendFill className="me-2" size={24} />
-                            ),
-                            texto: textoCorreo,
-                          },
-                        ]}
-                        gridHeading={encabezadoArchivo}
-                        gridData={listaArchivosTabla}
-                        selectableRows={false}
-                        onSearch={onBuscarDocNombre}
-                        filterColumns={["nombre"]}
-                        fetchData={fetchData}
-                        totalRows={cantRegs}
-                      ></GridPags>
-                    ) : (
+                          icono: <FaCheckSquare className="me-2" size={24} />,
+                          texto: "Deseleccionar todos",
+                        },
+                        {
+                          condicion: listaArchivosTablaSeleccionados.length > 0,
+																		 
+                          accion: handleDescargarArchivos,
+                          icono: <FaDownload className="me-2" size={24} />,
+                          texto: textoDescarga,
+                        },
+                        {
+                          condicion: listaArchivosTablaSeleccionados.length > 0,
+																		 
+                          accion: () => setShowObservacionesEliminar(true),
+                          icono: <FaTrash className="me-2" size={24} />,
+                          texto: textoObservaciones,
+                        },
+                        {
+                          condicion: listaArchivosTablaSeleccionados.length > 1,
+																		 
+                          accion: () => handleModalCorreo(null, true),
+									
+                          icono: <RiMailSendFill className="me-2" size={24} />,
+							  
+                          texto: textoCorreo,
+                        },
+                      ]}
+                      gridHeading={encabezadoArchivo}
+                      gridData={listaArchivosTabla}
+                      selectableRows={false}
+                      onSearch={onBuscarDocNombre}
+                      filterColumns={["nombre"]}
+                      fetchData={fetchData}
+                      totalRows={cantRegs}
+                    ></GridPags>
+					) : (
                       <>
                         <PaginatedCard
                           fetchData={fetchData}
@@ -1993,10 +1986,10 @@ function BuscarArchivos() {
                                       Fecha Carga:
                                     </strong>{" "}
                                     {fechaFormato}
-                                  </p>
-                                </div>
+                                  </p>	 
+                  </div>
 
-                                {/* Botones de Acción */}
+				{/* Botones de Acción */}
                                 <div
                                   style={{
                                     display: "flex",
