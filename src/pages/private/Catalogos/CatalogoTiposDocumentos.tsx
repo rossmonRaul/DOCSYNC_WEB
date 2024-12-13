@@ -105,7 +105,6 @@ function CatalogoTiposDocumentos() {
     try {
       const tiposDocumentos = await ObtenerTiposDocumentos();
       setListaTiposDocumentos(tiposDocumentos);
-      console.log(tiposDocumentos)
     } catch (error) {
       console.error("Error al obtener los tipos de documentos:", error);
     } finally {
