@@ -18,7 +18,7 @@ export const VisorArchivos: React.FC<any> = ({
   const [error, setError] = useState("");
   const [fileExtension, setFileExtension] = useState<any>(null);
   const [fileURL, setFileURL] = useState<any>(null);
-  const { setShowSpinner,showSpinner } = useSpinner();
+  const { setShowSpinner, showSpinner } = useSpinner();
   const [showAlert, setShowAlert] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
 
@@ -44,7 +44,11 @@ export const VisorArchivos: React.FC<any> = ({
       const url = URL.createObjectURL(archivoBlob);
       setFileURL(url);
       let extensionArchivo = documentoDescarga.nomDocumento.split(".").pop();
-      if (extensionArchivo === "doc" || extensionArchivo === "rtf") {
+      if (
+        extensionArchivo === "doc" ||
+        extensionArchivo === "rtf" ||
+        extensionArchivo === "docx"
+      ) {
         extensionArchivo = "pdf";
       }
       setFileExtension(extensionArchivo);
@@ -98,6 +102,7 @@ export const VisorArchivos: React.FC<any> = ({
 
   useEffect(() => {
     if (documento) {
+      console.log(documento.type);
       if (documento.type === "application/msword") {
         obtenerDocConvertidoPDF();
       } else {
@@ -153,8 +158,9 @@ export const VisorArchivos: React.FC<any> = ({
             />
           </div>
         )}
-        {!tiposSoportados.includes(fileExtension) && !showSpinner &&
-          !["html","txt","sql"].includes(fileExtension) && (
+        {!tiposSoportados.includes(fileExtension) &&
+          !showSpinner &&
+          !["html", "txt", "sql"].includes(fileExtension) && (
             <>
               <p style={{ color: "#9E0000" }}>
                 El archivo ha sido descargado ya que posee un formato no

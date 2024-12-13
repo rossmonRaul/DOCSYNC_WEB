@@ -33,6 +33,7 @@ export const PaginatedCard: React.FC<any> = ({
   };
 
   function handleFilter(event: React.ChangeEvent<HTMLInputElement>) {
+    console.log(data)
     const newData = data.filter((row: any) => {
       return filterColumns.some((column: any) => {
         const value = row[column] || "";
@@ -47,43 +48,11 @@ export const PaginatedCard: React.FC<any> = ({
 
   return (
     <>
-      {filterColumns && (
-        <div
-          className="mb-6 mt-0 d-flex justify-content-between align-items-center"
-          style={{ marginLeft: 10, marginBottom:20 }}
-        >
-          <div>
-            {buttonVisible && (
-              <Button
-                variant="primary"
-                onClick={handle}
-                className="btn-crear px-2"
-              >
-                <FaPlus className="me-2" size={24} />
-                Agregar
-              </Button>
-            )}
-            {botonesAccion &&
-              botonesAccion.map(
-                (accionBotones: any, index: number) =>
-                  accionBotones?.condicion && (
-                    <Button
-                      key={index}
-                      variant="primary"
-                      onClick={accionBotones?.accion}
-                      className={
-                        accionBotones?.clase
-                          ? accionBotones?.clase
-                          : "ms-3 btn-crear"
-                      }
-                    >
-                      {accionBotones?.icono}
-                      {accionBotones?.texto}
-                    </Button>
-                  )
-              )}
-          </div>
-
+      <div
+        className="mb-6 mt-0 d-flex justify-content-between align-items-center"
+        style={{ marginLeft: 10, marginBottom: 20 }}
+      >
+        {filterColumns && !botonesAccion && (
           <div className={buttonVisible ? "" : "ms-auto"}>
             <input
               className="form-control"
@@ -92,9 +61,58 @@ export const PaginatedCard: React.FC<any> = ({
               onChange={handleFilter}
             />
           </div>
+        )}
+        <div>
+          {buttonVisible && (
+            <Button
+              variant="primary"
+              onClick={handle}
+              className="btn-crear px-2"
+            >
+              <FaPlus className="me-2" size={24} />
+              Agregar
+            </Button>
+          )}
+          {botonesAccion &&
+            botonesAccion.map(
+              (accionBotones: any, index: number) =>
+                accionBotones?.condicion && (
+                  <Button
+                    key={index}
+                    variant="primary"
+                    onClick={accionBotones?.accion}
+                    className={
+                      accionBotones?.clase
+                        ? accionBotones?.clase
+                        : "ms-3 btn-crear"
+                    }
+                  >
+                    {accionBotones?.icono}
+                    {accionBotones?.texto}
+                  </Button>
+                )
+            )}
         </div>
-      )}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginLeft:25 }}>
+        {filterColumns && botonesAccion && (
+          <div className={buttonVisible ? "" : "ms-auto"}>
+            <input
+              className="form-control"
+              type="search"
+              placeholder="Buscar"
+              onChange={handleFilter}
+            />
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "16px",
+          marginLeft: 25,
+        }}
+      >
         {children}
       </div>
 
@@ -192,10 +210,10 @@ export const PaginatedCard: React.FC<any> = ({
               color: "#555",
             }}
           >
-            Página {page} de {totalPages}
+            Página {page}-{totalPages} de {totalRows} registros
           </span>
 
-          {/* Botón Página Siguiente */}
+          {/* Botón Siguiente */}
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
