@@ -105,6 +105,7 @@ function CatalogoTiposDocumentos() {
     try {
       const tiposDocumentos = await ObtenerTiposDocumentos();
       setListaTiposDocumentos(tiposDocumentos);
+      console.log(tiposDocumentos)
     } catch (error) {
       console.error("Error al obtener los tipos de documentos:", error);
     } finally {
@@ -175,14 +176,15 @@ function CatalogoTiposDocumentos() {
 
   // Función para abrir el modal y editar un tipo de documento
   const editarTipoDocumento = (tipoDocumento: any) => {
-    if (!["eeb", "sdl", "eebosdl"].includes(tipoDocumento.fraseBusqFin)) {
-      setPalabraClaveFin(tipoDocumento.fraseBusqFin);
-      tipoDocumento.fraseBusqFin = "otro";
+    const tipoAux = {...tipoDocumento};
+    if (!["eeb", "sdl", "eebosdl"].includes(tipoAux.fraseBusqFin)) {
+      setPalabraClaveFin(tipoAux.fraseBusqFin);
+      tipoAux.fraseBusqFin = "otro";
     }
-    setNombreFormato(tipoDocumento.formatoDocumento);
-    setCriterioBusquedaId(tipoDocumento.idCriterioBusqueda);
-    setCriterioBusquedaText(tipoDocumento.criterioBusqueda);
-    setNuevoTipoDocumento(tipoDocumento);
+    setNombreFormato(tipoAux.formatoDocumento);
+    setCriterioBusquedaId(tipoAux.idCriterioBusqueda);
+    setCriterioBusquedaText(tipoAux.criterioBusqueda);
+    setNuevoTipoDocumento(tipoAux);
     setIsEditing(true);
     setShowModal(true);
   };
