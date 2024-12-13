@@ -130,7 +130,6 @@ function CatalogoTiposDocumentos() {
     setShowSpinner(true);
     try {
       const formatosDocs = await ObtenerFormatoDocumento();
-      console.log(formatosDocs);
       setListaFormatoDocumento(formatosDocs);
     } catch (error) {
       console.error("Error al obtener los tipos de documentos:", error);
@@ -175,12 +174,12 @@ function CatalogoTiposDocumentos() {
   };
 
   // Función para abrir el modal y editar un tipo de documento
-  const editarTipoDocumento = (tipoDocumento: TipoDocumento) => {
+  const editarTipoDocumento = (tipoDocumento: any) => {
     if (!["eeb", "sdl", "eebosdl"].includes(tipoDocumento.fraseBusqFin)) {
       setPalabraClaveFin(tipoDocumento.fraseBusqFin);
       tipoDocumento.fraseBusqFin = "otro";
     }
-    setNombreFormato("");
+    setNombreFormato(tipoDocumento.formatoDocumento);
     setCriterioBusquedaId(tipoDocumento.idCriterioBusqueda);
     setCriterioBusquedaText(tipoDocumento.criterioBusqueda);
     setNuevoTipoDocumento(tipoDocumento);
@@ -239,7 +238,6 @@ function CatalogoTiposDocumentos() {
             usuarioModificacion: identificacionUsuario,
             fechaModificacion: new Date().toISOString(),
           };
-          console.log(tipoDocumentoActualizar);
           const response = await ActualizarTipoDocumento(
             tipoDocumentoActualizar
           );
@@ -276,7 +274,6 @@ function CatalogoTiposDocumentos() {
             usuarioCreacion: identificacionUsuario,
             fechaCreacion: new Date().toISOString(),
           };
-          console.log(tipoDocumentoACrear);
           const response = await CrearTipoDocumento(tipoDocumentoACrear);
 
           if (response) {
@@ -872,7 +869,7 @@ function CatalogoTiposDocumentos() {
             </Row>
           )}
           <Row style={{ marginTop: "3%" }}>
-            {nuevoTipoDocumento.fraseBusqFin === "otro" && (
+            {(nuevoTipoDocumento.fraseBusqFin === "otro" && nombreFormato !=="Imagen") && (
               <Col md={6}>
                 <Form.Group controlId="formBusInicio">
                   <Form.Label>Palabra o símbolo clave fin</Form.Label>
