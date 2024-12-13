@@ -339,7 +339,7 @@ function CargarArchivos() {
                 id: consecutivo++,
                 archivo: element,
                 observacion: "",
-                numSolicitud: "123",
+                numSolicitud: "",
                 tamanioArchivo: element.size,
                 tipoDocumento: tipoDocumentoSeleccionado,
                 nombreGuardar:
@@ -440,6 +440,8 @@ function CargarArchivos() {
             setFiles([]);
           }
           setShowSpinner(false);
+        }else{
+          setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
         }
       }
     }
