@@ -108,12 +108,12 @@
 .contenedorFiltro.mostrar {
   left: 0; /* Posición final en la pantalla */
   width: 20%;
-  height: 400px; /* Establece la altura deseada aquí */
+  height: 483px; /* Establece la altura deseada aquí */
   overflow: auto;
 }
 
 .grid {
-  width: 80%;
+  width: 50%;
 }
 
 .h4Estilo{

@@ -95,6 +95,7 @@ function BuscarArchivos() {
   );
   const [textoDescarga, setTextoDescarga] = useState("Descargar seleccionados");
   const [textoCorreo, setTextoCorreo] = useState("Enviar archivos por correo");
+  const [textoSeleccion, setTextoSeleccion] = useState("Seleccionar todos");
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
   // const [pendiente, setPendiente] = useState(false);
@@ -135,8 +136,12 @@ function BuscarArchivos() {
     );
     if (existeEnAmbas) {
       setSeleccionaTodos(true);
+      if(!mostrarBusqueda && !documentoVer)
+        setTextoSeleccion("Deseleccionar todos");
     } else {
       setSeleccionaTodos(false);
+      if(!mostrarBusqueda && !documentoVer)
+        setTextoSeleccion("Seleccionar todos");
     }
   }, [listaArchivosTabla]);
 
@@ -146,8 +151,12 @@ function BuscarArchivos() {
     );
     if (existeEnAmbas) {
       setSeleccionaTodos(true);
+      if(!mostrarBusqueda && !documentoVer)
+        setTextoSeleccion("Deseleccionar todos");
     } else {
       setSeleccionaTodos(false);
+      if(!mostrarBusqueda && !documentoVer)
+        setTextoSeleccion("Seleccionar todos");
     }
   }, [listaArchivosTablaSeleccionados]);
 
@@ -326,7 +335,6 @@ function BuscarArchivos() {
         numSolicitud: paramBusqueda,
         fechaFiltroInicial:
           fechaFiltroInicial === null ? null : fechaFiltroInicial,
-
         fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
         tamannoPagina: tamPag === 0 ? 10 : tamPag,
         numeroPagina: numPag === 0 ? 1 : numPag,
@@ -904,10 +912,17 @@ function BuscarArchivos() {
       setTextoCorreo("Enviar archivos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
+      if(textoSeleccion === ""){
+        setTextoSeleccion( seleccionaTodos ? "Deseleccionar todos" : "Seleccionar todos");
+      }
+      else{
+        setTextoSeleccion(textoSeleccion);
+      }      
     } else {
       setTextoCorreo("");
       setTextoDescarga("");
       setTextoObservaciones("");
+      setTextoSeleccion("");
     }
   };
 
@@ -917,6 +932,7 @@ function BuscarArchivos() {
     setTextoCorreo("");
     setTextoDescarga("");
     setTextoObservaciones("");
+    setTextoSeleccion("");
 
     setMostrarBusqueda(false);
 
@@ -1010,10 +1026,17 @@ function BuscarArchivos() {
       setTextoCorreo("Enviar archivos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
+      if(textoSeleccion === ""){
+        setTextoSeleccion( seleccionaTodos ? "Deseleccionar todos" : "Seleccionar todos");
+      }
+      else{
+        setTextoSeleccion(textoSeleccion);
+      }      
     } else {
       setTextoCorreo("");
       setTextoDescarga("");
       setTextoObservaciones("");
+      setTextoSeleccion("");
     }
   };
 
@@ -1768,9 +1791,11 @@ function BuscarArchivos() {
                                 ...listaArchivosTabla,
                               ]);
                               setSeleccionaTodos(true);
+                              if(!mostrarBusqueda && !documentoVer)
+                                setTextoSeleccion("Deseleccionar todos");
                             },
                             icono: <FaCheckSquare className="me-2" size={24} />,
-                            texto: "Seleccionar todos",
+                            texto: textoSeleccion,
                           },
                           {
                             condicion: seleccionaTodos,
@@ -1785,9 +1810,11 @@ function BuscarArchivos() {
                                 );
                               setListaArchivosTablaSeleccionados(resultado);
                               setSeleccionaTodos(false);
+                              if(!mostrarBusqueda && !documentoVer)
+                                setTextoSeleccion("Seleccionar todos");
                             },
                             icono: <FaCheckSquare className="me-2" size={24} />,
-                            texto: "Deseleccionar todos",
+                            texto: textoSeleccion,
                           },
                           {
                             condicion:
@@ -1845,11 +1872,13 @@ function BuscarArchivos() {
                                   ...listaArchivosTabla,
                                 ]);
                                 setSeleccionaTodos(true);
+                                if(!mostrarBusqueda && !documentoVer)
+                                  setTextoSeleccion("Deseleccionar todos");
                               },
                               icono: (
                                 <FaCheckSquare className="me-2" size={24} />
                               ),
-                              texto: "Seleccionar todos",
+                              texto: textoSeleccion,
                             },
                             {
                               condicion: seleccionaTodos,
@@ -1864,11 +1893,13 @@ function BuscarArchivos() {
                                   );
                                 setListaArchivosTablaSeleccionados(resultado);
                                 setSeleccionaTodos(false);
+                                if(!mostrarBusqueda && !documentoVer)
+                                  setTextoSeleccion("Seleccionar todos");
                               },
                               icono: (
                                 <FaCheckSquare className="me-2" size={24} />
                               ),
-                              texto: "Deseleccionar todos",
+                              texto: textoSeleccion,
                             },
                             {
                               condicion:
@@ -2082,6 +2113,7 @@ function BuscarArchivos() {
                   key={documentoVer}
                   documentoDescarga={documentoVer}
                   cerrar={handleVisor}
+                  esLista={viewMode === "Lista"}
                 />
               </div>
             )}

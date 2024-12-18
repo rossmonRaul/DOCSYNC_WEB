@@ -752,11 +752,12 @@ function CargarArchivos() {
           </div>
         </div>
         {documentoVer?.archivo && (
-          <div style={{ flex: 1, padding: "20px", overflowY: "hidden" }}>
+          <div style={{ flex: 1, padding: "1%", overflowY: "hidden" }}>
             <VisorArchivos
               key={documentoVer}
               documento={documentoVer.archivo}
               cerrar={handleVisor}
+              esCarga={true}
             />
           </div>
         )}

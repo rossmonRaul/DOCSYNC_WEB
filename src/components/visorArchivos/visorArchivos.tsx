@@ -14,6 +14,8 @@ export const VisorArchivos: React.FC<any> = ({
   documento,
   documentoDescarga,
   cerrar,
+  esLista,
+  esCarga
 }) => {
   const [error, setError] = useState("");
   const [fileExtension, setFileExtension] = useState<any>(null);
@@ -130,7 +132,7 @@ export const VisorArchivos: React.FC<any> = ({
       {showAlert && (
         <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
       )}
-      <div style={{ width: "100%", height: "100%", padding: "1%" }}>
+      <div style={{ width: "100%", height: "100%", padding: "1%"}}>
         <div className="mb-2 d-flex justify-content-between align-items-center">
           <h4 className="mb-0">
             {documento?.name || documentoDescarga?.nomDocumento}
@@ -143,10 +145,10 @@ export const VisorArchivos: React.FC<any> = ({
         {tiposSoportados.includes(fileExtension) && fileURL && (
           <div
             style={{
-              maxHeight: "60vh",
+              maxHeight: "327vh",
               overflowY: "auto",
               width: "100%",
-              height: "100%",
+              height: esCarga ? '61%' : (esLista ? "675px" : "98%")
             }}
           >
             <FileViewer
