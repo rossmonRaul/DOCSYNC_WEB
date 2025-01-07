@@ -335,7 +335,7 @@ function AdministrarRoles() {
             <Row>
               <Col md={6}>
                 <Form.Group controlId="formNombre">
-                  <Form.Label>Nombre</Form.Label>
+                  <Form.Label>Nombre*</Form.Label>
                   <Form.Control
                     type="text"
                     name="nombre"
