@@ -860,7 +860,7 @@ function CatalogoPersonas() {
           <Row>
             <Col md={6}>
               <Form.Group controlId="formNombreCompleto">
-                <Form.Label>Nombre Completo</Form.Label>
+                <Form.Label>Nombre Completo*</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombreCompleto"
@@ -967,7 +967,7 @@ function CatalogoPersonas() {
             </Col>
             <Col md={6}>
               <Form.Group controlId="formEmail">
-                <Form.Label>Correo</Form.Label>
+                <Form.Label>Correo*</Form.Label>
                 <Form.Control
                   type="email"
                   name="email"

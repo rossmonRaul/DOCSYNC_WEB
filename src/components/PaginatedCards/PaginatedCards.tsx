@@ -33,7 +33,7 @@ export const PaginatedCard: React.FC<any> = ({
   };
 
   function handleFilter(event: React.ChangeEvent<HTMLInputElement>) {
-    console.log(data)
+    console.log(data);
     const newData = data.filter((row: any) => {
       return filterColumns.some((column: any) => {
         const value = row[column] || "";
@@ -50,7 +50,7 @@ export const PaginatedCard: React.FC<any> = ({
     <>
       <div
         className="mb-6 mt-0 d-flex justify-content-between align-items-center"
-        style={{ marginLeft: 10, marginBottom: 20 }}
+        style={{ marginLeft: 10, marginBottom: 20, maxHeight: "20px" }}
       >
         {filterColumns && !botonesAccion && (
           <div className={buttonVisible ? "" : "ms-auto"}>
@@ -111,6 +111,7 @@ export const PaginatedCard: React.FC<any> = ({
           flexWrap: "wrap",
           gap: "16px",
           marginLeft: 25,
+          marginTop:"30px"
         }}
       >
         {children}

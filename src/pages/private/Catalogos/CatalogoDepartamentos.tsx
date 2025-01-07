@@ -548,7 +548,7 @@ function CatalogoDepartamentos() {
           <Row>
             <Col md={6}>
               <Form.Group controlId="formNombre">
-                <Form.Label>Nombre del departamento</Form.Label>
+                <Form.Label>Nombre del departamento*</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"

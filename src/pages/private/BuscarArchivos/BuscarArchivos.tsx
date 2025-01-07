@@ -927,8 +927,11 @@ function BuscarArchivos() {
   };
 
   const handleVerArchivo = (archivo: Archivo) => {
+    window.scrollTo({
+      top: 180,
+      behavior: 'smooth'
+    });
     setDocumentoVer(archivo);
-
     setTextoCorreo("");
     setTextoDescarga("");
     setTextoObservaciones("");
@@ -1854,7 +1857,7 @@ function BuscarArchivos() {
                         totalRows={cantRegs}
                       ></GridPags>
                     ) : (
-                      <>
+                      <div>
                         <PaginatedCard
                           fetchData={fetchData}
                           totalRows={cantRegs}
@@ -2087,7 +2090,7 @@ function BuscarArchivos() {
                             );
                           })}
                         </PaginatedCard>
-                      </>
+                      </div>
                     )}
                   </div>
                 ) : (
@@ -2108,7 +2111,7 @@ function BuscarArchivos() {
               </div>
             </div>
             {documentoVer && (
-              <div style={{ flex: "1", overflow: "hidden" }}>
+              <div style={{ flex: "1", overflow: "hidden", maxHeight:"100vh" }}>
                 <VisorArchivos
                   key={documentoVer}
                   documentoDescarga={documentoVer}

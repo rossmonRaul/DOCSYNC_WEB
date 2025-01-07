@@ -550,7 +550,7 @@ function CatalogoPuestos() {
           <Row>
             <Col md={6}>
               <Form.Group controlId="formNombre">
-                <Form.Label>Nombre del puesto</Form.Label>
+                <Form.Label>Nombre del puesto*</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"

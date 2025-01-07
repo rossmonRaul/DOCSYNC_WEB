@@ -378,7 +378,7 @@ function CatalogoUsuarios() {
             <Row>
               <Col md={6}>
                 <Form.Group controlId="formPersona">
-                  <Form.Label>Persona</Form.Label>
+                  <Form.Label>Persona*</Form.Label>
                   <Select
                     value={
                       persona !== ""
@@ -410,7 +410,7 @@ function CatalogoUsuarios() {
               </Col>
               <Col md={6}>
                 <Form.Group controlId="formRol">
-                  <Form.Label>Rol</Form.Label>
+                  <Form.Label>Rol*</Form.Label>
                   <Select
                     value={
                       rol !== ""
@@ -483,7 +483,7 @@ function CatalogoUsuarios() {
               <Col md={6}>
                 <Form.Group controlId="formContrasennaT">
                   <Form.Label style={{ marginTop: "3%" }}>
-                    Contraseña temporal
+                    Contraseña temporal*
                   </Form.Label>
                   <Form.Control
                     type="text"

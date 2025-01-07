@@ -702,7 +702,7 @@ function CatalogoCriterioBusqueda() {
           <Row>
             <Col md={6}>
               <Form.Group controlId="formNombre">
-                <Form.Label>Nombre del criterio</Form.Label>
+                <Form.Label>Nombre del criterio*</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"
@@ -759,7 +759,7 @@ function CatalogoCriterioBusqueda() {
             <Col md={6}>
               <Form.Group controlId="formNombre">
                 <Form.Label style={{ marginTop: "3%" }}>
-                  Valor externo
+                  Valor externo*
                 </Form.Label>
                 <Form.Control
                   type="text"
