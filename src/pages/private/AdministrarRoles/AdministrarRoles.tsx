@@ -412,14 +412,12 @@ function AdministrarRoles() {
                     /> 
                 </Form.Group>
               </Col>
-              <Col md={4} style={{marginTop: '2.8%', paddingRight: '0px', marginRight: '0px'}}>              
+              <Col md={4} style={{marginTop: '2.6%', paddingRight: '0px', marginRight: '0px'}}>              
                   <Button  
                     type="button" 
                     className="mt-3 mb-0 btn-save"
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      alignContent: 'center',
+                      height:"47px"
                     }}
                     onClick={() => agregaOpcion()}
                   >  
