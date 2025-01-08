@@ -9,4 +9,5 @@ export interface UserInfo {
     idRol: number;
     estado: number;
     verConfidencial: boolean;
+    acciones: Array<any>;
 }

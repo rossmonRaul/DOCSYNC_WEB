@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button, Spinner } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import { FaPlus } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { AppStore } from "../../redux/Store";
 
 // Tabla con funciones para paginación
 export const GridPags: React.FC<any> = ({
@@ -23,6 +25,7 @@ export const GridPags: React.FC<any> = ({
   const [records, setRecords] = useState([]);
   const [page, setPage] = useState(1); // Página actual
   const [rowsPerPage, setRowsPerPage] = useState(10); // Filas por página
+  const userState = useSelector((store: AppStore) => store.user);
 
   const paginationComponentOptions = {
     rowsPerPageText: "Filas por página",
@@ -150,7 +153,11 @@ export const GridPags: React.FC<any> = ({
             {botonesAccion &&
               botonesAccion.map(
                 (accionBotones: any, index: number) =>
-                  accionBotones?.condicion && (
+                  accionBotones?.condicion &&
+                  (userState.acciones?.find(
+                    (x: any) => x.descripcion === accionBotones?.permiso
+                  ) ||
+                    !accionBotones?.permiso) && (
                     <Button
                       key={index}
                       variant="primary"

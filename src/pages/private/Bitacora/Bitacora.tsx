@@ -12,7 +12,6 @@ import { ObtenerBitacora } from "../../../servicios/ServicioBitacora";
 import { useSpinner } from "../../../context/spinnerContext";
 import { exportToExcel } from '../../../utilities/exportReportToExcel';
 import { format } from "date-fns";
-import { ObtenerDocumentosDescarga } from "../../../servicios/ServicioDocumentos";
 
 
 interface Bitacora {

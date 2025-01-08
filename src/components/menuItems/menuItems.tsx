@@ -1,5 +1,4 @@
 import { FaUpload } from "react-icons/fa";
-import { MdDocumentScanner } from "react-icons/md";
 import { AiOutlineFileSearch } from "react-icons/ai";
 
 interface MenuItem {

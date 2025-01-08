@@ -11,7 +11,6 @@ import {
 } from "../../../servicios/ServicioTiposDocumentos";
 import Select from "react-select";
 import { FaBan, FaDownload, FaRedo, FaUpload } from "react-icons/fa";
-import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
 import CustomModal from "../../../components/modal/CustomModal";
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -50,7 +49,6 @@ interface ErrorResponse {
 function CatalogoTiposDocumentos() {
   const { openConfirm } = useConfirm();
   const { setShowSpinner } = useSpinner();
-  const [paramBusqueda, setParamBusqueda] = useState("");
   const [listaTiposDocumentos, setListaTiposDocumentos] = useState<
     TipoDocumento[]
   >([]);
@@ -60,7 +58,6 @@ function CatalogoTiposDocumentos() {
   const [criteriosBusqueda, setCriteriosBusqueda] = useState<any[]>([]);
   const [criterioBusquedaId, setCriterioBusquedaId] = useState<any>();
   const [nombreFormato, setNombreFormato] = useState<any>();
-  const [tipoValidacion, setTipoValidacion] = useState("");
   const [nuevoTipoDocumento, setNuevoTipoDocumento] = useState<TipoDocumento>({
     idTipoDocumento: "0",
     codigo: "",
@@ -78,7 +75,6 @@ function CatalogoTiposDocumentos() {
   const [isEditing, setIsEditing] = useState(false);
   const [criterioBusquedaText, setCriterioBusquedaText] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const [regExp, setRegExp] = useState<RegExp>(/.*/);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({
     indicador: 0,
     mensaje: "",

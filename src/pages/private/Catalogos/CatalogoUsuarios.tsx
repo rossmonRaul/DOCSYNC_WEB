@@ -9,9 +9,10 @@ import {
   EliminarUsuario,
   ActualizarUsuario,
   ObtenerAcciones,
+  ObtenerAccionesUsuario,
 } from "../../../servicios/ServicioUsuario";
 import { ObtenerPersonas } from "../../../servicios/ServicioPersonas";
-import { FaBan, FaRedo } from "react-icons/fa";
+import { FaBan, FaRedo, FaTrash } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
 import CustomModal from "../../../components/modal/CustomModal";
@@ -29,6 +30,7 @@ function CatalogoUsuarios() {
   const [rol, setRol] = useState<string>("");
   const [rolTexto, setRolTexto] = useState<string>("");
   const [accion, setAccion] = useState<string>("");
+  const [accionesUsuario, setAccionesUsuario] = useState<any[]>([]);
   const [accionTexto, setAccionTexto] = useState<string>("");
   const [nombrePersona, setNombrePersona] = useState<string>("");
   const [idUsuario, setIdUsuario] = useState<string>("");
@@ -128,8 +130,19 @@ function CatalogoUsuarios() {
     );
   };
 
+  const cargarAccionesUsuario = async (identificacion: any) => {
+    try {
+      setShowSpinner(true);
+      const response = await ObtenerAccionesUsuario({ identificacion });
+      setAccionesUsuario(response);
+      setShowSpinner(false);
+    } catch (error) {
+      console.error("Error al obtener personas:", error);
+    }
+  };
+
   // Función para abrir el modal y editar
-  const editarUsuario = (usuario: any) => {
+  const editarUsuario = async (usuario: any) => {
     setCorreoE(usuario.correoElectronico);
     setEstado(usuario.estado);
     setRol(usuario.idRol);
@@ -141,6 +154,7 @@ function CatalogoUsuarios() {
     setVerConfidencial(usuario.verConfidencial);
     setNombrePersona(usuario.nombreCompleto);
     setRolTexto(usuario.rol);
+    await cargarAccionesUsuario(usuario.identificacion);
   };
 
   // Función para manejar el cierre del modal
@@ -155,6 +169,7 @@ function CatalogoUsuarios() {
     setPersona("");
     setNombrePersona("");
     setRolTexto("");
+    setAccionesUsuario([]);
   };
 
   // Maneja los cambios en el formulario del modal
@@ -196,7 +211,8 @@ function CatalogoUsuarios() {
 
   const handleAccionChange = (e: any) => {
     if (e.value !== "") {
-      const nombre = acciones.filter((x: any) => x.idAccion == e.value)[0].descripcion;
+      const nombre = acciones.filter((x: any) => x.idAccion == e.value)[0]
+        .descripcion;
 
       setAccion(e.value);
       setAccionTexto(nombre);
@@ -234,6 +250,11 @@ function CatalogoUsuarios() {
             mensaje: "Seleccione el rol del usuario",
           });
         } else {
+          let accionesBD = "";
+
+          accionesUsuario.forEach((op) => {
+            accionesBD += op.idAccion + ",";
+          });
           const usuario = {
             idPersona: persona,
             idRol: rol,
@@ -244,6 +265,7 @@ function CatalogoUsuarios() {
             usuarioModificacion: identificacionUsuario,
             fechaModificacion: new Date().toISOString(),
             contrasenna: null,
+            acciones: accionesBD,
             verConfidencial: verConfidencial,
           };
 
@@ -285,6 +307,12 @@ function CatalogoUsuarios() {
             mensaje: "Debe ingresar una contraseña para el usuario",
           });
         } else {
+          let accionesBD = "";
+
+          accionesUsuario.forEach((op) => {
+            accionesBD += op.idAccion + ",";
+          });
+
           const nuevoUsuario = {
             idPersona: persona,
             idRol: rol,
@@ -295,6 +323,7 @@ function CatalogoUsuarios() {
             usuarioCreacion: identificacionUsuario,
             fechaCreacion: new Date().toISOString(),
             contrasenna: "",
+            acciones: accionesBD,
             verConfidencial: verConfidencial,
           };
 
@@ -404,8 +433,75 @@ function CatalogoUsuarios() {
   ];
 
   const agregaAccion = () => {
-    
+    if (accion) {
+      const accionSelected = acciones.filter(
+        (x: any) => x.idAccion === parseInt(accion)
+      )[0];
+
+      if (accionesUsuario.find((x: any) => x.idAccion == parseInt(accion))) {
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 1,
+          mensaje: "El usuario ya cuenta con este permiso",
+        });
+      } else {
+        const data = {
+          idAccion: accionSelected.idAccion,
+          descripcion: accionSelected.descripcion,
+        };
+
+        setAccionesUsuario((prevOpcionesRol: any[]) => [
+          ...prevOpcionesRol,
+          data,
+        ]);
+
+        setShowAlert(true);
+        setMensajeRespuesta({
+          indicador: 0,
+          mensaje: "Permiso agregado para el usuario",
+        });
+      }
+    }
   };
+
+  const eliminarAccion = (opcion: any) => {
+    openConfirm("¿Está seguro que desea eliminar la acción?", () => {
+      setAccionesUsuario((prev: any[]) =>
+        prev.filter((op: any) => op.idAccion !== opcion.idAccion)
+      );
+
+      setShowAlert(true);
+      setMensajeRespuesta({ indicador: 0, mensaje: "Opción eliminada" });
+    });
+  };
+
+  const encabezadoTablaModal = [
+    {
+      id: "accion",
+      name: "Permiso",
+      selector: (row: any) => row.descripcion,
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+      },
+    },
+    {
+      id: "acciones",
+      name: "Acción",
+      cell: (row: any) => (
+        <>
+          <Button
+            size="sm"
+            onClick={() => eliminarAccion(row)}
+            className="bg-secondary"
+          >
+            <FaTrash />
+          </Button>
+        </>
+      ),
+      width: "120px",
+    },
+  ];
 
   return (
     <>
@@ -477,7 +573,7 @@ function CatalogoUsuarios() {
             </Col>
             <Col md={6}>
               <Form.Group controlId="formRol">
-                <Form.Label>Rol*</Form.Label>
+                <Form.Label>Rol de acceso*</Form.Label>
                 <Select
                   value={
                     rol !== ""
@@ -595,7 +691,7 @@ function CatalogoUsuarios() {
                 </div>
               </Form.Group>
             </Col>
-            
+
             <Col md={3}>
               <Form.Group controlId="formEstado">
                 <div
@@ -627,7 +723,9 @@ function CatalogoUsuarios() {
             </Col>
             <Col md={3}>
               <Form.Group controlId="formAccion">
-                <Form.Label style={{ marginTop: "3%" }}>Acciones</Form.Label>
+                <Form.Label style={{ marginTop: "3%" }}>
+                  Permisos de acciones
+                </Form.Label>
                 <Select
                   value={
                     accion !== ""
@@ -674,8 +772,15 @@ function CatalogoUsuarios() {
                 onClick={() => agregaAccion()}
               >
                 <RiAddLine className="me-2" size={24} />
-                Agregar acción
+                Agregar permiso
               </Button>
+            </Col>
+            <Col md={12}>
+              <Grid
+                gridHeading={encabezadoTablaModal}
+                gridData={accionesUsuario}
+                selectableRows={false}
+              ></Grid>
             </Col>
           </Row>
         </Form>

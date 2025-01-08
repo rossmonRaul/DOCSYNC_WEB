@@ -136,11 +136,11 @@ function BuscarArchivos() {
     );
     if (existeEnAmbas) {
       setSeleccionaTodos(true);
-      if(!mostrarBusqueda && !documentoVer)
+      if (!mostrarBusqueda && !documentoVer)
         setTextoSeleccion("Deseleccionar todos");
     } else {
       setSeleccionaTodos(false);
-      if(!mostrarBusqueda && !documentoVer)
+      if (!mostrarBusqueda && !documentoVer)
         setTextoSeleccion("Seleccionar todos");
     }
   }, [listaArchivosTabla]);
@@ -151,11 +151,11 @@ function BuscarArchivos() {
     );
     if (existeEnAmbas) {
       setSeleccionaTodos(true);
-      if(!mostrarBusqueda && !documentoVer)
+      if (!mostrarBusqueda && !documentoVer)
         setTextoSeleccion("Deseleccionar todos");
     } else {
       setSeleccionaTodos(false);
-      if(!mostrarBusqueda && !documentoVer)
+      if (!mostrarBusqueda && !documentoVer)
         setTextoSeleccion("Seleccionar todos");
     }
   }, [listaArchivosTablaSeleccionados]);
@@ -453,211 +453,6 @@ function BuscarArchivos() {
     setShowSpinner(false);
   };
 
-  const SeleccionarTodosBusqueda = async () => {
-    // Convertir fechas vacías a null
-    const fechaInicio = fechaFiltroInicial === null ? null : fechaFiltroInicial;
-    const fechaFin = fechaFiltroFinal === null ? null : fechaFiltroFinal;
-
-    if (fechaInicio && fechaFin) {
-      // Validar que la fecha final no sea menor que la fecha inicial
-      if (new Date(fechaFin) < new Date(fechaInicio)) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "La fecha final no puede ser menor que la fecha inicial.",
-        });
-        return;
-      }
-    }
-
-    // Validar que se haya ingresado un parámetro búsqueda si eligió un criterio
-    if (paramBusqueda.trim() === "" && criterioBusquedaText !== "") {
-      setShowAlert(true);
-      setMensajeRespuesta({
-        indicador: 1,
-        mensaje: "Debe ingresar un parámetro de búsqueda válido",
-      });
-      return;
-    }
-
-    if (paramBusqueda.trim() !== "") {
-      // Validar que el parámetro de búsqueda cumpla con la expresión regular del tipo de validación
-      if (!regExp.test(paramBusqueda)) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje:
-            'El parámetro ingresado no cumple con el tipo de validación: "' +
-            tipoValidacion +
-            '"',
-        });
-        return;
-      }
-    }
-
-    // Validar cual método de API llamar
-    setShowSpinner(true);
-    if (
-      criterioBusquedaText.trim().toLowerCase() === "solicitud" ||
-      criterioBusquedaText.trim() == ""
-    ) {
-      const filtro = {
-        nomDocumento: nombreBuscar,
-        numSolicitud: paramBusqueda,
-        fechaFiltroInicial:
-          fechaFiltroInicial === null ? null : fechaFiltroInicial,
-        fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
-        tamannoPagina: tamPag === 0 ? 10 : tamPag,
-        numeroPagina: numPag === 0 ? 1 : numPag,
-        usuarioBusqueda: identificacionUsuario,
-      };
-
-      setFiltros(filtro);
-
-      const cantRegistros = await ObtenerCantDocumentos(filtro);
-
-      if (typeof cantRegistros === "number") {
-        if (cantRegistros > 0) {
-          setCantRegs(cantRegistros);
-
-          const resultadosObtenidos = await ObtenerDocumento(filtro);
-
-          if (resultadosObtenidos) {
-            setListaArchivosTabla(resultadosObtenidos);
-            setListaArchivosCards(resultadosObtenidos);
-
-            setMostrarBusqueda(false);
-          } else {
-            setShowAlert(true);
-            setMensajeRespuesta({
-              indicador: 1,
-              mensaje: "Ocurrió un error al contactar con el servicio",
-            });
-          }
-        } else {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 2,
-            mensaje: "No hay registros con los parámetros indicados",
-          });
-        }
-      } else {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Ocurrió un error al contactar con el servicio",
-        });
-      }
-    } else {
-      const valorExt =
-        criterioBusquedaText !== ""
-          ? criteriosBusqueda.filter(
-              (x: any) => x.criterioBusqueda === criterioBusquedaText
-            )[0].valorExterno
-          : null;
-
-      const filtro = {
-        valorExterno: valorExt,
-        valor: paramBusqueda,
-        usuarioBusqueda: identificacionUsuario,
-      };
-
-      var response = await BusquedaSolicitudIHTT(filtro);
-
-      if (response) {
-        if (response.length === 0) {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 2,
-            mensaje: "No hay registros con los parámetros indicados",
-          });
-        } else {
-          var solics = "";
-
-          response.forEach((element: any) => {
-            solics +=
-              solics === ""
-                ? element.codigoSolicitud
-                : "," + element.codigoSolicitud;
-          });
-
-          const filtroDocs = {
-            nomDocumento: nombreBuscar,
-            numSolicitud: solics,
-            fechaFiltroInicial:
-              fechaFiltroInicial === null ? null : fechaFiltroInicial,
-            fechaFiltroFinal:
-              fechaFiltroFinal === null ? null : fechaFiltroFinal,
-            tamannoPagina: tamPag === 0 ? 10 : tamPag,
-            numeroPagina: numPag === 0 ? 1 : numPag,
-            usuarioBusqueda: identificacionUsuario,
-          };
-
-          setFiltros(filtroDocs);
-
-          const cantRegistros = await ObtenerCantDocumentos(filtroDocs);
-
-          if (cantRegistros > 0) {
-            setCantRegs(cantRegistros);
-
-            const resultadosObtenidos = await ObtenerDocumento(filtroDocs);
-            setListaArchivosTabla(resultadosObtenidos);
-            setListaArchivosCards(resultadosObtenidos);
-
-            setMostrarBusqueda(false);
-          } else {
-            setShowAlert(true);
-            setMensajeRespuesta({
-              indicador: 2,
-              mensaje: "No hay registros con los parámetros indicados",
-            });
-          }
-        }
-      } else {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Ocurrió un error al contactar con el servicio",
-        });
-      }
-    }
-    setShowSpinner(false);
-  };
-
-  // const handleBuscarPorContenidoClick = async () => {
-  //   setPendiente(true);
-
-  //   if (contenido !== "") {
-  //     // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
-  //     //console.log('filtro del buscar antes de ejecutar el sp')
-  //     //console.log(filtro)
-  //     const resultadosObtenidos = await ObtenerDocumentosPorContenido({
-  //       archivosBuscar: listaArchivosTabla.map((a) => a.idDocumento + ""),
-  //       contenido,
-  //     });
-
-  //     if (resultadosObtenidos.indicador === 0) {
-  //       const coincidencias = resultadosObtenidos.datos;
-  //       const archivosContenido = listaArchivosTabla.filter((a) =>
-  //         coincidencias.some((s: any) => s.idDocumento === a.idDocumento + "")
-  //       );
-  //       console.log(coincidencias);
-  //       setListaArchivosTabla(archivosContenido);
-  //       setPendiente(false);
-  //       setListaArchivosTablaSeleccionados([]);
-  //       //setContenido("");
-
-  //       if (archivosContenido.length === 0) {
-  //         setShowAlert(true);
-  //         setMensajeRespuesta({
-  //           indicador: 2,
-  //           mensaje: "No se encontraron resultados.",
-  //         });
-  //       }
-  //     }
-  //   }
-  // };
-
   const base64ToUint8Array = (base64: string) => {
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -912,12 +707,13 @@ function BuscarArchivos() {
       setTextoCorreo("Enviar archivos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
-      if(textoSeleccion === ""){
-        setTextoSeleccion( seleccionaTodos ? "Deseleccionar todos" : "Seleccionar todos");
-      }
-      else{
+      if (textoSeleccion === "") {
+        setTextoSeleccion(
+          seleccionaTodos ? "Deseleccionar todos" : "Seleccionar todos"
+        );
+      } else {
         setTextoSeleccion(textoSeleccion);
-      }      
+      }
     } else {
       setTextoCorreo("");
       setTextoDescarga("");
@@ -929,7 +725,7 @@ function BuscarArchivos() {
   const handleVerArchivo = (archivo: Archivo) => {
     window.scrollTo({
       top: 180,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
     setDocumentoVer(archivo);
     setTextoCorreo("");
@@ -1029,12 +825,13 @@ function BuscarArchivos() {
       setTextoCorreo("Enviar archivos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
-      if(textoSeleccion === ""){
-        setTextoSeleccion( seleccionaTodos ? "Deseleccionar todos" : "Seleccionar todos");
-      }
-      else{
+      if (textoSeleccion === "") {
+        setTextoSeleccion(
+          seleccionaTodos ? "Deseleccionar todos" : "Seleccionar todos"
+        );
+      } else {
         setTextoSeleccion(textoSeleccion);
-      }      
+      }
     } else {
       setTextoCorreo("");
       setTextoDescarga("");
@@ -1794,7 +1591,7 @@ function BuscarArchivos() {
                                 ...listaArchivosTabla,
                               ]);
                               setSeleccionaTodos(true);
-                              if(!mostrarBusqueda && !documentoVer)
+                              if (!mostrarBusqueda && !documentoVer)
                                 setTextoSeleccion("Deseleccionar todos");
                             },
                             icono: <FaCheckSquare className="me-2" size={24} />,
@@ -1813,7 +1610,7 @@ function BuscarArchivos() {
                                 );
                               setListaArchivosTablaSeleccionados(resultado);
                               setSeleccionaTodos(false);
-                              if(!mostrarBusqueda && !documentoVer)
+                              if (!mostrarBusqueda && !documentoVer)
                                 setTextoSeleccion("Seleccionar todos");
                             },
                             icono: <FaCheckSquare className="me-2" size={24} />,
@@ -1826,6 +1623,7 @@ function BuscarArchivos() {
                             accion: handleDescargarArchivos,
                             icono: <FaDownload className="me-2" size={24} />,
                             texto: textoDescarga,
+                            permiso: "Descarga",
                           },
                           {
                             condicion:
@@ -1834,6 +1632,7 @@ function BuscarArchivos() {
                             accion: () => setShowObservacionesEliminar(true),
                             icono: <FaTrash className="me-2" size={24} />,
                             texto: textoObservaciones,
+                            permiso: "Eliminar",
                           },
                           {
                             condicion:
@@ -1846,6 +1645,7 @@ function BuscarArchivos() {
                             ),
 
                             texto: textoCorreo,
+                            permiso: "Envío correo",
                           },
                         ]}
                         gridHeading={encabezadoArchivo}
@@ -1875,7 +1675,7 @@ function BuscarArchivos() {
                                   ...listaArchivosTabla,
                                 ]);
                                 setSeleccionaTodos(true);
-                                if(!mostrarBusqueda && !documentoVer)
+                                if (!mostrarBusqueda && !documentoVer)
                                   setTextoSeleccion("Deseleccionar todos");
                               },
                               icono: (
@@ -1896,7 +1696,7 @@ function BuscarArchivos() {
                                   );
                                 setListaArchivosTablaSeleccionados(resultado);
                                 setSeleccionaTodos(false);
-                                if(!mostrarBusqueda && !documentoVer)
+                                if (!mostrarBusqueda && !documentoVer)
                                   setTextoSeleccion("Seleccionar todos");
                               },
                               icono: (
@@ -1910,6 +1710,7 @@ function BuscarArchivos() {
                               accion: handleDescargarArchivos,
                               icono: <FaDownload className="me-2" size={24} />,
                               texto: textoDescarga,
+                              permiso: "Descarga",
                             },
                             {
                               condicion:
@@ -1917,6 +1718,7 @@ function BuscarArchivos() {
                               accion: () => setShowObservacionesEliminar(true),
                               icono: <FaTrash className="me-2" size={24} />,
                               texto: textoObservaciones,
+                              permiso: "Eliminar",
                             },
                             {
                               condicion:
@@ -1926,6 +1728,7 @@ function BuscarArchivos() {
                                 <RiMailSendFill className="me-2" size={24} />
                               ),
                               texto: textoCorreo,
+                              permiso: "Envío correo",
                             },
                           ]}
                         >
@@ -2111,7 +1914,9 @@ function BuscarArchivos() {
               </div>
             </div>
             {documentoVer && (
-              <div style={{ flex: "1", overflow: "hidden", maxHeight:"100vh" }}>
+              <div
+                style={{ flex: "1", overflow: "hidden", maxHeight: "100vh" }}
+              >
                 <VisorArchivos
                   key={documentoVer}
                   documentoDescarga={documentoVer}

@@ -8,7 +8,6 @@ import { useSelector } from "react-redux";
 import { AppStore } from "../../redux/Store";
 import { Logout } from "../logout";
 import {
-  FaRegBell,
   FaBook,
   FaHistory,
   FaSignature,

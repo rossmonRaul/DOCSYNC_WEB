@@ -20,7 +20,7 @@ import { ObtenerUsuarios } from "../../../servicios/ServicioUsuario";
 import { useSpinner } from "../../../context/spinnerContext";
 import { exportToExcel } from "../../../utilities/exportReportToExcel";
 import { format } from "date-fns";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 interface UsuarioOption {
   value: string;
@@ -67,7 +67,6 @@ function Historial() {
   const location = useLocation();
   const [busquedaAutomaticaHistorial, setBusquedaAutomaticaHistorial] =
     useState(false);
-  const fecha = location.state?.fecha; // Obtenido del estado de navegación
   const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(
     null
   );

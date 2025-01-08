@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { FaRegBell } from "react-icons/fa";
 import "../../css/notificacions.css";
 import { useWorker } from "../../context/workerContext";
-import { obtenerFechaConHora } from "../../utils/utils";
 import { useNavigate } from "react-router-dom";
 import { IoEye } from "react-icons/io5";
 import {
@@ -99,7 +98,7 @@ const Notification: React.FC = () => {
           usuarioCreacion: userState.nombre,
         };
         crearNotificacion(notificacionObj)
-          .then((resp: any) => {
+          .then((_: any) => {
             obtenerNotificaciones();
             //notificacionObj.idNotificacion = resp;
             //setNotifications([...notifications, notificacionObj]);

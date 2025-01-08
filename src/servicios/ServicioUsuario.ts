@@ -47,6 +47,11 @@ export const ObtenerAcciones = async () => {
     return await ProcesarDatosApi('POST', url, null);
 }
 
+export const ObtenerAccionesUsuario = async (data:any) => {
+    const url = `${API_BASE_URL}/${controlador}/ObtenerAccionesUsuario`;
+    return await ProcesarDatosApi('POST', url, data);
+}
+
 
 export const AgregarUsuario = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/AgregarUsuario`;

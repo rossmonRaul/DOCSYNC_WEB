@@ -13,6 +13,7 @@ export const EmptyUserState: UserInfo = {
   idEmpresa: 0,
   idRol: Roles.SuperAdmin,
   estado: 0,
+  acciones:[]
 };
 
 // Clave para almacenar y recuperar la información del usuario en el almacenamiento de sesión.

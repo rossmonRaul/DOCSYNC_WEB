@@ -1,4 +1,4 @@
-import { FaHistory, FaSignature, FaUser, FaFlag, FaFileAlt, FaSitemap, FaUsers, FaUserCog } from 'react-icons/fa';
+import { FaHistory, FaSignature, FaUser, FaFileAlt, FaUsers, FaUserCog } from 'react-icons/fa';
 import { IconType } from 'react-icons/lib';
 
 interface MenuItem {
