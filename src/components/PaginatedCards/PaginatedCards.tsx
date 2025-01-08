@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
+import { AppStore } from "../../redux/Store";
+import { useSelector } from "react-redux";
 
 export const PaginatedCard: React.FC<any> = ({
   children,
@@ -16,6 +18,7 @@ export const PaginatedCard: React.FC<any> = ({
   const [page, setPage] = useState(1); // Página actual
   const [rowsPerPage, setRowsPerPage] = useState(10); // Filas por página
   const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const userState = useSelector((store: AppStore) => store.user);
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -76,7 +79,10 @@ export const PaginatedCard: React.FC<any> = ({
           {botonesAccion &&
             botonesAccion.map(
               (accionBotones: any, index: number) =>
-                accionBotones?.condicion && (
+                accionBotones?.condicion &&  (userState.acciones?.find(
+                  (x: any) => x.descripcion === accionBotones?.permiso
+                ) ||
+                  !accionBotones?.permiso) && (
                   <Button
                     key={index}
                     variant="primary"
