@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Spinner } from "react-bootstrap";
+import { Button, Spinner, OverlayTrigger, Tooltip } from "react-bootstrap";
 import DataTable from "react-data-table-component";
 import { FaPlus } from "react-icons/fa";
 import { useSelector } from "react-redux";
@@ -153,24 +153,43 @@ export const GridPags: React.FC<any> = ({
             {botonesAccion &&
               botonesAccion.map(
                 (accionBotones: any, index: number) =>
-                  accionBotones?.condicion &&
-                  (userState.acciones?.find(
-                    (x: any) => x.descripcion === accionBotones?.permiso
-                  ) ||
-                    !accionBotones?.permiso) && (
-                    <Button
-                      key={index}
-                      variant="primary"
-                      onClick={accionBotones?.accion}
-                      className={
-                        accionBotones?.clase
-                          ? accionBotones?.clase
-                          : "ms-3 btn-crear"
+                  accionBotones?.condicion && (
+                    <OverlayTrigger
+                      placement="top" // Posición del tooltip: puede ser "top", "bottom", "left", o "right"
+                      overlay={
+                        !userState.acciones?.find(
+                          (x: any) => x.descripcion === accionBotones?.permiso
+                        ) && accionBotones.permiso ? (
+                          <Tooltip id="button-tooltip">
+                            Permisos insuficientes
+                          </Tooltip>
+                        ) : (
+                          <></>
+                        )
                       }
                     >
-                      {accionBotones?.icono}
-                      {accionBotones?.texto}
-                    </Button>
+                      <span>
+                        <Button
+                          key={index}
+                          disabled={
+                            !userState.acciones?.find(
+                              (x: any) =>
+                                x.descripcion === accionBotones?.permiso
+                            ) && accionBotones?.permiso
+                          }
+                          variant="primary"
+                          onClick={accionBotones?.accion}
+                          className={
+                            accionBotones?.clase
+                              ? accionBotones?.clase
+                              : "ms-3 btn-crear"
+                          }
+                        >
+                          {accionBotones?.icono}
+                          {accionBotones?.texto}
+                        </Button>
+                      </span>
+                    </OverlayTrigger>
                   )
               )}
           </div>

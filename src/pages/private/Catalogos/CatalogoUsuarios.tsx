@@ -43,6 +43,7 @@ function CatalogoUsuarios() {
   const [acciones, setAcciones] = useState<any>([]);
   const [estado, setEstado] = useState<boolean>(false);
   const [verConfidencial, setVerConfidencial] = useState<boolean>(false);
+  const [todosLosPermisos, setTodosLosPermisos] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -136,6 +137,13 @@ function CatalogoUsuarios() {
       const response = await ObtenerAccionesUsuario({ identificacion });
       setAccionesUsuario(response);
       setShowSpinner(false);
+      if (response && response?.length > 0) {
+        if (response.length === acciones.length) {
+          setTodosLosPermisos(true);
+        } else {
+          setTodosLosPermisos(false);
+        }
+      }
     } catch (error) {
       console.error("Error al obtener personas:", error);
     }
@@ -154,6 +162,8 @@ function CatalogoUsuarios() {
     setVerConfidencial(usuario.verConfidencial);
     setNombrePersona(usuario.nombreCompleto);
     setRolTexto(usuario.rol);
+    setAccion("");
+    setAccionTexto("");
     await cargarAccionesUsuario(usuario.identificacion);
   };
 
@@ -169,6 +179,9 @@ function CatalogoUsuarios() {
     setPersona("");
     setNombrePersona("");
     setRolTexto("");
+    setTodosLosPermisos(false);
+    setAccion("");
+    setAccionTexto("");
     setAccionesUsuario([]);
   };
 
@@ -503,6 +516,15 @@ function CatalogoUsuarios() {
     },
   ];
 
+  const asignarTodosPermisos = (checked: any) => {
+    setTodosLosPermisos(checked);
+    if (!checked) {
+      setAccionesUsuario([]);
+    } else {
+      setAccionesUsuario([...acciones]);
+    }
+  };
+
   return (
     <>
       <h1 className="title">Catálogo de usuarios</h1>
@@ -722,66 +744,91 @@ function CatalogoUsuarios() {
               </Form.Group>
             </Col>
             <Col md={3}>
-              <Form.Group controlId="formAccion">
-                <Form.Label style={{ marginTop: "3%" }}>
-                  Permisos de acciones
-                </Form.Label>
-                <Select
-                  value={
-                    accion !== ""
-                      ? {
-                          value: accion,
-                          label: accionTexto ?? "",
-                        }
-                      : null
-                  }
-                  onChange={(e: any) => handleAccionChange(e)}
-                  className="GrupoFiltro"
-                  styles={{
-                    control: (provided) => ({
-                      ...provided,
-                      fontSize: "16px",
-                      padding: "2%",
-                      outline: "none",
-                      marginTop: "1%",
-                    }),
-                  }}
-                  placeholder="Seleccione"
-                  options={acciones.map((cat: any) => ({
-                    value: cat.idAccion,
-                    label: cat.descripcion,
-                  }))}
-                  noOptionsMessage={() => "Opción no encontrada"}
+              <Form.Label style={{ marginTop: "7%" }}>
+                Todos los permisos
+              </Form.Label>
+              <div className="w-100" style={{marginTop:"5px"}}>
+                <BootstrapSwitchButton
+                  checked={todosLosPermisos === true}
+                  onlabel="Sí"
+                  onstyle="success"
+                  offlabel="No"
+                  offstyle="danger"
+                  style="w-100 mx-3;"
+                  onChange={(checked) => asignarTodosPermisos(checked)}
                 />
-              </Form.Group>
+              </div>
             </Col>
-            <Col
-              md={3}
-              style={{
-                marginTop: "2.6%",
-                paddingRight: "0px",
-                marginRight: "0px",
-              }}
-            >
-              <Button
-                type="button"
-                className="mt-3 mb-0 btn-save"
-                style={{
-                  height: "47px",
-                }}
-                onClick={() => agregaAccion()}
-              >
-                <RiAddLine className="me-2" size={24} />
-                Agregar permiso
-              </Button>
-            </Col>
-            <Col md={12}>
-              <Grid
-                gridHeading={encabezadoTablaModal}
-                gridData={accionesUsuario}
-                selectableRows={false}
-              ></Grid>
-            </Col>
+            {!todosLosPermisos && (
+              <>
+                <Col md={6}>
+                  <Form.Group controlId="formAccion">
+                    <Form.Label style={{ marginTop: "3%" }}>
+                      Permisos de acciones
+                    </Form.Label>
+                    <Select
+                      value={
+                        accion !== ""
+                          ? {
+                              value: accion,
+                              label: accionTexto ?? "",
+                            }
+                          : null
+                      }
+                      onChange={(e: any) => handleAccionChange(e)}
+                      className="GrupoFiltro"
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          fontSize: "16px",
+                          padding: "2%",
+                          outline: "none",
+                          marginTop: "1%",
+                          height: "47px",
+                        }),
+                      }}
+                      placeholder="Seleccione"
+                      options={acciones.map((cat: any) => ({
+                        value: cat.idAccion,
+                        label: cat.descripcion,
+                      }))}
+                      noOptionsMessage={() => "Opción no encontrada"}
+                    />
+                  </Form.Group>
+                </Col>
+
+                <Col
+                  md={3}
+                  style={{
+                    marginTop: "2.6%",
+                    paddingRight: "0px",
+                    marginRight: "0px",
+                  }}
+                >
+                  <Button
+                    type="button"
+                    className="mt-4 mb-0 btn-save"
+                    style={{
+                      height: "47px",
+                    }}
+                    onClick={() => agregaAccion()}
+                  >
+                    <RiAddLine className="me-2" size={24} />
+                    Agregar permiso
+                  </Button>
+                </Col>
+              </>
+            )}
+
+            {!todosLosPermisos && (
+              <Col md={12}>
+                <Grid
+                  gridHeading={encabezadoTablaModal}
+                  gridData={accionesUsuario}
+                  selectableRows={false}
+                ></Grid>
+              </Col>
+            )}
           </Row>
         </Form>
       </CustomModal>

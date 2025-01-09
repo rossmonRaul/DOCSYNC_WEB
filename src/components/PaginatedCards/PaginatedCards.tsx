@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button } from "react-bootstrap";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
 import { AppStore } from "../../redux/Store";
 import { useSelector } from "react-redux";
@@ -24,6 +24,7 @@ export const PaginatedCard: React.FC<any> = ({
   };
 
   useEffect(() => {
+    console.log(userState.acciones)
     const loadData = async () => {
       const response = await fetchData(page, rowsPerPage);
     };
@@ -36,7 +37,6 @@ export const PaginatedCard: React.FC<any> = ({
   };
 
   function handleFilter(event: React.ChangeEvent<HTMLInputElement>) {
-    console.log(data);
     const newData = data.filter((row: any) => {
       return filterColumns.some((column: any) => {
         const value = row[column] || "";
@@ -79,23 +79,43 @@ export const PaginatedCard: React.FC<any> = ({
           {botonesAccion &&
             botonesAccion.map(
               (accionBotones: any, index: number) =>
-                accionBotones?.condicion &&  (userState.acciones?.find(
-                  (x: any) => x.descripcion === accionBotones?.permiso
-                ) ||
-                  !accionBotones?.permiso) && (
-                  <Button
-                    key={index}
-                    variant="primary"
-                    onClick={accionBotones?.accion}
-                    className={
-                      accionBotones?.clase
-                        ? accionBotones?.clase
-                        : "ms-3 btn-crear"
+                accionBotones?.condicion && (
+                  <OverlayTrigger
+                    placement="top" // Posición del tooltip: puede ser "top", "bottom", "left", o "right"
+                    overlay={
+                      !userState.acciones?.find(
+                        (x: any) => x.descripcion === accionBotones?.permiso
+                      ) && accionBotones.permiso ? (
+                        <Tooltip id="button-tooltip">
+                          Permisos insuficientes
+                        </Tooltip>
+                      ) : (
+                        <></>
+                      )
                     }
                   >
-                    {accionBotones?.icono}
-                    {accionBotones?.texto}
-                  </Button>
+                    <span>
+                      <Button
+                        key={index}
+                        variant="primary"
+                        disabled={
+                          !userState.acciones?.find(
+                            (x: any) =>
+                              x.descripcion === accionBotones?.permiso
+                          ) && accionBotones?.permiso
+                        }
+                        onClick={accionBotones?.accion}
+                        className={
+                          accionBotones?.clase
+                            ? accionBotones?.clase
+                            : "ms-3 btn-crear"
+                        }
+                      >
+                        {accionBotones?.icono}
+                        {accionBotones?.texto}
+                      </Button>
+                    </span>
+                  </OverlayTrigger>
                 )
             )}
         </div>
@@ -117,7 +137,7 @@ export const PaginatedCard: React.FC<any> = ({
           flexWrap: "wrap",
           gap: "16px",
           marginLeft: 25,
-          marginTop:"30px"
+          marginTop: "30px",
         }}
       >
         {children}

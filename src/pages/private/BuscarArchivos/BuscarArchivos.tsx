@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import "../../../css/general.css";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Form,
+  Row,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
@@ -42,6 +49,8 @@ import { Grid } from "../../../components/table/tabla";
 import { useConfirm } from "../../../context/confirmContext";
 import { getDocIcon, recortarTexto } from "../../../utils/utils";
 import { PaginatedCard } from "../../../components/PaginatedCards/PaginatedCards";
+import { useSelector } from "react-redux";
+import { AppStore } from "../../../redux/Store";
 
 interface Archivo {
   idDocumento: Number;
@@ -90,6 +99,7 @@ function BuscarArchivos() {
   const [archivoEnviar, setArchivoEnviar] = useState("");
   const [esEnvioMasivo, setEsEnvioMasivo] = useState(false);
   const nombreArchivoMasivo = "Documentos.zip";
+  const userState = useSelector((store: AppStore) => store.user);
   const [textoObservaciones, setTextoObservaciones] = useState(
     "Eliminar seleccionados"
   );
@@ -250,20 +260,60 @@ function BuscarArchivos() {
           >
             <FaClipboardList />
           </Button>
-          <Button
-            onClick={() => handleVerArchivo(row)}
-            size="sm"
-            className="bg-secondary me-2"
+          <OverlayTrigger
+            placement="top" // Posición del tooltip: puede ser "top", "bottom", "left", o "right"
+            overlay={
+              !userState.acciones?.find(
+                (x: any) => x.descripcion === "Visualizar"
+              ) ? (
+                <Tooltip id="button-tooltip">Permisos insuficientes</Tooltip>
+              ) : (
+                <></>
+              )
+            }
           >
-            <FaEye />
-          </Button>
-          <Button
-            onClick={() => handleModalCorreo(row)}
-            size="sm"
-            className="bg-secondary me-2"
+            <span>
+              <Button
+                disabled={
+                  !userState.acciones?.find(
+                    (x: any) => x.descripcion === "Visualizar"
+                  )
+                }
+                onClick={() => handleVerArchivo(row)}
+                size="sm"
+                className="bg-secondary me-2"
+              >
+                <FaEye />
+              </Button>
+            </span>
+          </OverlayTrigger>
+          <OverlayTrigger
+            placement="top" // Posición del tooltip: puede ser "top", "bottom", "left", o "right"
+            overlay={
+              !userState.acciones?.find(
+                (x: any) => x.descripcion === "Envío correo"
+              ) ? (
+                <Tooltip id="button-tooltip">Permisos insuficientes</Tooltip>
+              ) : (
+                <></>
+              )
+            }
           >
-            <FaEnvelope />
-          </Button>
+            <span>
+              <Button
+                disabled={
+                  !userState.acciones?.find(
+                    (x: any) => x.descripcion === "Envío correo"
+                  )
+                }
+                onClick={() => handleModalCorreo(row)}
+                size="sm"
+                className="bg-secondary me-2"
+              >
+                <FaEnvelope />
+              </Button>
+            </span>
+          </OverlayTrigger>
         </div>
       ),
       head: "Seleccionar",
@@ -1873,21 +1923,69 @@ function BuscarArchivos() {
                                     <FaClipboardList />
                                   </Button>
                                   {/* Botón 2 */}
-                                  <Button
-                                    onClick={() => handleVerArchivo(doc)}
-                                    size="sm"
-                                    style={{ background: "#9E0000" }}
+                                  <OverlayTrigger
+                                    placement="top" // Posición del tooltip: puede ser "top", "bottom", "left", o "right"
+                                    overlay={
+                                      !userState.acciones?.find(
+                                        (x: any) =>
+                                          x.descripcion === "Visualizar"
+                                      ) ? (
+                                        <Tooltip id="button-tooltip">
+                                          Permisos insuficientes
+                                        </Tooltip>
+                                      ) : (
+                                        <></>
+                                      )
+                                    }
                                   >
-                                    <FaEye />
-                                  </Button>
+                                    <span>
+                                      <Button
+                                        disabled={
+                                          !userState.acciones?.find(
+                                            (x: any) =>
+                                              x.descripcion === "Visualizar"
+                                          )
+                                        }
+                                        onClick={() => handleVerArchivo(doc)}
+                                        size="sm"
+                                        style={{ background: "#9E0000" }}
+                                      >
+                                        <FaEye />
+                                      </Button>
+                                    </span>
+                                  </OverlayTrigger>
                                   {/* Botón 3 */}
-                                  <Button
-                                    onClick={() => handleModalCorreo(doc)}
-                                    size="sm"
-                                    style={{ background: "#9E0000" }}
+                                  <OverlayTrigger
+                                    placement="top" // Posición del tooltip: puede ser "top", "bottom", "left", o "right"
+                                    overlay={
+                                      !userState.acciones?.find(
+                                        (x: any) =>
+                                          x.descripcion === "Envío correo"
+                                      ) ? (
+                                        <Tooltip id="button-tooltip">
+                                          Permisos insuficientes
+                                        </Tooltip>
+                                      ) : (
+                                        <></>
+                                      )
+                                    }
                                   >
-                                    <FaEnvelope />
-                                  </Button>
+                                    <span>
+                                      <Button
+                                        disabled={
+                                          !userState.acciones?.find(
+                                            (x: any) =>
+                                              x.descripcion === "Envío correo"
+                                          )
+                                        }
+                                        onClick={() => handleModalCorreo(doc)}
+                                        size="sm"
+                                        style={{ background: "#9E0000" }}
+                                      >
+                                        <FaEnvelope />
+                                      </Button>
+                                    </span>
+                                  </OverlayTrigger>
                                 </div>
                               </div>
                             );
