@@ -95,7 +95,7 @@ function CargarArchivos() {
     }
   };
   useEffect(() => {
-    setTaskTitle("Carga de archivos");
+    setTaskTitle("Carga de documentos");
     cargarTiposDocumentos();
   }, []);
 
@@ -330,7 +330,7 @@ function CargarArchivos() {
           if (element.size > FILE_MAX_SIZE) {
             setMensajeRespuesta({
               indicador: 3,
-              mensaje: `Se han omitido los archivos que exceden los ${FILE_MAX_SIZE_MB}MB.`,
+              mensaje: `Se han omitido los documentos que exceden los ${FILE_MAX_SIZE_MB}MB.`,
             });
             setShowAlert(true);
           } else {
@@ -358,7 +358,7 @@ function CargarArchivos() {
               setMensajeRespuesta({
                 indicador: 3,
                 mensaje:
-                  "Se han omitido los archivos duplicados o con el mismo nombre.",
+                  "Se han omitido los documentos duplicados o con el mismo nombre.",
               });
               setShowAlert(true);
             }
@@ -699,7 +699,7 @@ function CargarArchivos() {
                   <>
                     <div className="mb-6 mt-4 d-flex justify-content-end align-items-right">
                       <h4 className="mt-4">
-                        Archivos seleccionados:{" "}
+                        Documentos seleccionados:{" "}
                         {listaArchivosTablaSeleccionados.length}
                       </h4>
                     </div>

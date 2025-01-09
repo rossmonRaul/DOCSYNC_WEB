@@ -104,7 +104,7 @@ function BuscarArchivos() {
     "Eliminar seleccionados"
   );
   const [textoDescarga, setTextoDescarga] = useState("Descargar seleccionados");
-  const [textoCorreo, setTextoCorreo] = useState("Enviar archivos por correo");
+  const [textoCorreo, setTextoCorreo] = useState("Enviar documentos por correo");
   const [textoSeleccion, setTextoSeleccion] = useState("Seleccionar todos");
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
@@ -754,7 +754,7 @@ function BuscarArchivos() {
     setDocumentoVer(undefined);
 
     if (!mostrarBusqueda) {
-      setTextoCorreo("Enviar archivos por correo");
+      setTextoCorreo("Enviar documentos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
       if (textoSeleccion === "") {
@@ -872,7 +872,7 @@ function BuscarArchivos() {
     handleVisor();
 
     if (mostrarBusqueda) {
-      setTextoCorreo("Enviar archivos por correo");
+      setTextoCorreo("Enviar documentos por correo");
       setTextoDescarga("Descargar seleccionados");
       setTextoObservaciones("Eliminar seleccionados");
       if (textoSeleccion === "") {
@@ -1003,13 +1003,13 @@ function BuscarArchivos() {
             setMensajeRespuesta({
               indicador: 1,
               mensaje:
-                "Ocurrió un error al obtener los archivos para enviar por correo",
+                "Ocurrió un error al obtener los documentos para enviar por correo",
             });
           } else if (responseArchivos.datos.length < 1) {
             setShowAlert(true);
             setMensajeRespuesta({
               indicador: 1,
-              mensaje: "No encontraron los archivos seleccionados",
+              mensaje: "No encontraron los documentos seleccionados",
             });
           } else {
             if (mensaje.trim() === "") {
