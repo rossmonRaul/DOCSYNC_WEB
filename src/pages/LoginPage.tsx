@@ -301,7 +301,7 @@ const Login: React.FC = () => {
           localStorage.setItem("idRol", response.usuario.idRol);
           localStorage.setItem("verConfidencial", response.usuario.verConfidencial);
 
-          navigate(`/${PrivateRoutes.BUSCARARCHIVOS}`, { replace: true });
+          navigate(`/${PrivateRoutes.BUSCARDOCUMENTOS}`, { replace: true });
 
           setIsLoggedIn(true);
         }

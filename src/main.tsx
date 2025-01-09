@@ -53,12 +53,12 @@ const router = createBrowserRouter(
 
         {/* <Route element={<RolGuard rol={Roles.SuperAdmin} />}> */}
         <Route
-          path={PrivateRoutes.CARGARARCHIVOS}
+          path={PrivateRoutes.CARGARDOCUMENTOS}
           element={<CargarArchivos />}
         />
         <Route path={PrivateRoutes.CARGASCANNER} element={<CargaScanner />} />
         <Route
-          path={PrivateRoutes.BUSCARARCHIVOS}
+          path={PrivateRoutes.BUSCARDOCUMENTOS}
           element={<BuscarArchivos />}
         />
         <Route path={PrivateRoutes.HISTORIALARCHIVOS} element={<Historial />} />

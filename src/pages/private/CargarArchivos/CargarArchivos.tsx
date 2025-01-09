@@ -623,7 +623,7 @@ function CargarArchivos() {
           </Row>
         </Form>
       </CustomModal>
-      <h1 className="title">Cargar archivos</h1>
+      <h1 className="title">Cargar documentos</h1>
       <div style={{ display: "flex", maxHeight: "100vh", overflow: "auto" }}>
         {/* Primera mitad de la pantalla */}
         <div
@@ -680,7 +680,7 @@ function CargarArchivos() {
                     {tipoDocumentoSeleccionado?.idTipoDocumento !== "" && (
                       <Form.Group>
                         <Form.Label>
-                          Selecciona un archivo (peso máximo {FILE_MAX_SIZE_MB}{" "}
+                          Selecciona un documento (peso máximo {FILE_MAX_SIZE_MB}{" "}
                           MB)
                         </Form.Label>
                         <Form.Control

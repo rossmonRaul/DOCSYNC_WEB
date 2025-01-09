@@ -6,9 +6,9 @@ export const PublicRoutes = {
 export const PrivateRoutes = {
     PRIVATE: 'private',
     DASHBOARD: 'dashboard',
-    CARGARARCHIVOS: 'cargar-archivos',
+    CARGARDOCUMENTOS: 'cargar-documentos',
     CARGASCANNER : 'cargar-scanner',
-    BUSCARARCHIVOS: 'buscar-archivos',
+    BUSCARDOCUMENTOS: 'buscar-documentos',
     HISTORIALARCHIVOS: 'historial',
     CATALOGOPERSONAS: 'catalogo-personas',
     CATALOGOESTADOS: 'catalogo-estados',

@@ -1381,7 +1381,7 @@ function BuscarArchivos() {
           <Col md={10} className="d-flex justify-content-start">
             <div style={{ display: "flex", alignItems: "center" }}>
               <AiOutlineFileSearch size={34} style={{ marginTop: "10px" }} />
-              <h1 className="title">Buscar archivos</h1>
+              <h1 className="title">Buscar documentos</h1>
             </div>
           </Col>
           <Col md={2} className="d-flex justify-content-start">
