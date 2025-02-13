@@ -48,11 +48,8 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
     setWorker(newWorker);
 
     newWorker.onmessage = (e) => {
-      if (e.data.type === "Error" || e.data.type === "ErrorConexionServidor") {
+      if (e.data.type === "Error") {
         setError(e.data.result);
-        if (e.data.type === "ErrorConexionServidor") {
-          //que se salga de la sesión
-        }
       } else {
         setError(null);
         setResult(e.data.result);
