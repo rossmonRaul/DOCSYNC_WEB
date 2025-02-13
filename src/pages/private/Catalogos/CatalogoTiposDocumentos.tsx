@@ -32,6 +32,7 @@ interface TipoDocumento {
   idCriterioBusqueda?: any;
   criterioBusqueda: string;
   contieneNumSoli: boolean;
+  contieneNumSoliNombre: boolean;
   codigo: string;
   descripcion: string;
   usuarioCreacion: string;
@@ -67,6 +68,7 @@ function CatalogoTiposDocumentos() {
     criterioBusqueda: "",
     idFormatoDocumento: undefined,
     contieneNumSoli: false,
+    contieneNumSoliNombre: false,
     descripcion: "",
     usuarioCreacion: "",
     usuarioModificacion: "",
@@ -100,6 +102,7 @@ function CatalogoTiposDocumentos() {
     setShowSpinner(true);
     try {
       const tiposDocumentos = await ObtenerTiposDocumentos();
+      console.log(tiposDocumentos);
       setListaTiposDocumentos(tiposDocumentos);
     } catch (error) {
       console.error("Error al obtener los tipos de documentos:", error);
@@ -171,7 +174,7 @@ function CatalogoTiposDocumentos() {
 
   // Función para abrir el modal y editar un tipo de documento
   const editarTipoDocumento = (tipoDocumento: any) => {
-    const tipoAux = {...tipoDocumento};
+    const tipoAux = { ...tipoDocumento };
     if (!["eeb", "sdl", "eebosdl"].includes(tipoAux.fraseBusqFin)) {
       setPalabraClaveFin(tipoAux.fraseBusqFin);
       tipoAux.fraseBusqFin = "otro";
@@ -199,6 +202,7 @@ function CatalogoTiposDocumentos() {
       criterioBusqueda: "",
       idFormatoDocumento: -1,
       contieneNumSoli: false,
+      contieneNumSoliNombre: false,
       descripcion: "",
       usuarioCreacion: "",
       usuarioModificacion: "",
@@ -757,74 +761,114 @@ function CatalogoTiposDocumentos() {
                 </div>
               </Form.Group>
             </Col>
-            {nombreFormato === "Imagen" && (
-              <Col md={6}>
-                <Form.Group controlId="formEstado">
-                  <div
-                    style={{
-                      display: "flex",
-                      alignContent: "start",
-                      alignItems: "start",
-                      margin:10,
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Form.Label>Tipo de documento activo</Form.Label>
-                    <div className="w-100">
-                      <BootstrapSwitchButton
-                        checked={nuevoTipoDocumento.estado === true}
-                        onlabel="Sí"
-                        onstyle="success"
-                        offlabel="No"
-                        offstyle="danger"
-                        style="w-100 mx-3;"
-                        onChange={(checked) =>
-                          (nuevoTipoDocumento.estado = checked)
-                        }
-                      />
-                    </div>
+
+            <Col md={6}>
+              <Form.Group controlId="formEstado">
+                <div
+                  style={{
+                    display: "flex",
+                    alignContent: "start",
+                    alignItems: "start",
+                    margin: 10,
+                    flexDirection: "column",
+                  }}
+                >
+                  <Form.Label>Tipo de documento activo</Form.Label>
+                  <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={nuevoTipoDocumento.estado === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;"
+                      onChange={(checked) =>
+                        (nuevoTipoDocumento.estado = checked)
+                      }
+                    />
                   </div>
-                </Form.Group>
-              </Col>
-            )}
+                </div>
+              </Form.Group>
+            </Col>
+
             {nombreFormato !== "Imagen" && (
-              <Col md={6}>
-                <Form.Group controlId="formNumSoli">
-                  <div
-                    style={{
-                      display: "flex",
-                      alignContent: "start",
-                      alignItems: "start",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Form.Label style={{ marginTop: "3%" }}>
-                      ¿Contiene número de solicitud?
-                    </Form.Label>
-                    <div className="w-100">
-                      <BootstrapSwitchButton
-                        checked={nuevoTipoDocumento.contieneNumSoli === true}
-                        onlabel="Sí"
-                        onstyle="success"
-                        offlabel="No"
-                        offstyle="danger"
-                        style="w-100 mx-3;"
-                        onChange={(checked) => {
-                          setNuevoTipoDocumento({
-                            ...nuevoTipoDocumento,
-                            contieneNumSoli: checked,
-                          });
-                          setCriterioBusquedaId(null);
-                          setCriterioBusquedaText("");
-                        }}
-                      />
+              <>
+                <Col md={6}>
+                  <Form.Group controlId="formNumSoli">
+                    <div
+                      style={{
+                        display: "flex",
+                        alignContent: "start",
+                        alignItems: "start",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <Form.Label style={{ marginTop: "3%" }}>
+                        ¿Contiene número de solicitud en el nombre?
+                      </Form.Label>
+                      <div className="w-100">
+                        <BootstrapSwitchButton
+                          checked={
+                            nuevoTipoDocumento.contieneNumSoliNombre === true
+                          }
+                          onlabel="Sí"
+                          onstyle="success"
+                          offlabel="No"
+                          offstyle="danger"
+                          style="w-100 mx-3;"
+                          onChange={(checked) => {
+                            setNuevoTipoDocumento({
+                              ...nuevoTipoDocumento,
+                              contieneNumSoliNombre: checked,
+                            });
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </Form.Group>
-              </Col>
+                  </Form.Group>
+                </Col>
+                {!nuevoTipoDocumento.contieneNumSoliNombre && (
+                  <Col md={6}>
+                    <Form.Group controlId="formNumSoli">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignContent: "start",
+                          alignItems: "start",
+                          flexDirection: "column",
+                        }}
+                      >
+                        <Form.Label style={{ marginTop: "3%" }}>
+                          ¿Contiene número de solicitud en documento?
+                        </Form.Label>
+                        <div className="w-100">
+                          <BootstrapSwitchButton
+                            checked={
+                              nuevoTipoDocumento.contieneNumSoli === true
+                            }
+                            onlabel="Sí"
+                            onstyle="success"
+                            offlabel="No"
+                            offstyle="danger"
+                            style="w-100 mx-3;"
+                            onChange={(checked) => {
+                              setNuevoTipoDocumento({
+                                ...nuevoTipoDocumento,
+                                contieneNumSoli: checked,
+                              });
+                              setCriterioBusquedaId(null);
+                              setCriterioBusquedaText("");
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </Form.Group>
+                  </Col>
+                )}
+              </>
             )}
           </Row>
-          {nombreFormato !== "Imagen" && (
+          {nombreFormato !== "Imagen" && !nuevoTipoDocumento.contieneNumSoliNombre && (
             <Row style={{ marginTop: "3%" }}>
               <Col md={6}>
                 <Form.Group controlId="formBusInicio">
@@ -866,22 +910,23 @@ function CatalogoTiposDocumentos() {
             </Row>
           )}
           <Row style={{ marginTop: "3%" }}>
-            {(nuevoTipoDocumento.fraseBusqFin === "otro" && nombreFormato !=="Imagen") && (
-              <Col md={6}>
-                <Form.Group controlId="formBusInicio">
-                  <Form.Label>Palabra o símbolo clave fin</Form.Label>
-                  <Form.Control
-                    name="fraseInicio"
-                    value={palabraClaveFin}
-                    onChange={(e) => setPalabraClaveFin(e.target.value)}
-                    required
-                    min={1}
-                  />
-                </Form.Group>
-              </Col>
-            )}
+            {nuevoTipoDocumento.fraseBusqFin === "otro" &&
+              nombreFormato !== "Imagen" && !nuevoTipoDocumento.contieneNumSoliNombre && (
+                <Col md={6}>
+                  <Form.Group controlId="formBusInicio">
+                    <Form.Label>Palabra o símbolo clave fin</Form.Label>
+                    <Form.Control
+                      name="fraseInicio"
+                      value={palabraClaveFin}
+                      onChange={(e) => setPalabraClaveFin(e.target.value)}
+                      required
+                      min={1}
+                    />
+                  </Form.Group>
+                </Col>
+              )}
             {nombreFormato !== "Imagen" &&
-              nuevoTipoDocumento.contieneNumSoli === false && (
+              nuevoTipoDocumento.contieneNumSoli === false && !nuevoTipoDocumento.contieneNumSoliNombre && (
                 <Col md={6}>
                   <Form.Group>
                     <Form.Label>Tipo de campo de búsqueda</Form.Label>
@@ -918,35 +963,6 @@ function CatalogoTiposDocumentos() {
                   </Form.Group>
                 </Col>
               )}
-            {nombreFormato !== "Imagen" && (
-              <Col md={6}>
-                <Form.Group controlId="formEstado">
-                  <div
-                    style={{
-                      display: "flex",
-                      alignContent: "start",
-                      alignItems: "start",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Form.Label>Tipo de documento activo</Form.Label>
-                    <div className="w-100">
-                      <BootstrapSwitchButton
-                        checked={nuevoTipoDocumento.estado === true}
-                        onlabel="Sí"
-                        onstyle="success"
-                        offlabel="No"
-                        offstyle="danger"
-                        style="w-100 mx-3;"
-                        onChange={(checked) =>
-                          (nuevoTipoDocumento.estado = checked)
-                        }
-                      />
-                    </div>
-                  </div>
-                </Form.Group>
-              </Col>
-            )}
           </Row>
         </Form>
       </CustomModal>

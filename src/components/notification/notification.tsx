@@ -64,7 +64,7 @@ const Notification: React.FC = () => {
 
   const obtenerNotificaciones = async () => {
     const response = await ObtenerNotificaciones({
-      usuarioCreacion: userState.nombre,
+      usuarioCreacion: userState.identificacion,
     });
     if (!response) {
       setShowAlert(true);
@@ -95,7 +95,7 @@ const Notification: React.FC = () => {
         const notificacionObj = {
           idNotificacion: -1,
           descripcion: result || error,
-          usuarioCreacion: userState.nombre,
+          usuarioCreacion: userState.identificacion,
         };
         crearNotificacion(notificacionObj)
           .then((_: any) => {
