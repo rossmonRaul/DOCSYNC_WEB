@@ -13,8 +13,6 @@ import { cargarDocumentosWorker } from "./cargaDocumentosWorker";
 import { recortarTexto } from "../../../utils/utils";
 import { ObtenerTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
 import { useSpinner } from "../../../context/spinnerContext";
-import { useSelector } from "react-redux";
-import { AppStore } from "../../../redux/Store";
 import { ExtraerContenido } from "../../../servicios/ServicioDocumentos";
 
 interface TipoDocumento {
@@ -26,6 +24,7 @@ interface TipoDocumento {
   formatoDocumento: string;
   criterioBusqueda: string;
   contieneNumSoli: Boolean;
+  contieneNumSoliNombre: Boolean;
 }
 
 interface Archivo {
@@ -46,13 +45,11 @@ function CargarArchivos() {
   const [files, setFiles] = useState<File[]>([]);
   const [idArchivoGenerado, setIdArchivoGenerado] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [observacion, setObservacion] = useState("");
   const [showModalObservaciones, setShowModalObservaciones] = useState(false);
   const [documentoVer, setDocumentoVer] = useState<Archivo>();
   const [mensajeRespuesta, setMensajeRespuesta] = useState<any>({});
   const [listaArchivosTabla, setListaArchivosTabla] = useState<Archivo[]>([]);
-  const [documentoSeleccionado, setDocumentoSeleccionado] = useState<Archivo>();
   const [tipoDocumentoSeleccionado, setTipoDocumentoSeleccionado] =
     useState<TipoDocumento>({
       idTipoDocumento: "",
@@ -62,18 +59,16 @@ function CargarArchivos() {
       fraseBusqFin: "",
       formatoDocumento: "",
       contieneNumSoli: true,
+      contieneNumSoliNombre: false,
       criterioBusqueda: "",
     });
   const [tipoDocumento, setTipoDocumento] = useState<any>();
-  const [documentoEditado, setDocumentoEditado] = useState(false);
-  const [primeraCarga, setPrimeraCarga] = useState(false);
   const { startWorker, setTaskTitle, loading, error, result } = useWorker();
   const identificacionUsuario = localStorage.getItem("identificacionUsuario");
   const API_BASE_URL_BD = import.meta.env.VITE_API_BASE_URL;
   const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
   const FILE_MAX_SIZE = FILE_MAX_SIZE_MB * (1024 * 1024);
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
-  const userState = useSelector((store: AppStore) => store.user);
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
@@ -266,6 +261,7 @@ function CargarArchivos() {
                 criterioBusqueda: tipoSeleccionado.criterioBusqueda,
                 formatoDocumento: tipoSeleccionado.formatoDocumento,
                 contieneNumSoli: tipoSeleccionado.contieneNumSoli,
+                contieneNumSoliNombre: tipoSeleccionado.contieneNumSoliNombre,
               },
             }
           : row
@@ -303,16 +299,6 @@ function CargarArchivos() {
     }
   };
 
-  const handleInputChange = (e: any) => {
-    if (documentoSeleccionado) {
-      setDocumentoSeleccionado({
-        ...documentoSeleccionado,
-        [e.target.name]:
-          e.target.type !== "switch" ? e.target.value : e.target.checked + "",
-      });
-    }
-  };
-
   // Maneja el cambio de archivos
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -339,7 +325,7 @@ function CargarArchivos() {
                 id: consecutivo++,
                 archivo: element,
                 observacion: "",
-                numSolicitud: "",
+                numSolicitud: element.name,
                 tamanioArchivo: element.size,
                 tipoDocumento: tipoDocumentoSeleccionado,
                 nombreGuardar:
@@ -364,7 +350,10 @@ function CargarArchivos() {
             }
           }
         });
-        if (tipoDocumentoSeleccionado.formatoDocumento !== "Imagen") {
+        if (
+          tipoDocumentoSeleccionado.formatoDocumento !== "Imagen" &&
+          !tipoDocumentoSeleccionado.contieneNumSoliNombre
+        ) {
           setShowSpinner(true);
           const batchSize = 50; // Número de documentos por solicitud
           const totalBatches = Math.ceil(archivosAux.length / batchSize);
@@ -440,8 +429,18 @@ function CargarArchivos() {
             setFiles([]);
           }
           setShowSpinner(false);
-        }else{
+        } else {
           setListaArchivosTabla([...listaArchivosTabla, ...archivosAux]);
+          setIdArchivoGenerado(consecutivo);
+          setFiles([]);
+        }
+        if(tipoDocumentoSeleccionado.contieneNumSoliNombre && !tipoDocumentoSeleccionado.esImagen){
+          archivosAux.forEach((a) => {
+            const nombreArchivo = a.nomDocumento;
+            const ultimoPunto = nombreArchivo.lastIndexOf('.');
+            const nombreSinExtension = ultimoPunto !== -1 ? nombreArchivo.substring(0, ultimoPunto) : nombreArchivo;
+            a.numSolicitud = nombreSinExtension;
+          });
         }
       }
     }
@@ -456,34 +455,6 @@ function CargarArchivos() {
         indicador: 1,
         mensaje: "Complete los campos del documento correctamente.",
       });
-    }
-  };
-
-  const guardarInformacioArchivo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setShowModal(false);
-
-    setListaArchivosTabla(
-      listaArchivosTabla.map((row) =>
-        row.id === documentoSeleccionado?.id
-          ? { ...row, ...documentoSeleccionado }
-          : row
-      )
-    );
-    setListaArchivosTablaSeleccionados(
-      listaArchivosTablaSeleccionados.map((row) =>
-        row.id === documentoSeleccionado?.id
-          ? { ...row, ...documentoSeleccionado }
-          : row
-      )
-    );
-
-    if (!documentoEditado) {
-      if (documentoSeleccionado) {
-        if (validarDatosCompletosArchivo(documentoSeleccionado)) {
-          seleccionarDocumento(documentoSeleccionado);
-        }
-      }
     }
   };
 
@@ -553,18 +524,15 @@ function CargarArchivos() {
     }
   };
 
-  // Función para manejar el cierre del modal
-  const handleModal = () => {
-    setShowModal(!showModal);
-  };
-
   const validarDatosCompletosArchivo = (archivo: Archivo): boolean => {
     //return true;
     const valores = Object.entries(archivo);
     for (const [key, valor] of valores) {
       if (
         key !== "observacion" &&
-        (valor === undefined ||valor === null || valor.toString().trim() === "")
+        (valor === undefined ||
+          valor === null ||
+          valor.toString().trim() === "")
       ) {
         return false;
       }
@@ -586,11 +554,6 @@ function CargarArchivos() {
     return true;
   };
 
-  const abrirInformacionArchivo = (row: Archivo, editar = false) => {
-    setDocumentoSeleccionado(row);
-    setShowModal(true);
-    setDocumentoEditado(editar);
-  };
   return (
     <>
       <CustomModal
@@ -663,6 +626,8 @@ function CargarArchivos() {
                             formatoDocumento: tipoSeleccionado.formatoDocumento,
                             criterioBusqueda: tipoSeleccionado.criterioBusqueda,
                             contieneNumSoli: tipoSeleccionado.contieneNumSoli,
+                            contieneNumSoliNombre:
+                              tipoSeleccionado.contieneNumSoliNombre,
                           });
                         }}
                       >
@@ -680,8 +645,8 @@ function CargarArchivos() {
                     {tipoDocumentoSeleccionado?.idTipoDocumento !== "" && (
                       <Form.Group>
                         <Form.Label>
-                          Selecciona un documento (peso máximo {FILE_MAX_SIZE_MB}{" "}
-                          MB)
+                          Selecciona un documento (peso máximo{" "}
+                          {FILE_MAX_SIZE_MB} MB)
                         </Form.Label>
                         <Form.Control
                           multiple

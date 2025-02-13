@@ -261,7 +261,7 @@ function BuscarArchivos() {
             <FaClipboardList />
           </Button>
           <OverlayTrigger
-            placement="top" // Posición del tooltip: puede ser "top", "bottom", "left", o "right"
+            placement="top"
             overlay={
               !userState.acciones?.find(
                 (x: any) => x.descripcion === "Visualizar"
