@@ -48,11 +48,15 @@ export const WorkerProvider: React.FC<{ children: React.ReactNode }> = ({
     setWorker(newWorker);
 
     newWorker.onmessage = (e) => {
-      if (e.data.type === "Error") {
-        setError(e.data.result);
+      if (e.data.type === "NoHayCone") {
+        //boteme la sesion
       } else {
-        setError(null);
-        setResult(e.data.result);
+        if (e.data.type === "Error") {
+          setError(e.data.result);
+        } else {
+          setError(null);
+          setResult(e.data.result);
+        }
       }
       setLoading(false);
 
