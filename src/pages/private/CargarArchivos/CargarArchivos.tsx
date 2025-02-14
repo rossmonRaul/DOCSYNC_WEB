@@ -76,8 +76,6 @@ function CargarArchivos() {
   const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
   const FILE_MAX_SIZE = FILE_MAX_SIZE_MB * (1024 * 1024);
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
-  const serverUrl = API_BASE_URL_CARGA.match(/(?:https?:\/\/)?(\d+\.\d+\.\d+\.\d+)/)[1];
-  const puertoServer =  API_BASE_URL_CARGA.match(/:(\d+)\//)[1];
   const navigate = useNavigate(); // Hook de react-router-dom para la navegación
   const dispatch = useDispatch(); // Hook de react-redux para despachar acciones
   const { openAccept } = useAccept();
