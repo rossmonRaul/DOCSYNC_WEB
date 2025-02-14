@@ -1,6 +1,7 @@
 import { ProcesarDatosApi } from "./ApiFetch";
 const controlador = "Usuario";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
 
 export const ValidarUsuario = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ValidarUsuario`;
@@ -101,4 +102,9 @@ export const CambiarContrasennaTemporal = async (data: any) => {
 export const RecuperarContrasenna = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/RecuperarContrasenna`;
     return await ProcesarDatosApi('POST', url, data);
+}
+
+export const Test = async () => {
+    const url = `${API_BASE_URL_CARGA}/${controlador}/Test`;
+    return await ProcesarDatosApi('GET', url, null);
 }
