@@ -33,6 +33,7 @@ import CatalogoCriterioBusqueda from "./pages/private/Catalogos/CatalogoCriterio
 import BuscarArchivosSolicitud from "./pages/private/BuscarArchivosSolicitud/BuscarArchivosSolicitud.tsx";
 import { ConfirmProvider } from "./context/confirmContext.tsx";
 import Bitacora from "./pages/private/Bitacora/Bitacora.tsx";
+import { AcceptProvider } from "./context/acceptContext.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -107,8 +108,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <WorkerProvider>
       <SpinnerProvider>
         <ConfirmProvider>
-          <RouterProvider router={router} />
-        </ConfirmProvider>
+          <AcceptProvider>
+            <RouterProvider router={router} />
+          </AcceptProvider>
+        </ConfirmProvider>       
       </SpinnerProvider>
     </WorkerProvider>
   </Provider>

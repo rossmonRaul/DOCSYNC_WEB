@@ -16,6 +16,8 @@ import icono from "../assets/iconoLogin.png"
 import CustomModal from "../components/modal/CustomModal.tsx";
 import { AlertDismissible } from "../components/alert/alert";
 import { useSpinner } from "../context/spinnerContext";
+import { LimpiarTrabajos, ValidarTrabajosProceso } from "../servicios/ServicioTrabajos.ts";
+import { useAccept } from "../context/acceptContext";
 
 /**
  * Interfaz para el estado del formulario de inicio de sesión.
@@ -213,6 +215,7 @@ const Login: React.FC = () => {
   const [correo, setCorreo] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const [mensajeRespuesta, setMensajeRespuesta] = useState({indicador:0, mensaje:""});
+  const { openAccept } = useAccept();
 
   const handleModal = () => {
     setShowModal(!showModal);
@@ -300,6 +303,26 @@ const Login: React.FC = () => {
           localStorage.setItem("token", response.token);
           localStorage.setItem("idRol", response.usuario.idRol);
           localStorage.setItem("verConfidencial", response.usuario.verConfidencial);
+
+          const responseTrabajos = await ValidarTrabajosProceso({identificacion: usuario.identificacion});
+
+          if(responseTrabajos.hayTrabajos){            
+            openAccept("Se detectaron fallos de red en su última carga de documentos. Se han cargado "
+              +responseTrabajos.docsBien+" documentos correctamente, "
+              +responseTrabajos.docsMal+" fallaron de un total de "
+              +responseTrabajos.totalDocs+" documentos.", async () => {      
+                
+                const responseLimpieza = await LimpiarTrabajos({identificacion: usuario.identificacion});
+
+                if(responseLimpieza.indicador === '0'){
+                  setShowAlert(true);
+                  setMensajeRespuesta({
+                    indicador: 3,
+                    mensaje: responseLimpieza.mensaje
+                  });
+                }                
+            });
+          }
 
           navigate(`/${PrivateRoutes.BUSCARDOCUMENTOS}`, { replace: true });
 

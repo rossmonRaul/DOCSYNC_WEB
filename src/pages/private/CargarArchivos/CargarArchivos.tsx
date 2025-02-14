@@ -14,6 +14,13 @@ import { recortarTexto } from "../../../utils/utils";
 import { ObtenerTiposDocumentos } from "../../../servicios/ServicioTiposDocumentos";
 import { useSpinner } from "../../../context/spinnerContext";
 import { ExtraerContenido } from "../../../servicios/ServicioDocumentos";
+import { useNavigate } from "react-router-dom";
+import { UserKey, resetUser } from "../../../redux/state/User";
+import { clearSessionStorage } from "../../../utilities";
+import { useDispatch } from "react-redux";
+import { useAccept } from "../../../context/acceptContext";
+import { PublicRoutes } from "../../../models/routes";
+import { Test } from "../../../servicios/ServicioUsuario";
 
 interface TipoDocumento {
   idTipoDocumento: string;
@@ -69,11 +76,47 @@ function CargarArchivos() {
   const FILE_MAX_SIZE_MB = import.meta.env.VITE_FILE_MAX_SIZE_MB;
   const FILE_MAX_SIZE = FILE_MAX_SIZE_MB * (1024 * 1024);
   const API_BASE_URL_CARGA = import.meta.env.VITE_API_BASE_URL_CARGA;
+  const serverUrl = API_BASE_URL_CARGA.match(/(?:https?:\/\/)?(\d+\.\d+\.\d+\.\d+)/)[1];
+  const puertoServer =  API_BASE_URL_CARGA.match(/:(\d+)\//)[1];
+  const navigate = useNavigate(); // Hook de react-router-dom para la navegación
+  const dispatch = useDispatch(); // Hook de react-redux para despachar acciones
+  const { openAccept } = useAccept();
 
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
   const { setShowSpinner } = useSpinner();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Verificar conexión al server de carga
+  useEffect(() => {
+    const validarConexion = async () => {
+      try {        
+        if(loading){
+          const response = await Test();
+          if(!response){ // El servidor no está levantado en el puerto correspondiente
+            openAccept("Ha ocurrido un error al contactar con el servidor de carga, favor vuelva a iniciar sesión", () => {
+              clearSessionStorage(UserKey);
+              dispatch(resetUser());
+              navigate(`/${PublicRoutes.LOGIN}`, { replace: true });
+            });
+          }
+        }
+      } catch (error) {
+        // Cerrar la sesión
+        openAccept("Ha ocurrido un error al contactar con el servidor de carga, favor vuelva a iniciar sesión", () => {
+          clearSessionStorage(UserKey);
+          dispatch(resetUser());
+          navigate(`/${PublicRoutes.LOGIN}`, { replace: true });
+        });
+      }
+    };
+
+    validarConexion();
+    
+    const intervalId = setInterval(validarConexion, 15000); 
+
+    return () => clearInterval(intervalId);
+  }, [loading]);
 
   const cargarTiposDocumentos = async () => {
     setShowSpinner(true);
@@ -89,8 +132,9 @@ function CargarArchivos() {
       });
     }
   };
+
   useEffect(() => {
-    setTaskTitle("Carga de documentos");
+    setTaskTitle("Carga de documentos, por favor no cerrar sesión hasta que finalice la carga");
     cargarTiposDocumentos();
   }, []);
 
