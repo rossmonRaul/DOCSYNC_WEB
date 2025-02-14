@@ -40,12 +40,26 @@ function BuscarArchivosSolicitud() {
 
   const { numSolicitudSecreta,usuario , token } = useParams<{ numSolicitudSecreta: string; usuario : string ;token: string }>();
 
+  const decodeBase64Url = (base64Url: any) => {
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    
+    const decodedBytes = atob(base64);
+    return decodedBytes;
+  }
+
 useEffect(() => {
   if (numSolicitudSecreta && token && usuario) {
     // Decodificar el token y numSolicitudSecreta recibidos de la URL
-    const decodedToken = decodeURIComponent(token);
-    const decodedNumSolicitud = decodeURIComponent(numSolicitudSecreta);
-    const decodedUsuario = decodeURIComponent(usuario);
+    // const decodedToken = decodeURIComponent(token);
+    // const decodedNumSolicitud = decodeURIComponent(numSolicitudSecreta);
+    // const decodedUsuario = decodeURIComponent(usuario);
+    const decodedToken = decodeBase64Url(token);
+    const decodedNumSolicitud = numSolicitudSecreta;
+    const decodedUsuario = usuario;
 
     // Guardar el token decodificado en localStorage
     localStorage.setItem("token", decodedToken);
