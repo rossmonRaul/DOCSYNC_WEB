@@ -230,7 +230,7 @@ function BuscarArchivos() {
         fontSize: "1.5em",
       },
       omit: documentoVer != null,
-      width: "15%",
+      width: "13%",
     },
     {
       id: "FechaCarga",
