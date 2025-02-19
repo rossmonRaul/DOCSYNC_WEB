@@ -92,6 +92,10 @@
   z-index: 20 !important;
 }
 
+.grupoFiltroPosicion{
+  z-index: 20 !important;
+}
+
 .GrupoFiltro:hover {
   background-position: left bottom;
 }

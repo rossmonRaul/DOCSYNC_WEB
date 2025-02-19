@@ -776,7 +776,7 @@ function CatalogoUsuarios() {
                           : null
                       }
                       onChange={(e: any) => handleAccionChange(e)}
-                      className="GrupoFiltro"
+                      className="grupoFiltroPosicion"
                       styles={{
                         control: (provided) => ({
                           ...provided,
