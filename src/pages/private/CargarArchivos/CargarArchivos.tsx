@@ -686,10 +686,18 @@ function CargarArchivos() {
                   <Col>
                     {tipoDocumentoSeleccionado?.idTipoDocumento !== "" && (
                       <Form.Group>
-                        <Form.Label>
-                          Selecciona un documento (peso máximo{" "}
+                        {FILE_MAX_SIZE_MB > 999 && (
+                          <Form.Label>
+                          Seleccionar documentos (peso máximo por documento{" "}
+                          {FILE_MAX_SIZE_MB/1000} GB)
+                        </Form.Label>
+                        )}
+                        {FILE_MAX_SIZE_MB < 1000 && (
+                          <Form.Label>
+                          Seleccionar documentos (peso máximo por documento{" "}
                           {FILE_MAX_SIZE_MB} MB)
                         </Form.Label>
+                        )}
                         <Form.Control
                           multiple
                           ref={fileInputRef}
