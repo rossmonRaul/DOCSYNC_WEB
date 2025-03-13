@@ -870,10 +870,15 @@ function BuscarArchivos() {
     setShowSpinner(true);
     const responseArchivos = await ObtenerDetalleDocumento(row);
     if (responseArchivos) {
-      row.placa = responseArchivos?.placa;
+      row.placa = responseArchivos?.placa ?? "No existe placa asociada";
+    } else {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ocurrió un error al obtener la placa del documento",
+      });
     }
     setDocumentoSeleccionado(row);
-    console.log(responseArchivos);
     setShowSpinner(false);
     setShowModal(true);
     // setDocumentoEditado(editar);
@@ -1351,7 +1356,7 @@ function BuscarArchivos() {
                 />
               </Form.Group>
             </Col>
-           
+
             <Col md={12}>
               <Form.Group controlId="formObservacion">
                 <Form.Label>Modificado el:</Form.Label>
