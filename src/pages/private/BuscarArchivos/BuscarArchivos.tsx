@@ -29,6 +29,7 @@ import {
   EliminarDocumento,
   EnviarArchivoPorCorreo,
   ObtenerCantDocumentos,
+  ObtenerDetalleDocumento,
   ObtenerDocumento,
   ObtenerDocumentosDescarga,
   // ObtenerDocumentosPorContenido,
@@ -59,6 +60,7 @@ interface Archivo {
   numSolicitud: string;
   idTipoDocumento: Number;
   descripcionTipo: string;
+  placa: string;
   archivo: File;
   tamanioArchivo: number;
   usuarioCreacion: string;
@@ -104,7 +106,9 @@ function BuscarArchivos() {
     "Eliminar seleccionados"
   );
   const [textoDescarga, setTextoDescarga] = useState("Descargar seleccionados");
-  const [textoCorreo, setTextoCorreo] = useState("Enviar documentos por correo");
+  const [textoCorreo, setTextoCorreo] = useState(
+    "Enviar documentos por correo"
+  );
   const [textoSeleccion, setTextoSeleccion] = useState("Seleccionar todos");
 
   const [mostrarBusqueda, setMostrarBusqueda] = useState(true);
@@ -772,11 +776,12 @@ function BuscarArchivos() {
     }
   };
 
-  const handleVerArchivo = (archivo: Archivo) => {
+  const handleVerArchivo = async (archivo: Archivo) => {
     window.scrollTo({
       top: 180,
       behavior: "smooth",
     });
+
     setDocumentoVer(archivo);
     setTextoCorreo("");
     setTextoDescarga("");
@@ -861,8 +866,15 @@ function BuscarArchivos() {
   const handleModalEliminar = () => {
     setShowObservacionesEliminar(!showObservacionesEliminar);
   };
-  const abrirInformacionArchivo = (row: Archivo /*, editar = false*/) => {
+  const abrirInformacionArchivo = async (row: Archivo /*, editar = false*/) => {
+    setShowSpinner(true);
+    const responseArchivos = await ObtenerDetalleDocumento(row);
+    if (responseArchivos) {
+      row.placa = responseArchivos?.placa;
+    }
     setDocumentoSeleccionado(row);
+    console.log(responseArchivos);
+    setShowSpinner(false);
     setShowModal(true);
     // setDocumentoEditado(editar);
   };
@@ -1313,7 +1325,19 @@ function BuscarArchivos() {
                 />
               </Form.Group>
             </Col>
-            <Col md={12}>
+            <Col md={6}>
+              <Form.Group controlId="formObservacion">
+                <Form.Label>Placa:</Form.Label>
+                <Form.Control
+                  type="text"
+                  disabled
+                  name="observacionEliminacion"
+                  value={documentoSeleccionado?.placa}
+                  required={true}
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
               <Form.Group controlId="formObservacion">
                 <Form.Label>Guardado el:</Form.Label>
                 <Form.Control
@@ -1327,6 +1351,7 @@ function BuscarArchivos() {
                 />
               </Form.Group>
             </Col>
+           
             <Col md={12}>
               <Form.Group controlId="formObservacion">
                 <Form.Label>Modificado el:</Form.Label>
