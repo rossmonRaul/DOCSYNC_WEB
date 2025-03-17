@@ -623,7 +623,6 @@ function Historial() {
                   />
                 </Form.Group>
               </div>
-
               <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
                 <label htmlFor="FechaFiltroFinal">
                   <b>Fecha final</b>

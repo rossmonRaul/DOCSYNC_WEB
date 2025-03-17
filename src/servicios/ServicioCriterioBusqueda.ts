@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const ObtenerCriterioBusqueda = async (data: boolean) => {
     const url = `${API_BASE_URL}/${controlador}/ObtenerCriterioBusqueda`;
-    return await ProcesarDatosApi('GET', url, data);
+    return await ProcesarDatosApi('POST', url, {estado: data});
 }
 
 export const ObtenerTipoValidacion = async () => {

@@ -43,9 +43,9 @@ export const ObtenerRoles = async () => {
     return await ProcesarDatosApi('POST', url, null);
 }
 
-export const ObtenerAcciones = async () => {
+export const ObtenerAcciones = async (data?: boolean) => {
     const url = `${API_BASE_URL}/${controlador}/ObtenerAccion`;
-    return await ProcesarDatosApi('POST', url, null);
+    return await ProcesarDatosApi('POST', url, {estado: data});
 }
 
 export const ObtenerAccionesUsuario = async (data:any) => {

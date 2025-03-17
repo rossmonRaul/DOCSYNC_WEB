@@ -12,7 +12,8 @@ import { ObtenerBitacora } from "../../../servicios/ServicioBitacora";
 import { useSpinner } from "../../../context/spinnerContext";
 import { exportToExcel } from '../../../utilities/exportReportToExcel';
 import { format } from "date-fns";
-
+import { ObtenerAcciones } from "../../../servicios/ServicioUsuario";
+import Select, { SingleValue } from "react-select";
 
 interface Bitacora {
   idBitacora: Number;
@@ -45,6 +46,9 @@ function Bitacora() {
   const [usuario, setUsuario] = useState("");
   //
   const [mostrarDiv, setMostrarDiv] = useState(true);
+  const [acciones, setAcciones] = useState<any[]>([]);
+  const [accion, setAccion] = useState(0);
+  const [accionSelect, setAccionSelect] = useState("");
 
 
   const toggleDiv = () => {
@@ -53,6 +57,7 @@ function Bitacora() {
   }
 
   useEffect(() => {
+    obtenerAcciones();
   }, []);
 
   //Encabezado tabla
@@ -129,6 +134,7 @@ function Bitacora() {
 
 
   const handleBuscarClick = async () => {
+    setShowAlert(false);
     setShowSpinner(true);
     setPendiente(true);
     setListaBitacoraTabla([]);
@@ -152,6 +158,7 @@ function Bitacora() {
     const filtro = {
       fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
       fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
+      idAccion: accion
     };
 
     // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
@@ -210,7 +217,6 @@ function Bitacora() {
     setShowModal(true);
   };
 
-
   const generarArchivoExcel = () => {
     setShowSpinner(true);
 
@@ -258,9 +264,26 @@ function Bitacora() {
     }
 
     setShowSpinner(false);
-};
+  };
 
+  const obtenerAcciones = async () =>{
+    const response = await ObtenerAcciones(true);
 
+    if(response){
+      response.push({
+        idAccion: 0,
+        descripcion: 'Todas'
+      });
+      setAcciones(response);
+    }
+    else{
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: 'Ocurrió un error al contactar con el servicio'
+      })
+    }
+  }
 
 
   return (
@@ -382,7 +405,7 @@ function Bitacora() {
                     />
                   </Form.Group>
                 </div>
-  
+                <br />
                 <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
                   <label htmlFor="FechaFiltroFinal">
                     <b>Fecha final</b>
@@ -396,6 +419,30 @@ function Bitacora() {
                       locale={es}
                     />
                   </Form.Group>
+                </div>
+                <br />
+                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                  <label htmlFor="accion">
+                    <b>Acción</b>
+                  </label>
+                  <Select
+                    id="accion"
+                    className="GrupoFiltro"
+                    value={accionSelect}
+                    onChange={(selectedOption: any) => {setAccion(selectedOption.value); setAccionSelect(selectedOption);}}
+                    options={acciones.map((x: any) => ({
+                      value: x.idAccion,
+                      label: x.descripcion,
+                    }))}
+                    placeholder="Seleccione"
+                    styles={{
+                      control: (provided: any) => ({
+                        ...provided,
+                        fontSize: "16px",
+                      }),
+                    }}
+                    noOptionsMessage={() => "Opción no encontrada"}
+                  />
                 </div>
   
                 <div className="d-flex flex-column" style={{ padding: "0 10px" }}>

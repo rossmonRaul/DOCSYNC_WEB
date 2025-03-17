@@ -26,6 +26,7 @@ import {
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
 import CustomModal from "../../../components/modal/CustomModal";
 import {
+  ActualizarDocumento,
   EliminarDocumento,
   EnviarArchivoPorCorreo,
   ObtenerCantDocumentos,
@@ -130,10 +131,16 @@ function BuscarArchivos() {
   const [seleccionaTodos, setSeleccionaTodos] = useState(false);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
-  const [viewMode, setViewMode] = useState("Lista");
+  const [viewMode, setViewMode] = useState("Lista");  
+  const [nombDoc, setNombDoc] = useState("");
+  const [numSolicDoc, setNumSolicDoc] = useState("");
+  const [idDoc, setIdDoc] = useState<Number>(0);
+  const [tipoDoc, setTipoDoc] = useState("");
+  const [permisosMod, setPermisosMod] = useState(false);
 
   useEffect(() => {
-    obtenerCriteriosBusqueda();
+    obtenerCriteriosBusqueda();    
+    setPermisosMod(userState.acciones?.find((x: any) => x.descripcion === "Actualizar documentos"));
   }, []);
 
   useEffect(() => {
@@ -859,8 +866,15 @@ function BuscarArchivos() {
   };
 
   // Función para manejar el cierre del modal
-  const handleModal = () => {
-    setShowModal(!showModal);
+  const handleModal = (doc?: any) => {
+    if(permisosMod){      
+      setNombDoc("");
+      setNumSolicDoc("");
+      setIdDoc(0);
+      setTipoDoc("");
+    }
+
+    setShowModal(!showModal);     
   };
 
   const handleModalEliminar = () => {
@@ -878,10 +892,23 @@ function BuscarArchivos() {
         mensaje: "Ocurrió un error al obtener la placa del documento",
       });
     }
+
+    if(row?.idDocumento){
+      setNombDoc(row?.nomDocumento.split('.')[0]);
+      setTipoDoc(row?.nomDocumento.split('.')[1]);
+      setNumSolicDoc(row?.numSolicitud);
+      setIdDoc(row?.idDocumento);
+    }
+    else{
+      setNombDoc("");
+      setNumSolicDoc("");
+      setIdDoc(0);
+      setTipoDoc("");
+    }
+
     setDocumentoSeleccionado(row);
     setShowSpinner(false);
     setShowModal(true);
-    // setDocumentoEditado(editar);
   };
 
   const toggleDiv = () => {
@@ -1241,6 +1268,51 @@ function BuscarArchivos() {
     );
   };
 
+  const handleActualizarDoc = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if(nombDoc.includes('.')){
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: 'El nombre del archivo no puede contener puntos'
+      });
+      return;
+    }
+
+    if(nombDoc.length > 0 && numSolicDoc.length > 0){
+      
+      setShowSpinner(true);
+      
+      const response = await ActualizarDocumento({
+        IdDocumento: idDoc,
+        NomDocumento: nombDoc + '.' + tipoDoc,
+        NumSolicitud: numSolicDoc,
+        UsuarioModificacion: userState.identificacion
+      });      
+
+      setShowSpinner(false);
+
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: response.indicador,
+        mensaje: response.mensaje
+      });      
+
+      if(response.indicador === 0){
+        handleBuscarClick();
+        handleModal();
+      }
+    }
+    else{
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: 'Debe llenar nombre y número de solicitud del documento'
+      });
+    }
+  }
+
   const encabezadoTablaModal = [
     {
       id: "categoria",
@@ -1272,36 +1344,58 @@ function BuscarArchivos() {
   return (
     <>
       <CustomModal
-        showSubmitButton={false}
+        showSubmitButton={permisosMod}
         show={showModal}
         onHide={handleModal}
         title={recortarTexto(documentoSeleccionado?.nomDocumento, 50)}
         formId="formCargaArchivos"
       >
-        <Form id="formCargaArchivos">
+         <Form id="formCargaArchivos" onSubmit={handleActualizarDoc}>
           <Row>
             <Col md={6}>
               <Form.Group controlId="formObservacion">
                 <Form.Label>Nombre:</Form.Label>
-                <Form.Control
-                  type="text"
-                  disabled
-                  name="observacionEliminacion"
-                  value={documentoSeleccionado?.nomDocumento}
-                  required={true}
-                />
+                {permisosMod ? (
+                  <Form.Control
+                    type="text"
+                    name="nomDoc"
+                    value={nombDoc}
+                    placeholder="Nombre del documento"
+                    onChange={(e: any) => setNombDoc(e.target.value)}
+                    maxLength={50}
+                  />
+                ):(
+                  <Form.Control
+                    type="text"
+                    disabled
+                    name="observacionEliminacion"
+                    value={documentoSeleccionado?.nomDocumento}
+                    required={true}
+                  />
+                )}
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group controlId="formObservacion">
                 <Form.Label>No. Solicitud:</Form.Label>
-                <Form.Control
-                  type="text"
-                  disabled
-                  name="observacionEliminacion"
-                  value={documentoSeleccionado?.numSolicitud}
-                  required={true}
-                />
+                {permisosMod ? (
+                   <Form.Control
+                   type="text"
+                   name="numSolic"
+                   value={numSolicDoc}
+                   placeholder="Número de solicitud asociado"
+                   onChange={(e: any) => setNumSolicDoc(e.target.value)}
+                   maxLength={50}
+                 />
+                ):(
+                  <Form.Control
+                    type="text"
+                    disabled
+                    name="observacionEliminacion"
+                    value={documentoSeleccionado?.numSolicitud}
+                    required={true}
+                  />
+                )}                
               </Form.Group>
             </Col>
           </Row>

@@ -34,7 +34,7 @@ export const cargarDocumentosWorker = () => {
         });
 
         if (!response || !response.ok) {
-          respuesta.estado = -99; //no hay conexion con el servidor, error dedicado.
+          respuesta.estado = -1;
           console.error(response);
           return respuesta;
         } else {
@@ -175,17 +175,6 @@ export const cargarDocumentosWorker = () => {
           (dataArchivos && dataArchivos?.indicador === 1)
         ) {
           //realizar rollback en BD metadata si el servicio de mongo no esta disponible
-          let type = "Error";
-          let result =
-            dataArchivos?.mensaje ||
-            "Ha ocurrido un error al contactar con el servicio. Contacte con un administrador.";
-
-          //valores especificos para cuando no hay conexion
-          if (estadoArchivos === -99) {
-            type = "ErrorConexionServidor";
-            result =
-              "Error. No se ha podido conectar con el servidor de carga.";
-          }
 
           const responseRollback = await enviarPeticion(
             urlReversion,
@@ -208,8 +197,10 @@ export const cargarDocumentosWorker = () => {
           );
           //
           postMessage({
-            type,
-            result,
+            type: "Error",
+            result:
+              dataArchivos?.mensaje ||
+              "Ha ocurrido un error al contactar con el servicio. Contacte con un administrador.",
           });
         } else {
           //si hay error en algunos archivos entonces hace rollback pero solo los que no pudieron subirse.
