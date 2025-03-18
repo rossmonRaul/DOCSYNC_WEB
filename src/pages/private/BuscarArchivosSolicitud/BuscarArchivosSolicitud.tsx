@@ -5,7 +5,7 @@ import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
 import {FaEye} from "react-icons/fa";
 import { VisorArchivos } from "../../../components/visorArchivos/visorArchivos";
-import {ObtenerDocumentoPorSolicitud} from "../../../servicios/ServicioDocumentos";
+import {ObtenerDetalleDocumento, ObtenerDocumentoPorSolicitud} from "../../../servicios/ServicioDocumentos";
 import { format } from "date-fns";
 import { AiOutlineFileSearch } from "react-icons/ai";
 import { useSpinner } from "../../../context/spinnerContext";
@@ -17,6 +17,7 @@ interface Archivo {
   nomDocumento: string;
   nombreGuardar: string;
   numSolicitud: string;
+  placa: string;
   idTipoDocumento: Number;
   descripcionTipo: string;
   archivo: File;
@@ -93,6 +94,19 @@ useEffect(() => {
         return row.descripcionTipo;
       },
       head: "Tipo",
+      sortable: true,
+      style: {
+        fontSize: "1.5em",
+      },
+      omit: documentoVer != null,
+    },
+    {
+      id: "placa",
+      name: "Placa",
+      selector: (row: Archivo) => {
+        return row?.placa;
+      },
+      head: "Placa",
       sortable: true,
       style: {
         fontSize: "1.5em",

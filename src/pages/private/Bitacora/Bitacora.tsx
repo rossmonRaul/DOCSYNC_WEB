@@ -6,11 +6,18 @@ import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale/es";
 import { Grid } from "../../../components/table/tabla";
 import { AlertDismissible } from "../../../components/alert/alert";
-import { FaClipboardList, FaSearch, FaEyeSlash, FaEye, FaFileDownload,FaDownload } from "react-icons/fa";
+import {
+  FaClipboardList,
+  FaSearch,
+  FaEyeSlash,
+  FaEye,
+  FaFileDownload,
+  FaDownload,
+} from "react-icons/fa";
 import CustomModal from "../../../components/modal/CustomModal";
 import { ObtenerBitacora } from "../../../servicios/ServicioBitacora";
 import { useSpinner } from "../../../context/spinnerContext";
-import { exportToExcel } from '../../../utilities/exportReportToExcel';
+import { exportToExcel } from "../../../utilities/exportReportToExcel";
 import { format } from "date-fns";
 import { ObtenerAcciones } from "../../../servicios/ServicioUsuario";
 import Select, { SingleValue } from "react-select";
@@ -41,20 +48,21 @@ function Bitacora() {
   //filtro:
   //const [idAccion, setIdAccion] = useState(null);
   //const [estado, setEstado] = useState("");
-  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(null);
+  const [fechaFiltroInicial, setFechaFiltroInicial] = useState<Date | null>(
+    null
+  );
   const [fechaFiltroFinal, setFechaFiltroFinal] = useState<Date | null>(null);
   const [usuario, setUsuario] = useState("");
   //
   const [mostrarDiv, setMostrarDiv] = useState(true);
   const [acciones, setAcciones] = useState<any[]>([]);
   const [accion, setAccion] = useState(0);
-  const [accionSelect, setAccionSelect] = useState("");
-
+  const [accionSelect, setAccionSelect] = useState([]);
 
   const toggleDiv = () => {
-    setMostrarDiv(prev => !prev); // Alterna el estado
-    setMostrarBusqueda(prev => !prev);
-  }
+    setMostrarDiv((prev) => !prev); // Alterna el estado
+    setMostrarBusqueda((prev) => !prev);
+  };
 
   useEffect(() => {
     obtenerAcciones();
@@ -69,14 +77,14 @@ function Bitacora() {
       head: "Accion",
       sortable: true,
       style: {
-        fontSize: "1.5em",      
+        fontSize: "1.5em",
       },
       width: "10%",
-    },  
+    },
     {
       id: "descripcion",
       name: "Descripción",
-      selector: (row: Bitacora) => 
+      selector: (row: Bitacora) =>
         row.descripcion?.length > 70
           ? row.descripcion.slice(0, 70) + "..."
           : row.descripcion,
@@ -86,11 +94,11 @@ function Bitacora() {
         fontSize: "1.5em",
       },
       width: "45%",
-    }, 
+    },
     {
       id: "usuario",
       name: "Usuario",
-      selector: (row: Bitacora) => 
+      selector: (row: Bitacora) =>
         row.usuario?.length > 50
           ? row.usuario.slice(0, 50) + "..."
           : row.usuario,
@@ -104,7 +112,8 @@ function Bitacora() {
     {
       id: "Fecha",
       name: "Fecha",
-      selector: (row: Bitacora) => row.fecha ? format(row.fecha, "dd/MM/yyyy") : "",
+      selector: (row: Bitacora) =>
+        row.fecha ? format(row.fecha, "dd/MM/yyyy") : "",
       sortable: true,
       style: {
         fontSize: "1.5em",
@@ -115,7 +124,13 @@ function Bitacora() {
       id: "Acciones",
       name: "Acciones",
       selector: (row: Bitacora) => (
-        <div style={{ paddingTop: "5px", paddingBottom: "5px", textAlign: "center" }}>
+        <div
+          style={{
+            paddingTop: "5px",
+            paddingBottom: "5px",
+            textAlign: "center",
+          }}
+        >
           <Button
             onClick={() => abrirInformacionBitacora(row)}
             size="sm"
@@ -127,11 +142,10 @@ function Bitacora() {
       ),
       head: "Seleccionar",
       sortable: false,
-      center: 'true',
+      center: "true",
       width: "10%",
     },
   ];
-
 
   const handleBuscarClick = async () => {
     setShowAlert(false);
@@ -155,10 +169,17 @@ function Bitacora() {
       return;
     }
 
+    const accioneSeleccionadas = accionSelect
+      .map((a: any) => a.value)
+      .toString();
+
+    console.log(accioneSeleccionadas);
+
     const filtro = {
-      fechaFiltroInicial: fechaFiltroInicial === null ? null : fechaFiltroInicial,
+      fechaFiltroInicial:
+        fechaFiltroInicial === null ? null : fechaFiltroInicial,
       fechaFiltroFinal: fechaFiltroFinal === null ? null : fechaFiltroFinal,
-      idAccion: accion
+      idAccion: accioneSeleccionadas,
     };
 
     // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
@@ -182,7 +203,7 @@ function Bitacora() {
   };
 
   const countEmptyFields = () => {
-    let count = 0; 
+    let count = 0;
     // if (estado !== "") count++;
     if (fechaFiltroInicial !== null && fechaFiltroFinal !== null) count++;
     else if (
@@ -221,70 +242,73 @@ function Bitacora() {
     setShowSpinner(true);
 
     if (listaBitacoraTabla.length === 0 || listaBitacoraTabla === null) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-            indicador: 0,
-            mensaje: "No hay datos para descargar.",
-        });
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 0,
+        mensaje: "No hay datos para descargar.",
+      });
     } else {
-        // datos para Excel
-        const listaFormateadaXLSX = listaBitacoraTabla.map(bitacora => ({
-            Acción: bitacora.descripcionAccion,
-            Descripción: bitacora.descripcion,
-            Usuario: bitacora.usuario,
-            Fecha: format(bitacora.fecha, "dd/MM/yyyy"),
-        }));
+      // datos para Excel
+      const listaFormateadaXLSX = listaBitacoraTabla.map((bitacora) => ({
+        Acción: bitacora.descripcionAccion,
+        Descripción: bitacora.descripcion,
+        Usuario: bitacora.usuario,
+        Fecha: format(bitacora.fecha, "dd/MM/yyyy"),
+      }));
 
+      //  filtros seleccionados
+      const dynamicHeaders: string[][] = [];
+      if (fechaFiltroInicial) {
+        dynamicHeaders.push([
+          "Fecha inicial: " +
+            new Date(fechaFiltroInicial).toLocaleDateString("es-ES"),
+        ]);
+      }
+      if (fechaFiltroFinal) {
+        dynamicHeaders.push([
+          "Fecha final: " +
+            new Date(fechaFiltroFinal).toLocaleDateString("es-ES"),
+        ]);
+      }
 
-        //  filtros seleccionados
-        const dynamicHeaders: string[][] = [];
-        if (fechaFiltroInicial) {
-            dynamicHeaders.push(['Fecha inicial: ' + new Date(fechaFiltroInicial).toLocaleDateString('es-ES')]);
-        }
-        if (fechaFiltroFinal) {
-            dynamicHeaders.push(['Fecha final: ' + new Date(fechaFiltroFinal).toLocaleDateString('es-ES')]);
-        }
+      // columnas del reporte
+      const columnas = [
+        { key: "Acción", header: "Acción", width: 15 },
+        { key: "Descripción", header: "Descripción", width: 130 },
+        { key: "Usuario", header: "Usuario", width: 30 },
+        { key: "Fecha", header: "Fecha", width: 12 },
+      ];
 
-        // columnas del reporte
-        const columnas = [
-            { key: 'Acción', header: 'Acción', width: 15 },
-            { key: 'Descripción', header: 'Descripción', width: 130 },
-            { key: 'Usuario', header: 'Usuario', width: 30 },
-            { key: 'Fecha', header: 'Fecha', width: 12 },
-        ];
-
-        //  función exportToExcel 
-        exportToExcel({
-            reportName: `Bitácora`,
-            data: listaFormateadaXLSX,
-            columns: columnas,
-            userName: usuario || '',
-            dynamicHeaders, 
-        });
+      //  función exportToExcel
+      exportToExcel({
+        reportName: `Bitácora`,
+        data: listaFormateadaXLSX,
+        columns: columnas,
+        userName: usuario || "",
+        dynamicHeaders,
+      });
     }
 
     setShowSpinner(false);
   };
 
-  const obtenerAcciones = async () =>{
+  const obtenerAcciones = async () => {
     const response = await ObtenerAcciones(true);
 
-    if(response){
+    if (response) {
       response.push({
         idAccion: 0,
-        descripcion: 'Todas'
+        descripcion: "Todas",
       });
       setAcciones(response);
-    }
-    else{
+    } else {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: 'Ocurrió un error al contactar con el servicio'
-      })
+        mensaje: "Ocurrió un error al contactar con el servicio",
+      });
     }
-  }
-
+  };
 
   return (
     <>
@@ -300,7 +324,11 @@ function Bitacora() {
               <Form.Group controlId="formFecha">
                 <Form.Label>Fecha</Form.Label>
                 <DatePicker
-                  selected={bitacoraSeleccionada?.fecha ? new Date(bitacoraSeleccionada.fecha) : null}
+                  selected={
+                    bitacoraSeleccionada?.fecha
+                      ? new Date(bitacoraSeleccionada.fecha)
+                      : null
+                  }
                   onChange={handleInputChange}
                   dateFormat="dd/MM/yyyy"
                   showTimeSelect
@@ -308,7 +336,7 @@ function Bitacora() {
                   disabled={true}
                 />
               </Form.Group>
-            </Col>       
+            </Col>
             <Col md={4}>
               <Form.Group controlId="formEformAccion">
                 <Form.Label>Acción</Form.Label>
@@ -319,7 +347,7 @@ function Bitacora() {
                   disabled={true}
                 />
               </Form.Group>
-            </Col>            
+            </Col>
             <Col md={4}>
               <Form.Group controlId="formUsuario">
                 <Form.Label>Usuario</Form.Label>
@@ -332,7 +360,7 @@ function Bitacora() {
                 />
               </Form.Group>
             </Col>
-          </Row> 
+          </Row>
           <Row style={{ marginTop: "3%" }}>
             <Col md={12}>
               <Form.Group controlId="formDescripcion">
@@ -350,7 +378,7 @@ function Bitacora() {
           </Row>
         </Form>
       </CustomModal>
-  
+
       <div className="container-fluid">
         <Row>
           <Col md={10} className="d-flex justify-content-start">
@@ -378,130 +406,135 @@ function Bitacora() {
           </Col>
         </Row>
       </div>
-  
+
       <hr />
-  
+
       <div className="container-fluid">
-          {pendiente ? (
-            <div>Cargando...</div>
-          ) : (
-            <div style={{ display: "flex"}}>
-              <div className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}>
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <h4 className="h4Estilo">Filtro de búsqueda</h4>
-                </div>
-                          
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <label htmlFor="FechaFiltroInicial">
-                    <b>Fecha inicial</b>
-                  </label>
-                  <Form.Group>
-                    <DatePicker
-                      selected={fechaFiltroInicial}
-                      onChange={(date) => setFechaFiltroInicial(date)}
-                      dateFormat="dd/MM/yyyy"
-                      className="form-control GrupoFiltro"
-                      locale={es}
-                    />
-                  </Form.Group>
-                </div>
-                <br />
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <label htmlFor="FechaFiltroFinal">
-                    <b>Fecha final</b>
-                  </label>
-                  <Form.Group>
-                    <DatePicker
-                      selected={fechaFiltroFinal}
-                      onChange={(date) => setFechaFiltroFinal(date)}
-                      dateFormat="dd/MM/yyyy"
-                      className="form-control GrupoFiltro"
-                      locale={es}
-                    />
-                  </Form.Group>
-                </div>
-                <br />
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <label htmlFor="accion">
-                    <b>Acción</b>
-                  </label>
-                  <Select
-                    id="accion"
-                    className="GrupoFiltro"
-                    value={accionSelect}
-                    onChange={(selectedOption: any) => {setAccion(selectedOption.value); setAccionSelect(selectedOption);}}
-                    options={acciones.map((x: any) => ({
-                      value: x.idAccion,
-                      label: x.descripcion,
-                    }))}
-                    placeholder="Seleccione"
-                    styles={{
-                      control: (provided: any) => ({
-                        ...provided,
-                        fontSize: "16px",
-                      }),
-                    }}
-                    noOptionsMessage={() => "Opción no encontrada"}
-                  />
-                </div>
-  
-                <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
-                  <Button
-                    className="btn-save"
-                    variant="primary"
-                    onClick={handleBuscarClick}
-                    style={{ marginTop: "20px" }}
-                    disabled={areInputsEmpty()}
-                  >
-                    <FaSearch className="me-2" size={24} />
-                    Buscar
-                  </Button>
-                </div>
+        {pendiente ? (
+          <div>Cargando...</div>
+        ) : (
+          <div style={{ display: "flex" }}>
+            <div className={`contenedorFiltro ${mostrarDiv ? "mostrar" : ""}`}>
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <h4 className="h4Estilo">Filtro de búsqueda</h4>
               </div>
-  
-              <div style={{ flex: 1, padding: "20px",  width:"80%" }}>
-                {showAlert && (
-                  <AlertDismissible
-                    indicador={0}
-                    mensaje={mensajeRespuesta}
-                    setShow={setShowAlert}
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <label htmlFor="FechaFiltroInicial">
+                  <b>Fecha inicial</b>
+                </label>
+                <Form.Group>
+                  <DatePicker
+                    selected={fechaFiltroInicial}
+                    onChange={(date) => setFechaFiltroInicial(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="form-control GrupoFiltro"
+                    locale={es}
                   />
-                )}
-               
-                  {listaBitacoraTabla.length > 0 ? (             
-                      <Grid
-                        gridHeading={encabezadoBitacora}
-                        gridData={listaBitacoraTabla}
-                        selectableRows={false}
-                        filterColumns={["usuario", "accion","descripcion", "fecha"]}
-                        nameButtonOpcion1={"Descargar"}
-                        visibleButtonOpcion1={true}
-                        botonesAccion={[
-                          {
-                            condicion:true,
-                            accion: generarArchivoExcel,
-                            icono: <FaDownload className="me-2" size={24} />,
-                            texto: 'Descargar',                            
-                          },
-                        ]}
-                        handleButtonOpcion1={generarArchivoExcel}
-                        iconButtonOpcion1={<FaFileDownload className="me-2" size={24} />}
-                      />                   
-                  ) : (
-                    <div
-                      className="content row justify-content-center align-items-center"
-                      style={{ marginLeft: 10, textAlign: "center", width: "100%" }}
-                    >
-                      <img src="/SinResultados.png" className="imgSinResultados"/>
-                    </div>
-                  )}
+                </Form.Group>
+              </div>
+              <br />
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <label htmlFor="FechaFiltroFinal">
+                  <b>Fecha final</b>
+                </label>
+                <Form.Group>
+                  <DatePicker
+                    selected={fechaFiltroFinal}
+                    onChange={(date) => setFechaFiltroFinal(date)}
+                    dateFormat="dd/MM/yyyy"
+                    className="form-control GrupoFiltro"
+                    locale={es}
+                  />
+                </Form.Group>
+              </div>
+              <br />
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <label htmlFor="accion">
+                  <b>Acción</b>
+                </label>
+                <Select
+                  id="accion"
+                  isMulti
+                  className="GrupoFiltro"
+                  value={accionSelect}
+                  onChange={(selectedOption: any) => {
+                    setAccion(selectedOption.value);
+                    setAccionSelect(selectedOption);
+                  }}
+                  options={acciones.map((x: any) => ({
+                    value: x.idAccion,
+                    label: x.descripcion,
+                  }))}
+                  placeholder="Seleccione"
+                  styles={{
+                    control: (provided: any) => ({
+                      ...provided,
+                      fontSize: "16px",
+                    }),
+                  }}
+                  noOptionsMessage={() => "Opción no encontrada"}
+                />
+              </div>
+
+              <div className="d-flex flex-column" style={{ padding: "0 10px" }}>
+                <Button
+                  className="btn-save"
+                  variant="primary"
+                  onClick={handleBuscarClick}
+                  style={{ marginTop: "20px" }}
+                  disabled={areInputsEmpty()}
+                >
+                  <FaSearch className="me-2" size={24} />
+                  Buscar
+                </Button>
               </div>
             </div>
-          )}
+
+            <div style={{ flex: 1, padding: "20px", width: "80%" }}>
+              {showAlert && (
+                <AlertDismissible
+                  indicador={0}
+                  mensaje={mensajeRespuesta}
+                  setShow={setShowAlert}
+                />
+              )}
+
+              {listaBitacoraTabla.length > 0 ? (
+                <Grid
+                  gridHeading={encabezadoBitacora}
+                  gridData={listaBitacoraTabla}
+                  selectableRows={false}
+                  filterColumns={["usuario", "accion", "descripcion", "fecha"]}
+                  nameButtonOpcion1={"Descargar"}
+                  visibleButtonOpcion1={true}
+                  botonesAccion={[
+                    {
+                      condicion: true,
+                      accion: generarArchivoExcel,
+                      icono: <FaDownload className="me-2" size={24} />,
+                      texto: "Descargar",
+                    },
+                  ]}
+                  handleButtonOpcion1={generarArchivoExcel}
+                  iconButtonOpcion1={
+                    <FaFileDownload className="me-2" size={24} />
+                  }
+                />
+              ) : (
+                <div
+                  className="content row justify-content-center align-items-center"
+                  style={{ marginLeft: 10, textAlign: "center", width: "100%" }}
+                >
+                  <img src="/SinResultados.png" className="imgSinResultados" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
-  
 }
 
 export default Bitacora;
