@@ -186,7 +186,6 @@ useEffect(() => {
 
     }catch(e){
       setListaArchivosTabla([]);
-      console.log(e);
 
     }finally{
       setShowSpinner(false);
@@ -199,7 +198,6 @@ useEffect(() => {
 
   const handleVerArchivo = (archivo: Archivo) => {
     setDocumentoVer(archivo);
-    console.log(archivo);
   };
 
   return (

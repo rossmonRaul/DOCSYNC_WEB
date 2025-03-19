@@ -173,8 +173,6 @@ function Bitacora() {
       .map((a: any) => a.value)
       .toString();
 
-    console.log(accioneSeleccionadas);
-
     const filtro = {
       fechaFiltroInicial:
         fechaFiltroInicial === null ? null : fechaFiltroInicial,

@@ -131,7 +131,7 @@ function BuscarArchivos() {
   const [seleccionaTodos, setSeleccionaTodos] = useState(false);
   const [listaArchivosTablaSeleccionados, setListaArchivosTablaSeleccionados] =
     useState<Archivo[]>([]);
-  const [viewMode, setViewMode] = useState("Lista");  
+  const [viewMode, setViewMode] = useState("Lista");
   const [nombDoc, setNombDoc] = useState("");
   const [numSolicDoc, setNumSolicDoc] = useState("");
   const [idDoc, setIdDoc] = useState<Number>(0);
@@ -139,8 +139,12 @@ function BuscarArchivos() {
   const [permisosMod, setPermisosMod] = useState(false);
 
   useEffect(() => {
-    obtenerCriteriosBusqueda();    
-    setPermisosMod(userState.acciones?.find((x: any) => x.descripcion === "Actualizar documentos"));
+    obtenerCriteriosBusqueda();
+    setPermisosMod(
+      userState.acciones?.find(
+        (x: any) => x.descripcion === "Actualizar documentos"
+      )
+    );
   }, []);
 
   useEffect(() => {
@@ -453,7 +457,6 @@ function BuscarArchivos() {
       };
 
       var response = await BusquedaSolicitudIHTT(filtro);
-
       if (response) {
         if (response.length === 0) {
           setShowAlert(true);
@@ -462,6 +465,15 @@ function BuscarArchivos() {
             mensaje: "No hay registros con los parámetros indicados",
           });
         } else {
+          if (response.indicador === 1) {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Ocurrió un error al obtener la información en servidor IHTT.",
+            });
+            setShowSpinner(false);
+            return;
+          }
           var solics = "";
 
           response.forEach((element: any) => {
@@ -867,14 +879,14 @@ function BuscarArchivos() {
 
   // Función para manejar el cierre del modal
   const handleModal = (doc?: any) => {
-    if(permisosMod){      
+    if (permisosMod) {
       setNombDoc("");
       setNumSolicDoc("");
       setIdDoc(0);
       setTipoDoc("");
     }
 
-    setShowModal(!showModal);     
+    setShowModal(!showModal);
   };
 
   const handleModalEliminar = () => {
@@ -893,13 +905,12 @@ function BuscarArchivos() {
       });
     }
 
-    if(row?.idDocumento){
-      setNombDoc(row?.nomDocumento.split('.')[0]);
-      setTipoDoc(row?.nomDocumento.split('.')[1]);
+    if (row?.idDocumento) {
+      setNombDoc(row?.nomDocumento.split(".")[0]);
+      setTipoDoc(row?.nomDocumento.split(".")[1]);
       setNumSolicDoc(row?.numSolicitud);
       setIdDoc(row?.idDocumento);
-    }
-    else{
+    } else {
       setNombDoc("");
       setNumSolicDoc("");
       setIdDoc(0);
@@ -1271,47 +1282,45 @@ function BuscarArchivos() {
   const handleActualizarDoc = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if(nombDoc.includes('.')){
+    if (nombDoc.includes(".")) {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: 'El nombre del archivo no puede contener puntos'
+        mensaje: "El nombre del archivo no puede contener puntos",
       });
       return;
     }
 
-    if(nombDoc.length > 0 && numSolicDoc.length > 0){
-      
+    if (nombDoc.length > 0 && numSolicDoc.length > 0) {
       setShowSpinner(true);
-      
+
       const response = await ActualizarDocumento({
         IdDocumento: idDoc,
-        NomDocumento: nombDoc + '.' + tipoDoc,
+        NomDocumento: nombDoc + "." + tipoDoc,
         NumSolicitud: numSolicDoc,
-        UsuarioModificacion: userState.identificacion
-      });      
+        UsuarioModificacion: userState.identificacion,
+      });
 
       setShowSpinner(false);
 
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: response.indicador,
-        mensaje: response.mensaje
-      });      
+        mensaje: response.mensaje,
+      });
 
-      if(response.indicador === 0){
+      if (response.indicador === 0) {
         handleBuscarClick();
         handleModal();
       }
-    }
-    else{
+    } else {
       setShowAlert(true);
       setMensajeRespuesta({
         indicador: 1,
-        mensaje: 'Debe llenar nombre y número de solicitud del documento'
+        mensaje: "Debe llenar nombre y número de solicitud del documento",
       });
     }
-  }
+  };
 
   const encabezadoTablaModal = [
     {
@@ -1350,7 +1359,7 @@ function BuscarArchivos() {
         title={recortarTexto(documentoSeleccionado?.nomDocumento, 50)}
         formId="formCargaArchivos"
       >
-         <Form id="formCargaArchivos" onSubmit={handleActualizarDoc}>
+        <Form id="formCargaArchivos" onSubmit={handleActualizarDoc}>
           <Row>
             <Col md={6}>
               <Form.Group controlId="formObservacion">
@@ -1364,7 +1373,7 @@ function BuscarArchivos() {
                     onChange={(e: any) => setNombDoc(e.target.value)}
                     maxLength={50}
                   />
-                ):(
+                ) : (
                   <Form.Control
                     type="text"
                     disabled
@@ -1379,15 +1388,15 @@ function BuscarArchivos() {
               <Form.Group controlId="formObservacion">
                 <Form.Label>No. Solicitud:</Form.Label>
                 {permisosMod ? (
-                   <Form.Control
-                   type="text"
-                   name="numSolic"
-                   value={numSolicDoc}
-                   placeholder="Número de solicitud asociado"
-                   onChange={(e: any) => setNumSolicDoc(e.target.value)}
-                   maxLength={50}
-                 />
-                ):(
+                  <Form.Control
+                    type="text"
+                    name="numSolic"
+                    value={numSolicDoc}
+                    placeholder="Número de solicitud asociado"
+                    onChange={(e: any) => setNumSolicDoc(e.target.value)}
+                    maxLength={50}
+                  />
+                ) : (
                   <Form.Control
                     type="text"
                     disabled
@@ -1395,7 +1404,7 @@ function BuscarArchivos() {
                     value={documentoSeleccionado?.numSolicitud}
                     required={true}
                   />
-                )}                
+                )}
               </Form.Group>
             </Col>
           </Row>

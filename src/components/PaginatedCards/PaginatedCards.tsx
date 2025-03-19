@@ -24,7 +24,6 @@ export const PaginatedCard: React.FC<any> = ({
   };
 
   useEffect(() => {
-    console.log(userState.acciones)
     const loadData = async () => {
       const response = await fetchData(page, rowsPerPage);
     };
