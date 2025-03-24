@@ -11,7 +11,7 @@ function RoutesWithNotFound({children} : Props) {
   return (
     <Routes>
         {children}
-        <Route path="*" element={<div>No Encontrada</div>} />
+        <Route path="*" element={<div></div>} />
     </Routes>
   );
 }

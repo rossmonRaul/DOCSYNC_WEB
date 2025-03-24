@@ -1,3 +1,7 @@
+#root{
+  width: 100%;
+}
+
 .main-container {
     display: flex;
     flex-direction: column;
@@ -6,16 +10,28 @@
   }
   
   .content {
-    width: 80%;
+    width: 90%;
     margin-left: 40px;
     margin-top: 20px;
   }
+
+  .title{
+    margin-left: 40px;
+    margin-top: 20px;
+    color: #243340;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
   
   .btn-crear {
-    background-color: #548454;
+    background-color: #497494 !important;
+    border: none !important;
     color: white;
     margin-top: 10px;
-    border-color: #548454;
+  }
+
+  .imgSinResultados{
+    height: 20rem;
+    width: 20rem;
   }
   
   /* Estilos para el contenedor del filtro */
@@ -23,9 +39,14 @@
     margin-top: 20px; /* Espacio entre el botón y el filtro */
   }
 
-  .btn{
-    background-color: #9E0000 !important;
+  .btn-save{
+    background-color: #548454 !important;
     border: none !important;
+  }
+
+  .btn-cancel{
+    background-color: #9E0000 !important;
+    border: black !important;
   }
 
   .btn-action.hover{
@@ -43,3 +64,73 @@
     width: 25%; /* Ancho del input al 100% del contenedor */
     margin-top: 5px; /* Espacio entre el label y el input */
   }
+
+  button{
+    display: flex;
+    align-content: center;
+    align-items: center;
+  }
+
+.react-datepicker-popper{
+  z-index: 2 !important;
+}
+
+.GrupoFiltro {
+  background: linear-gradient(to left, white 50%, #f2f2f2 50%);
+  background-position: right bottom;
+  background-size: 200% 100%;
+  transition: all 0.5s ease-out;
+  transition-timing-function: linear;
+}
+
+.GrupoFiltroAdmRoles{
+  background: linear-gradient(to left, white 50%, #f2f2f2 50%);
+  background-position: right bottom;
+  background-size: 200% 100%;
+  transition: all 0.5s ease-out;
+  transition-timing-function: linear;
+  z-index: 20 !important;
+}
+
+.grupoFiltroPosicion{
+  z-index: 20 !important;
+}
+
+.GrupoFiltro:hover {
+  background-position: left bottom;
+}
+
+.contenedorFiltro {
+  width: 0%;
+  position: relative;
+  left: -300px; /* Posición inicial fuera de la pantalla */
+  transition: left 1s ease; /* Transición de la propiedad left más lenta */
+  height: 400px;
+  overflow: auto;
+}
+
+.contenedorFiltro.mostrar {
+  left: 0; /* Posición final en la pantalla */
+  width: 20%;
+  height: 483px; /* Establece la altura deseada aquí */
+  overflow: auto;
+}
+
+.grid {
+  width: 50%;
+}
+
+.h4Estilo{
+  color: #9E0000;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px; /* Bordes redondeados */
+}
+
+.react-datepicker-wrapper{
+  display: inline !important;
+}

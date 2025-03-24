@@ -1,0 +1,152 @@
+/* styles.css */
+.worker-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99999;
+    background-color: #497494; 
+    color: #ffff; 
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 350px;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    overflow: hidden;
+  }
+  
+  .worker-status.ready {
+    background-color: #2B9E2B;
+  }
+
+  .worker-status.error {
+    background-color: rgb(175, 81, 81);
+  }
+  
+  .worker-status.minimized {
+    width: 160px;
+    height: 60px;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #9E0000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease-in-out;
+    animation: pulse 1s infinite ease-in-out;
+  }
+  
+  .worker-status.minimized.ready {
+    background-color: #2B9E2B; 
+    animation: none;
+  }
+  
+  .worker-status.minimized h3,
+  .worker-status.minimized .status-content {
+    display: none;
+  }
+  
+  .worker-status .status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .worker-status h3 {
+    font-size: 18px;
+    margin: 0;
+    color: #ffff;
+  }
+  
+  .worker-status .status-content p {
+    margin: 10px 0;
+    padding: 5px 0;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+  
+  /* Animación para estado "loading" */
+  .worker-status .loading {
+    background-color: #9E0000; 
+    color: #ffff;
+    padding: 10px;
+    animation: pulse 1s infinite ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+  
+  .worker-status .ready {
+    background-color: #4CAF50;
+    color: #ffff;
+    padding: 10px;
+  }
+  
+  .worker-status .error {
+    background-color: #9E0000;
+    color: #ffff;
+    padding: 10px;
+  }
+  
+  .worker-status .result {
+    background-color: #ffff; 
+    color: #9E0000; 
+    padding: 10px;
+    font-weight: bold;
+  }
+  
+  /* Botones de minimizar y cerrar */
+  .worker-status .toggle-btn {
+    background-color: transparent;
+    border: none;
+    color: #ffff;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    padding: 5px;
+  }
+  
+  .worker-status .close-btn {
+    background-color: transparent;
+    border: none;
+    color: #ffff;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+  }
+  
+  @media (max-width: 600px) {
+    .worker-status {
+      width: 200px;
+      bottom: 10px;
+      right: 10px;
+    }
+  
+    .worker-status.minimized {
+      width: 60px;
+      height: 30px;
+    }
+  }
+  

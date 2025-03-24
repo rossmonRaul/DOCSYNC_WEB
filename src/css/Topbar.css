@@ -15,28 +15,26 @@
 .user-info {
     display: flex;
     align-items: center;
-    margin-right: 10px;
+    margin-right: 10%;
 }
 
 .user-name {
     display: flex;
     align-items: center;
-    margin-right: 10px;
+    margin-right: 1%;
+    width: 100%;
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 4.5rem;
+    height: 3rem;
     border-radius: 50%;
     margin-right: 10px;
     background-image: url('../img/user.png');
     background-size: cover;
-    position: relative;
+    position: center;
 }
 
-.notifications {
-    margin-right: 20px;
-}
 
 .avatar-options {
     position: absolute;
@@ -51,29 +49,7 @@
     white-space: nowrap;
 }
 
-.notifications {
-    position: relative;
-}
 
-.notification-list {
-    position: absolute;
-    top: calc(100% + 5px);
-    right: 0;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    z-index: 1;
-}
-
-.notification-list ul {
-    list-style: none;
-    padding: 0;
-}
-
-.notification-list ul li {
-    margin-bottom: 5px;
-}
 
 .nav-link-custom {
     color: "243340" !important; /* Asegúrate de que los enlaces no sean opacos */
@@ -89,11 +65,12 @@
     flex-direction: column;
     align-items: center;
     color:#fff;
-    background-color: #243340; 
+   /* background-color: #243340; 
   padding: 10px;
   border-radius: 8px; 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); 
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  */
   }
   .brand-content {
     display: flex;

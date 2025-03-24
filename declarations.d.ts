@@ -13,3 +13,4 @@ declare module '*.png' {
     export default value;
   }
   
+  declare module 'react-file-viewer';

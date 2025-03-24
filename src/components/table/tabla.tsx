@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Spinner } from "react-bootstrap";
+import { Button, Spinner } from "react-bootstrap";
 import DataTable from "react-data-table-component";
+import { FaPlus } from "react-icons/fa";
 
 export const Grid: React.FC<any> = ({
   gridHeading,
@@ -10,8 +11,10 @@ export const Grid: React.FC<any> = ({
   setFilaSeleccionada,
   idBuscar,
   filterColumns,
-  className,
   rowModal,
+  handle,
+  buttonVisible,
+  botonesAccion
 }) => {
   const [id, setId] = useState(-1);
   const [records, setRecords] = useState([]);
@@ -102,7 +105,7 @@ export const Grid: React.FC<any> = ({
     },
     pagination: {
       style: {
-        fontSize: "12px",
+        fontSize: "12px"
       },
     },
   };
@@ -111,14 +114,44 @@ export const Grid: React.FC<any> = ({
     <>
       {filterColumns && (
         <div
-          className={
-            className ? className : "row col-12 row justify-content-end"
-          }
-          style={{ padding: 0, margin: 0 }}
+          className="mb-6 mt-0 d-flex justify-content-between align-items-center"
+          style={{ marginLeft: 10 }}
         >
-          <div className="col-3 row">
+          <div>
+            {buttonVisible && (
+              <Button
+                variant="primary"
+                onClick={handle}
+                className="btn-crear px-2"
+              >
+                <FaPlus className="me-2" size={24} />
+                Agregar
+              </Button>
+            )}
+            {botonesAccion &&
+              botonesAccion.map(
+                (accionBotones: any, index: number) =>
+                  accionBotones?.condicion && (
+                    <Button
+                      key={index}
+                      variant="primary"
+                      onClick={accionBotones?.accion}
+                      className={
+                        accionBotones?.clase
+                          ? accionBotones?.clase
+                          : "ms-3 btn-crear"
+                      }
+                    >
+                      {accionBotones?.icono}
+                      {accionBotones?.texto}
+                    </Button>
+                  )
+              )}
+          </div>
+
+          <div className={buttonVisible ? "" : "ms-auto"}>
             <input
-              className="form-control mb-2"
+              className="form-control"
               type="search"
               placeholder="Buscar"
               onChange={handleFilter}
@@ -126,8 +159,9 @@ export const Grid: React.FC<any> = ({
           </div>
         </div>
       )}
+
       <DataTable
-        className="table table-sm mt-2"
+        className="table table-sm mt-4"
         customStyles={customStyles}
         columns={gridHeading}
         data={records}
