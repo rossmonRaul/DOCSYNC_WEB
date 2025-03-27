@@ -285,36 +285,33 @@ const Login: React.FC = () => {
       correoElectronico: formData.usuario,
       contrasenna: formData.contrasena
     };
-
+  
     try {
       setShowSpinner(true);
       const response = await ValidarUsuario(formDataLogin);   
       
-      if(response){
+      if (response) {
         const usuario = response.usuario;
-
-        if(usuario.mensaje === "1"){
+        console.log(usuario); // Depurar el objeto usuario
+  
+        if (usuario && usuario.mensaje === "1") {
           dispatch(createUser(usuario));
-          //localstorage datos guardados
-          localStorage.setItem(
-            "identificacionUsuario",
-            usuario.identificacion
-          );
+          localStorage.setItem("identificacionUsuario", usuario.identificacion);
           localStorage.setItem("token", response.token);
-          localStorage.setItem("idRol", response.usuario.idRol);
-          localStorage.setItem("verConfidencial", response.usuario.verConfidencial);
-
-          const responseTrabajos = await ValidarTrabajosProceso({identificacion: usuario.identificacion});
-
-          if(responseTrabajos.hayTrabajos){            
+          localStorage.setItem("idRol", usuario.idRol);
+          localStorage.setItem("verConfidencial", usuario.verConfidencial);
+  
+          const responseTrabajos = await ValidarTrabajosProceso({ identificacion: usuario.identificacion });
+  
+          if (responseTrabajos.hayTrabajos) {            
             openAccept("Se detectaron fallos de red en su última carga de documentos. Se han cargado "
-              +responseTrabajos.docsBien+" documentos correctamente, "
-              +responseTrabajos.docsMal+" fallaron de un total de "
-              +responseTrabajos.totalDocs+" documentos.", async () => {      
+              + responseTrabajos.docsBien + " documentos correctamente, "
+              + responseTrabajos.docsMal + " fallaron de un total de "
+              + responseTrabajos.totalDocs + " documentos.", async () => {      
                 
-                const responseLimpieza = await LimpiarTrabajos({identificacion: usuario.identificacion});
-
-                if(responseLimpieza.indicador === '0'){
+                const responseLimpieza = await LimpiarTrabajos({ identificacion: usuario.identificacion });
+  
+                if (responseLimpieza.indicador === '0') {
                   setShowAlert(true);
                   setMensajeRespuesta({
                     indicador: 3,
@@ -323,59 +320,49 @@ const Login: React.FC = () => {
                 }                
             });
           }
-
+  
           navigate(`/${PrivateRoutes.BUSCARDOCUMENTOS}`, { replace: true });
-
           setIsLoggedIn(true);
-        }
-        else if(usuario.mensaje === "2"){
+        } else if (usuario && usuario.mensaje === "2") {
           setShowAlert(true);
-          setCorreo(response.usuario.correo);
-          setIdentificacion(response.usuario.identificacion);
-
+          setCorreo(usuario.correo);
+          setIdentificacion(usuario.identificacion);
           setMensajeRespuesta({
             indicador: 3,
             mensaje: "La contraseña ingresada es temporal, por favor cree una"
           });
-
           localStorage.setItem("token", response.token);
-
           handleModal();
-        }
-        else if(usuario.mensaje === "3"){
+        } else if (usuario && usuario.mensaje === "3") {
           setShowAlert(true);          
           setMensajeRespuesta({
             indicador: 1,
             mensaje: "El usuario está bloqueado, contacte a un administrador"
           });
-        }
-        else if(usuario.mensaje === "4"){
+        } else if (usuario && usuario.mensaje === "4") {
           setShowAlert(true);          
           setMensajeRespuesta({
             indicador: 1,
             mensaje: "El rol del usuario está bloqueado, contacte a un administrador"
           });
-        }
-        else if(usuario.mensaje === "5"){
+        } else if (usuario && usuario.mensaje === "5") {
           setShowAlert(true);          
           setMensajeRespuesta({
             indicador: 1,
             mensaje: "Las credenciales son incorrectas o el usuario no existe"
           });
-        }
-        else{
+        } else {
           setShowAlert(true);          
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: usuario.mensaje
+            mensaje: usuario ? usuario.mensaje : "Ocurrió un error inesperado"
           });
         }
-      }
-      else{
+      } else {
         setShowAlert(true);
-        setMensajeRespuesta({indicador: 1, mensaje: "Ocurrió un error al contactar con el servicio"});
+        setMensajeRespuesta({ indicador: 1, mensaje: "Ocurrió un error al contactar con el servicio" });
       }
-
+  
       setShowSpinner(false);
     } catch (error) {
       console.log(error);

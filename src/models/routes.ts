@@ -1,3 +1,5 @@
+import CatalogoInstituciones from "../pages/private/Catalogos/CatalogoInstituciones";
+
 export const PublicRoutes = {
     LOGIN: 'login',
     BUSCARARCHIVOSSOLICITUD: 'buscar-archivos-solicitud/:numSolicitudSecreta/:usuario/:token',
@@ -11,6 +13,7 @@ export const PrivateRoutes = {
     BUSCARDOCUMENTOS: 'buscar-documentos',
     HISTORIALARCHIVOS: 'historial',
     CATALOGOPERSONAS: 'catalogo-personas',
+    CATALOGOINSTITUCIONES: 'catalogo-instituciones',
     CATALOGOESTADOS: 'catalogo-estados',
     CATALOGOTIPOSDOCUMENTOS: 'catalogo-tiposDocumentos',
     CATALOGOJERARQUIADOCUMENTOS:'jerarquia-documento',

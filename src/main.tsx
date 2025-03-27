@@ -17,6 +17,7 @@ import CargaScanner from "./pages/private/CargaScanner/CargaScanner.tsx";
 import BuscarArchivos from "./pages/private/BuscarArchivos/BuscarArchivos.tsx";
 import { Private } from "./pages/private/index.tsx";
 import CatalogoPersonas from "./pages/private/Catalogos/CatalogoPersonas.tsx";
+import CatalogoInstituciones from "./pages/private/Catalogos/CatalogoInstituciones.tsx";
 import AuthGuard from "./guards/AuthGuard.tsx";
 import Login from "./pages/LoginPage.tsx";
 import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
@@ -83,6 +84,10 @@ const router = createBrowserRouter(
         <Route
           path={PrivateRoutes.CATALOGOUSUARIOS}
           element={<CatalogoUsuarios />}
+        />
+        <Route
+          path={PrivateRoutes.CATALOGOINSTITUCIONES}
+          element={<CatalogoInstituciones />}
         />
         <Route path={PrivateRoutes.ADMINROLES} element={<AdministrarRoles />} />
         <Route

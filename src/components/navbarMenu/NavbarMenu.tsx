@@ -21,6 +21,7 @@ import {
   FaBuilding,
   FaUserTie,
   FaSearch,
+  FaUniversity,
 } from "react-icons/fa";
 import { IconType } from "react-icons/lib";
 import "../../css/TopBar.css";
@@ -80,7 +81,8 @@ const NavbarMenu: React.FC = () => {
     FaBuilding: FaBuilding,
     FaUserTie: FaUserTie,
     FaSearch: FaSearch,
-    PiNotebookBold: PiNotebookBold
+    PiNotebookBold: PiNotebookBold, 
+    FaUniversity: FaUniversity
   };
 
   const obtenerOpcionesMenu = async () => {
@@ -89,6 +91,7 @@ const NavbarMenu: React.FC = () => {
     };
 
     const menu = await ObtenerAccesoMenuPorRol(data);
+    console.log("Menú recibido desde API:", menu);
 
     // Se mapean todos los iconos
     menu.forEach((element: any) => {
