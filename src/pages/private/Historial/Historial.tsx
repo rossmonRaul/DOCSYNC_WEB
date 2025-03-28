@@ -671,6 +671,7 @@ function Historial() {
                     "accion",
                     "estado",
                     "descripcion",
+                    "nombreDocumento",
                     "fecha",
                   ]}
                   botonesAccion={[
