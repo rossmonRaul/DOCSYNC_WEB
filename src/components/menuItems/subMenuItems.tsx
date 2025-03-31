@@ -1,4 +1,4 @@
-import { FaHistory, FaSignature, FaUser, FaFileAlt, FaUsers, FaUserCog, FaUniversity } from 'react-icons/fa';
+import { FaHistory, FaSignature, FaUser, FaFileAlt, FaUsers, FaUserCog, FaUniversity, FaFolder } from 'react-icons/fa';
 import { IconType } from 'react-icons/lib';
 
 interface MenuItem {
@@ -20,7 +20,13 @@ export const subMenuCatalogos: MenuItem[] = [
     path: "/catalogo-instituciones",
     name: "Instituciónes",
     roles: [1, 2, 3, 4],
-    icon: FaUniversity // Asigna el ícono de Personas
+    icon: FaUniversity // Asigna el ícono de institucion
+  },
+  {
+    path: "/catalogo-directorios",
+    name: "Directorios",
+    roles: [1, 2, 3, 4],
+    icon: FaFolder // Asigna el ícono de folder
   },
   /*{
     path: "/catalogo-estados",

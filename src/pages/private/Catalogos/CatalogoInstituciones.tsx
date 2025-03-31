@@ -23,7 +23,7 @@ import { es } from "date-fns/locale/es";
 
 // Interfaz para la información de la institucion
 interface Institucion {
-  idInstitucion: string;
+  idInstitucion: number;
   nomInstitucion: string;
   fechaApertura: string;
   tipo: string;
@@ -55,7 +55,7 @@ function CatalogoInstituciones() {
 
   const [showModal, setShowModal] = useState(false);
   const [nuevaInstitucion, setNuevaInstitucion] = useState<Institucion>({
-    idInstitucion: "0",
+    idInstitucion: 0,
     nomInstitucion: "",
     fechaApertura: "",
     tipo: "",
@@ -78,11 +78,11 @@ function CatalogoInstituciones() {
   const [listaInstitucionesImportar, setListaInstitucionesImportar] = useState<Institucion[]>(
     []
   );
-  const [fechaApertura, setfechaApertura] = useState<Date | null>(
-      null
-    );
+  // const [fechaApertura, setFechaApertura] = useState("");
+
   const [showImportButton, setShowImportButton] = useState(false);
   const [file, setFile] = useState(null);
+  
 
   useEffect(() => {
     // obtenerDeps();
@@ -139,6 +139,7 @@ function CatalogoInstituciones() {
           ...institucion,
           UsuarioModificacion: identificacionUsuario,
           FechaModificacion: new Date().toISOString(),
+          
         };
 
         const response = await EliminarInstitucion(institucionActualizar);
@@ -158,18 +159,18 @@ function CatalogoInstituciones() {
         setShowAlert(true);
         setMensajeRespuesta({
           indicador: 1,
-          mensaje: "Error al eliminar la isntitución",
+          mensaje: "Error al eliminar la institución",
         });
       }
     });
   };
 
   // Función para abrir el modal y editar una persona
-  const editarInstitucion = (isntitución: Institucion) => {
+  const editarInstitucion = (institución: Institucion) => {
     // const idPuest = listaPuestos.filter((x: any) => x.nombre === persona.puesto)[0].idPuesto;
     // const idDp = listaDepartamentos.filter((x: any) => x.nombre === persona.departamento)[0].idDepartamento;
-
-    setNuevaInstitucion(isntitución);
+    setNuevaInstitucion(institución);
+    // Convierte el string a Date
     setIsEditing(true);
     setShowModal(true);
     // setIdDep(idDp);
@@ -183,7 +184,7 @@ function CatalogoInstituciones() {
     setShowModal(!showModal);
     setIsEditing(false);
     setNuevaInstitucion({
-      idInstitucion: "",
+      idInstitucion: 0,
       nomInstitucion: "",
       fechaApertura: "",
       tipo: "",
@@ -211,7 +212,9 @@ function CatalogoInstituciones() {
   // Maneja el envío del formulario para agregar o editar una institucion
   const handleSubmit = async (e: React.FormEvent) => {
     setShowSpinner(true);
-    e.preventDefault();    
+    e.preventDefault();   
+    
+   
 
     if (isEditing) {
       // editar
@@ -235,15 +238,19 @@ function CatalogoInstituciones() {
           setShowAlert(true);
           setMensajeRespuesta(response);
           ObtenerInstitucion();
+          setShowSpinner(false);
         } else {
           setShowAlert(true);
+          setShowSpinner(false);
           setMensajeRespuesta({
             indicador: 1,
             mensaje: "Error al actualizar la institución",
+            
           });
         }
       } catch (error) {
         setShowAlert(true);
+        setShowSpinner(false);
         setMensajeRespuesta({
           indicador: 1,
           mensaje: "Error al actualizar la institución",
@@ -251,38 +258,45 @@ function CatalogoInstituciones() {
       }
     } else {
       // agregar institucion
-      try {
-        const identificacionUsuario = localStorage.getItem(
-          "identificacionUsuario"
-        );
-        const institucionACrear = {
-          ...nuevaInstitucion,
-          idInstitucion: "0",
-          usuarioCreacion: identificacionUsuario,
-          fechaCreacion: new Date().toISOString(),
-        };
-        const response = await CrearInstitucion(institucionACrear); // Crea la institucion
-        if (response) {
-          setShowAlert(true);
-          setMensajeRespuesta(response);
-          ObtenerInstitucion();
-        } else {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Error al crear la institución",
-          });
-        }
-      } catch (error) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Error al crear la instutución",
-        });
-      }
+      console.log("prueba " + nuevaInstitucion)
+       try {
+    const institucionACrear = {
+      IdInstitucion: 0,
+      NomInstitucion: nuevaInstitucion.nomInstitucion,
+      FechaApertura: nuevaInstitucion.fechaApertura || new Date().toISOString().split('T')[0],
+      Tipo: nuevaInstitucion.tipo,
+      Descripcion: nuevaInstitucion.descripcion,
+      UsuarioCreacion: identificacionUsuario || "Sistema", // Asegura que tenga un valor
+      FechaCreacion: new Date().toISOString(), // Fecha actual
+      Estado: nuevaInstitucion.estado
+    };
+
+    const response = await CrearInstitucion(institucionACrear);
+    console.log(JSON.stringify(response));
+    
+    if (response?.indicador === 0) {
+      setShowAlert(true);
+      setMensajeRespuesta(response);
+      await ObtenerInstituciones();
+    } else {
+      setShowAlert(true);
+      setMensajeRespuesta(response || {
+        indicador: 1,
+        mensaje: "Error desconocido al crear la institución"
+      });
     }
-    handleModal(); // Cierra el modal
-  };
+  } catch (error) {
+    console.error("Error:", error);
+    setShowAlert(true);
+    setMensajeRespuesta({
+      indicador: 1,
+      mensaje: "Error en la conexión con el servidor"
+    });
+  } finally {
+    setShowSpinner(false);
+    handleModal();
+  }}
+};
 
   // Encabezados de la tabla con acciones
   const encabezadoInstituciones = [
@@ -441,8 +455,7 @@ function CatalogoInstituciones() {
             //   InfoValida = false;
 
             // Asignar valores al objeto Institucion
-            obj.idInstitucion = "0" as string;
-             if (property === "Identificación") obj.idInstitucion = value as string;
+            obj.idInstitucion = 0 as number;
             if (property === "Nombre") obj.nomInstitucion = value as string;
             if (property === "Fecha de Apertuta") obj.fechaApertura = value as string;
             if (property === "Tipo") obj.tipo = value as string;
@@ -511,28 +524,7 @@ function CatalogoInstituciones() {
           }
        );
 
-        // Mensaje departamentos que no existen
-        // if(deps !== ''){
-        //   setShowAlert(true);
-        //   setMensajeRespuesta({
-        //     indicador: 1,
-        //     mensaje: "Los siguientes departamentos no existen: " + deps
-        //   });
-        //   setShowSpinner(false);
-        //   return;
-        // }
-
-        // Mensaje puestos que no existen
-        // if(puestos !== ''){
-        //   setShowAlert(true);
-        //   setMensajeRespuesta({
-        //     indicador: 1,
-        //     mensaje: "Los siguientes puestos no existen: " + puestos
-        //   });
-        //   setShowSpinner(false);
-        //   return;
-        // }
-
+      
         if (errores.length > 0) {
           const columnasErroneas = Array.from(new Set(errores)); // Elimina duplicados
           const mensaje =
@@ -620,22 +612,6 @@ function CatalogoInstituciones() {
       setShowSpinner(false);
       return;
     }
-
-    //console.log("listaPersonasImportar: " + JSON.stringify(listaPersonasImportar, null, 2));
-    //console.log("personas: " + JSON.stringify(personas, null, 2));
-
-    /*if (erroresFormato) {
-        //setIsLoading(false);
-        setShowAlert(true);
-        return; // Detiene el proceso si el formato  es correcto
-    }*/
-
-    // Se asigna id de puesto y departamento, según el nombre        
-    // institucionesSinDuplicados.forEach((i: any) => {
-    //   i.departamento = listaDepartamentos.filter((x: any) => x.nombre.toLowerCase() === i.departamento.trim().toLowerCase())[0].idDepartamento;
-    //   i.puesto = listaPuestos.filter((x: any) => x.nombre.toLowerCase() === i.puesto.trim().toLowerCase())[0].idPuesto;
-    // });
-
     const respuesta: ErrorResponse[] = await ImportarInstitucion(
       institucionesSinDuplicados
     );
@@ -729,22 +705,10 @@ function CatalogoInstituciones() {
     },
   ];
 
-  // const handelDepChange = (e: any) => {
-  //   setIdDep(e.value);
-  //   setDepText(listaDepartamentos.filter((x: any) => x.idDepartamento === e.value)[0].nombre);
-  //   nuevaPersona.departamento = e.value;
-  // }
-
-  // const handelPuestoChange = (e: any) => {
-  //   setIdPuesto(e.value);
-  //   setPuestText(listaPuestos.filter((x: any) => x.idPuesto === e.value)[0].nombre);
-  //   nuevaPersona.puesto = e.value;
-  // }
-
   // Descarga de catálogo
   const descargaCatalogo = async () => {
     setShowSpinner(true);
-    const nombreReporte = "Reporte de isntituciones DocSync - " + new Date().toLocaleDateString() +".xlsx";
+    const nombreReporte = "Reporte de instituciones DocSync - " + new Date().toLocaleDateString() +".xlsx";
     const nombreHoja = "Instituciones";
 
     const columnsSelect = [
@@ -801,7 +765,7 @@ function CatalogoInstituciones() {
         {showAlert && (
           <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
         )}
-        {/* Tabla de isnticiones */}
+        {/* Tabla de insticiones */}
         <Grid
           gridHeading={encabezadoInstituciones}
           gridData={listaInstituciones}
@@ -844,70 +808,58 @@ function CatalogoInstituciones() {
         <Form id="formInstitucion" onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
-              <Form.Group controlId="formidInstitucion">
-                <Form.Label>Identificación *</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="idInstitucion"
-                  value={nuevaInstitucion.idInstitucion}
-                  onChange={handleChange}
-                  required
-                  maxLength={150}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="formnomInstitucion">
+            <Form.Group controlId="formnomInstitucion">
                 <Form.Label>Nombre *</Form.Label>
                 <Form.Control
                   type="text"
                   name="nomInstitucion"
-                  value={nuevaInstitucion.nomInstitucion } 
+                  value={nuevaInstitucion.nomInstitucion}
                   onChange={handleChange}
-                  maxLength={15}
+                  maxLength={50}
+                  required
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formfechaApertura">
+                <Form.Label>Fecha de apertura *</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="fechaApertura"
+                  value={nuevaInstitucion.fechaApertura}
+                  onChange={handleChange}
+                  required
                 />
               </Form.Group>
             </Col>
           </Row>
-          <Row style={{marginTop: '1%'}}>
-            <Col md={6}>
-              <Form.Group controlId="formfechaapertura">
-                <Form.Label>Fecha de apertura</Form.Label>
-                <DatePicker
-                  showIcon
-                  selected={fechaApertura}
-                  onChange={(date) => setfechaApertura(date)}
-                  dateFormat="dd/MM/yyyy"
-                  className="form-control"
-                  locale={es}
-                  placeholderText="Fecha de Apertura"
-                />
-                
-              </Form.Group>
-            </Col>
+
+          <Row className="mt-3">
             <Col md={6}>
               <Form.Group controlId="formTipo">
-                <Form.Label>Tipo</Form.Label>
+                <Form.Label>Tipo de institución *</Form.Label>
                 <Form.Control
                   type="text"
                   name="tipo"
-                  value={nuevaInstitucion.tipo } 
+                  value={nuevaInstitucion.tipo}
                   onChange={handleChange}
-                  maxLength={255}
+                  maxLength={100}
+                  required
                 />
               </Form.Group>
             </Col>
-          </Row>
-          <Row style={{marginTop: '1%'}}>
             <Col md={6}>
               <Form.Group controlId="formdescripcion">
-                <Form.Label>Descripción</Form.Label>
+                <Form.Label>Descripción *</Form.Label>
                 <Form.Control
-                  type="paragraph"
+                  as="textarea"
                   name="descripcion"
-                  value={nuevaInstitucion.descripcion } 
+                  value={nuevaInstitucion.descripcion}
                   onChange={handleChange}
                   maxLength={255}
+                  rows={3}
+                  placeholder="Propósito de la institución"
+                  required
                 />
               </Form.Group>
             </Col>

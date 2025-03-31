@@ -14,6 +14,7 @@ export const PrivateRoutes = {
     HISTORIALARCHIVOS: 'historial',
     CATALOGOPERSONAS: 'catalogo-personas',
     CATALOGOINSTITUCIONES: 'catalogo-instituciones',
+    CATALOGODIRECTORIOS: 'catalogo-directorios',
     CATALOGOESTADOS: 'catalogo-estados',
     CATALOGOTIPOSDOCUMENTOS: 'catalogo-tiposDocumentos',
     CATALOGOJERARQUIADOCUMENTOS:'jerarquia-documento',

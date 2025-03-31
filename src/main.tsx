@@ -18,6 +18,7 @@ import BuscarArchivos from "./pages/private/BuscarArchivos/BuscarArchivos.tsx";
 import { Private } from "./pages/private/index.tsx";
 import CatalogoPersonas from "./pages/private/Catalogos/CatalogoPersonas.tsx";
 import CatalogoInstituciones from "./pages/private/Catalogos/CatalogoInstituciones.tsx";
+import CatalogoDirectorios from "./pages/private/Catalogos/CatalogoDirectorios.tsx";
 import AuthGuard from "./guards/AuthGuard.tsx";
 import Login from "./pages/LoginPage.tsx";
 import CatalogoEstados from "./pages/private/Catalogos/CatalogoEstados.tsx";
@@ -74,6 +75,10 @@ const router = createBrowserRouter(
           element={<CatalogoEstados />}
         />
         <Route
+          path={PrivateRoutes.CATALOGODIRECTORIOS}
+          element={<CatalogoDirectorios />}
+        />
+        <Route
           path={PrivateRoutes.CATALOGOTIPOSDOCUMENTOS}
           element={<CatalogoTiposDocumentos />}
         />
@@ -89,6 +94,7 @@ const router = createBrowserRouter(
           path={PrivateRoutes.CATALOGOINSTITUCIONES}
           element={<CatalogoInstituciones />}
         />
+       
         <Route path={PrivateRoutes.ADMINROLES} element={<AdministrarRoles />} />
         <Route
           path={PrivateRoutes.CATALOGODEPARTAMENTOS}

@@ -260,6 +260,7 @@ function CatalogoPersonas() {
           usuarioCreacion: identificacionUsuario,
           fechaCreacion: new Date().toISOString(),
         };
+        console.log(personaACrear)
         const response = await CrearPersona(personaACrear); // Crea la persona
         if (response) {
           setShowAlert(true);
