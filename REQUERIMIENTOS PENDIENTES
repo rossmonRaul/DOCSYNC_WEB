@@ -1,0 +1,26 @@
+TAREAS PARA MEJORA
+
+1)CONTEO DE CONSULTAS ( 0 a 100 -50USD, 0 a 500- 100USD, ilimitado - 200USD) (Raul Monge) ✅
+1)Implementar una base de datos SQL de control de acceso (Jorge Fernandez) 🚫
+  -Crear BD (Datos encriptados)
+  -Crear procedimientos almacenados
+  -Crear interfaz de creación y administración de usuarios
+
+2)Transformar los esquemas y las particularidades en embedings (Raul Monge Mora) 🚫
+3)Agregar conectores 
+  MySQL, (Raul Monge) 🚫
+  ORACLE, (Jorge Fernandez) 🚫
+  MongoDB, (Jorge Fernandez) 🚫
+  MariaDB (Jorge Fernandez) 🚫
+4)Enviar correos electrónicos. (Jorge Fernandez) 🚫
+  Nota: Los correos pueden llebar adjuntos generados por el chatde jarvis
+5)Programar correos. (Jorge Fernandez) 🚫
+
+6)Agregar o Alterar registros a la base de datos  (Raul Monge) 🚫
+
+
+Establecer alertas. 
+Agendar tareas o llamadas
+
+Eliminar registros de la base de datos (Con factor de autentificacion)
+
