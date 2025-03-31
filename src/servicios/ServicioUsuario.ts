@@ -10,22 +10,22 @@ export const ValidarUsuario = async (data: any) => {
 
 export const ActualizarUsuarioAdministrador = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ActualizarUsuarioAdministrador`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const ActualizarAsignarUsuario = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ActualizarDatosUsuario`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 } 
 
 export const CambiarEstadoUsuario = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/CambiarEstadoUsuario`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const CambiarContrasenaUsuarios = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ActualizarContrasenaUsuario`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const ObtenerFincasUbicacionPorIdEmpresa = async (data: any) => {

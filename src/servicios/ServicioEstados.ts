@@ -9,7 +9,7 @@ export const ObtenerEstados = async () => {
 
 export const ActualizarEstado = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/ActualizarEstado`;
-  return await ProcesarDatosApi("PUT", url, data);
+  return await ProcesarDatosApi("POST", url, data);
 };
 
 export const CrearEstado = async (data: any) => {
@@ -19,7 +19,7 @@ export const CrearEstado = async (data: any) => {
 
 export const EliminarEstado = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/EliminarEstado`;
-  return await ProcesarDatosApi("PUT", url, data);
+  return await ProcesarDatosApi("POST", url, data);
 };
 
 export const ImportarEstados = async (data: any) => {

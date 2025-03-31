@@ -14,12 +14,12 @@ export const AgregarPuesto = async (data: any) => {
 
 export const ActualizarPuesto = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ActualizarPuesto`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const EliminarPuesto = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarPuesto`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const CargaMasivaPuesto = async (data: any) => {

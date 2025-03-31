@@ -9,7 +9,7 @@ export const ObtenerPersonas = async () => {
 
 export const ActualizarPersona = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/ActualizarPersona`;
-  return await ProcesarDatosApi("PUT", url, data);
+  return await ProcesarDatosApi("POST", url, data);
 };
 
 export const CrearPersona = async (data: any) => {
@@ -19,7 +19,7 @@ export const CrearPersona = async (data: any) => {
 
 export const EliminarPersona = async (data: any) => {
   const url = `${API_BASE_URL}/${controlador}/EliminarPersona`;
-  return await ProcesarDatosApi("PUT", url, data);
+  return await ProcesarDatosApi("POST", url, data);
 };
 
 export const ImportarPersonas = async (data: any) => {

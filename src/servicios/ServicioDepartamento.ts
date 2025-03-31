@@ -14,12 +14,12 @@ export const AgregarDepartamento = async (data: any) => {
 
 export const ActualizarDepartamento = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ActualizarDepartamento`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const EliminarDepartamento = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarDepartamento`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const CargaMasivaDepartamento = async (data: any) => {

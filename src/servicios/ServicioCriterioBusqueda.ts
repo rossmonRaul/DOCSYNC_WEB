@@ -20,12 +20,12 @@ export const AgregarCriterioBusqueda = async (data: any) => {
 
 export const ActualizarCriterioBusqueda = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ActualizarCriterioBusqueda`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const EliminarCriterioBusqueda = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarCriterioBusqueda`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const CargaMasivaCriterioBusqueda = async (data: any) => {

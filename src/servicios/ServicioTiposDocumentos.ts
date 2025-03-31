@@ -9,7 +9,7 @@ export const ObtenerTiposDocumentos = async () => {
 
 export const ActualizarTipoDocumento = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/ActualizarTipoDocumento`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
   
 export const CrearTipoDocumento = async (data: any) => {
@@ -19,7 +19,7 @@ export const CrearTipoDocumento = async (data: any) => {
  
 export const EliminarTipoDocumento = async (data: any) => {
     const url = `${API_BASE_URL}/${controlador}/EliminarTipoDocumento`;
-    return await ProcesarDatosApi('PUT', url, data);
+    return await ProcesarDatosApi('POST', url, data);
 }
 
 export const ImportarTiposDocumentos = async (data: any) => {
