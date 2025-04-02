@@ -4,7 +4,13 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import CustomModal from "../../../components/modal/CustomModal";
 
 import { Grid } from "../../../components/table/tabla";
-import { ObtenerPersonas, CrearPersona, EliminarPersona, ActualizarPersona, ImportarPersonas } from "../../../servicios/ServicioPersonas";
+import {
+  ObtenerPersonas,
+  CrearPersona,
+  EliminarPersona,
+  ActualizarPersona,
+  ImportarPersonas,
+} from "../../../servicios/ServicioPersonas";
 import { FaBan, FaDownload, FaRedo, FaUpload } from "react-icons/fa";
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { VscEdit } from "react-icons/vsc";
@@ -63,8 +69,8 @@ function CatalogoPersonas() {
     telefono: "",
     usuarioCreacion: identificacionUsuario ? identificacionUsuario : "",
     usuarioModificacion: "",
-    fechaCreacion:"",
-    estado: false
+    fechaCreacion: "",
+    estado: false,
   });
   const [isEditing, setIsEditing] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -128,44 +134,55 @@ function CatalogoPersonas() {
 
   // Función para eliminar una persona
   const eliminarPersona = (persona: Persona) => {
-    openConfirm("¿Está seguro que desea cambiar el estado de la persona?", async () => {
-      try {
-        persona.departamento = listaDepartamentos.filter((x: any) => x.nombre === persona.departamento)[0].idDepartamento;
-        persona.puesto = listaPuestos.filter((x: any) => x.nombre === persona.puesto)[0].idPuesto;
+    openConfirm(
+      "¿Está seguro que desea cambiar el estado de la persona?",
+      async () => {
+        try {
+          persona.departamento = listaDepartamentos.filter(
+            (x: any) => x.nombre === persona.departamento
+          )[0].idDepartamento;
+          persona.puesto = listaPuestos.filter(
+            (x: any) => x.nombre === persona.puesto
+          )[0].idPuesto;
 
-        const personaActualizar = {
-          ...persona,
-          UsuarioModificacion: identificacionUsuario,
-          FechaModificacion: new Date().toISOString(),
-        };
+          const personaActualizar = {
+            ...persona,
+            UsuarioModificacion: identificacionUsuario,
+            FechaModificacion: new Date().toISOString(),
+          };
 
-        const response = await EliminarPersona(personaActualizar);
+          const response = await EliminarPersona(personaActualizar);
 
-        if (response) {
-          setShowAlert(true);
-          setMensajeRespuesta(response);
-          obtenerPersonas();
-        } else {
+          if (response) {
+            setShowAlert(true);
+            setMensajeRespuesta(response);
+            obtenerPersonas();
+          } else {
+            setShowAlert(true);
+            setMensajeRespuesta({
+              indicador: 1,
+              mensaje: "Error al eliminar la persona",
+            });
+          }
+        } catch (error) {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
             mensaje: "Error al eliminar la persona",
           });
         }
-      } catch (error) {
-        setShowAlert(true);
-        setMensajeRespuesta({
-          indicador: 1,
-          mensaje: "Error al eliminar la persona",
-        });
       }
-    });
+    );
   };
 
   // Función para abrir el modal y editar una persona
   const editarPersona = (persona: Persona) => {
-    const idPuest = listaPuestos.filter((x: any) => x.nombre === persona.puesto)[0].idPuesto;
-    const idDp = listaDepartamentos.filter((x: any) => x.nombre === persona.departamento)[0].idDepartamento;
+    const idPuest = listaPuestos.filter(
+      (x: any) => x.nombre === persona.puesto
+    )[0].idPuesto;
+    const idDp = listaDepartamentos.filter(
+      (x: any) => x.nombre === persona.departamento
+    )[0].idDepartamento;
 
     setNuevaPersona(persona);
     setIsEditing(true);
@@ -173,7 +190,7 @@ function CatalogoPersonas() {
     setIdDep(idDp);
     setDepText(persona.departamento);
     setPuestText(persona.puesto);
-    setIdPuesto(idPuest);   
+    setIdPuesto(idPuest);
   };
 
   // Función para manejar el cierre del modal
@@ -190,8 +207,8 @@ function CatalogoPersonas() {
       telefono: "",
       usuarioCreacion: "",
       usuarioModificacion: "",
-      fechaCreacion:"",
-      estado: false
+      fechaCreacion: "",
+      estado: false,
     });
     setIdDep("");
     setDepText("");
@@ -210,7 +227,7 @@ function CatalogoPersonas() {
   // Maneja el envío del formulario para agregar o editar una persona
   const handleSubmit = async (e: React.FormEvent) => {
     setShowSpinner(true);
-    e.preventDefault();    
+    e.preventDefault();
 
     if (isEditing) {
       // editar
@@ -342,7 +359,7 @@ function CatalogoPersonas() {
     {
       id: "estado",
       name: "Estado",
-      selector: (row: Persona) => row.estado ? 'Activo': 'Inactivo',
+      selector: (row: Persona) => (row.estado ? "Activo" : "Inactivo"),
       sortable: true,
       style: {
         fontSize: "1.2em",
@@ -365,7 +382,6 @@ function CatalogoPersonas() {
             onClick={() => eliminarPersona(row)}
             className="bg-secondary"
           >
-            
             {row.estado ? <FaBan /> : <FaRedo />}
           </Button>
         </>
@@ -475,10 +491,9 @@ function CatalogoPersonas() {
           return;
         }
 
-        const errores: string[] = [];        
-        var deps = '';
-        var puestos = '';
-        
+        const errores: string[] = [];
+        var deps = "";
+        var puestos = "";
 
         // Validar que todos los campos son correctos
         formattedData.forEach(
@@ -489,57 +504,75 @@ function CatalogoPersonas() {
             nombreCompleto,
             puesto,
             telefono,
-          }) => {           
+          }) => {
+            try {
+              if (typeof nombreCompleto !== "string" || nombreCompleto === null)
+                errores.push("Nombre");
+              if (
+                (typeof identificacion !== "string" &&
+                  typeof telefono !== "number") ||
+                identificacion === null
+              )
+                errores.push("Identificación");
+              if (typeof departamento !== "string" || departamento === null)
+                errores.push("Departamento");
+              if (typeof puesto !== "string" || puesto === null)
+                errores.push("Puesto");
+              if (typeof telefono !== "number" || telefono === null)
+                errores.push("Teléfono");
+              if (
+                typeof email !== "string" ||
+                email === null ||
+                !email.includes("@")
+              ) {
+                errores.push("Correo");
+              }
 
-            if (typeof nombreCompleto !== "string" || nombreCompleto === null)
-              errores.push("Nombre");
-            if (
-              (typeof identificacion !== "string" &&
-                typeof telefono !== "number") ||
-              identificacion === null
-            )
-              errores.push("Identificación");
-            if (typeof departamento !== "string" || departamento === null)
-              errores.push("Departamento");
-            if (typeof puesto !== "string" || puesto === null)
-              errores.push("Puesto");
-            if (typeof telefono !== "number" || telefono === null)
-              errores.push("Teléfono");
-            if (
-              typeof email !== "string" ||
-              email === null ||
-              !email.includes("@")
-            ) {
-              errores.push("Correo");
+              // Se valida que exista departamento y puesto de cada registro ingresado
+              const existeDep =
+                listaDepartamentos.filter(
+                  (x: any) =>
+                    x.nombre.toLowerCase() === departamento.trim().toLowerCase()
+                ).length > 0;
+              const existePuesto =
+                listaPuestos.filter(
+                  (x: any) =>
+                    x.nombre.toLowerCase() === puesto.trim().toLowerCase()
+                ).length > 0;
+
+              if (!existeDep)
+                deps += deps === "" ? departamento : ", " + departamento;
+
+              if (!existePuesto)
+                puestos += puestos === "" ? puesto : ", " + puesto;
+            } catch (error) {
+              setShowAlert(true);
+              setMensajeRespuesta({
+                indicador: 2,
+                mensaje:
+                  "Ha ocurrido un error inesperado. Por favor, valide el formato del contenido del documento.",
+              });
             }
-
-            // Se valida que exista departamento y puesto de cada registro ingresado
-            const existeDep = listaDepartamentos.filter((x: any) => x.nombre.toLowerCase() === departamento.trim().toLowerCase()).length > 0;
-            const existePuesto = listaPuestos.filter((x: any) => x.nombre.toLowerCase() === puesto.trim().toLowerCase()).length > 0;
-
-            if(!existeDep) deps += deps === '' ? departamento : ", " + departamento;     
-
-            if(!existePuesto) puestos += puestos === '' ? puesto : ", " + puesto;           
           }
         );
 
         // Mensaje departamentos que no existen
-        if(deps !== ''){
+        if (deps !== "") {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: "Los siguientes departamentos no existen: " + deps
+            mensaje: "Los siguientes departamentos no existen: " + deps,
           });
           setShowSpinner(false);
           return;
         }
 
         // Mensaje puestos que no existen
-        if(puestos !== ''){
+        if (puestos !== "") {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje: "Los siguientes puestos no existen: " + puestos
+            mensaje: "Los siguientes puestos no existen: " + puestos,
           });
           setShowSpinner(false);
           return;
@@ -621,7 +654,7 @@ function CatalogoPersonas() {
     // Filtrar personas para eliminar duplicados
     const personasSinDuplicados = personas.filter(
       (persona: any) => !personaExists(persona)
-    );    
+    );
 
     if (personas.length > 0 && personasSinDuplicados.length == 0) {
       setShowAlert(true);
@@ -643,10 +676,15 @@ function CatalogoPersonas() {
         return; // Detiene el proceso si el formato  es correcto
     }*/
 
-    // Se asigna id de puesto y departamento, según el nombre        
+    // Se asigna id de puesto y departamento, según el nombre
     personasSinDuplicados.forEach((i: any) => {
-      i.departamento = listaDepartamentos.filter((x: any) => x.nombre.toLowerCase() === i.departamento.trim().toLowerCase())[0].idDepartamento;
-      i.puesto = listaPuestos.filter((x: any) => x.nombre.toLowerCase() === i.puesto.trim().toLowerCase())[0].idPuesto;
+      i.departamento = listaDepartamentos.filter(
+        (x: any) =>
+          x.nombre.toLowerCase() === i.departamento.trim().toLowerCase()
+      )[0].idDepartamento;
+      i.puesto = listaPuestos.filter(
+        (x: any) => x.nombre.toLowerCase() === i.puesto.trim().toLowerCase()
+      )[0].idPuesto;
     });
 
     const respuesta: ErrorResponse[] = await ImportarPersonas(
@@ -738,25 +776,33 @@ function CatalogoPersonas() {
       style: {
         fontSize: "1.2em",
       },
-    }
+    },
   ];
 
   const handelDepChange = (e: any) => {
     setIdDep(e.value);
-    setDepText(listaDepartamentos.filter((x: any) => x.idDepartamento === e.value)[0].nombre);
+    setDepText(
+      listaDepartamentos.filter((x: any) => x.idDepartamento === e.value)[0]
+        .nombre
+    );
     nuevaPersona.departamento = e.value;
-  }
+  };
 
   const handelPuestoChange = (e: any) => {
     setIdPuesto(e.value);
-    setPuestText(listaPuestos.filter((x: any) => x.idPuesto === e.value)[0].nombre);
+    setPuestText(
+      listaPuestos.filter((x: any) => x.idPuesto === e.value)[0].nombre
+    );
     nuevaPersona.puesto = e.value;
-  }
+  };
 
   // Descarga de catálogo
   const descargaCatalogo = async () => {
     setShowSpinner(true);
-    const nombreReporte = "Reporte de personas DocSync - " + new Date().toLocaleDateString() +".xlsx";
+    const nombreReporte =
+      "Reporte de personas DocSync - " +
+      new Date().toLocaleDateString() +
+      ".xlsx";
     const nombreHoja = "Personas";
 
     const columnsSelect = [
@@ -766,17 +812,17 @@ function CatalogoPersonas() {
       "email",
       "telefono",
       "departamento",
-      "estado"
+      "estado",
     ];
 
     const columnas = {
       identificacion: "Identificación",
-      nombreCompleto: "Nombre",      
+      nombreCompleto: "Nombre",
       departamento: "Departamento",
       puesto: "Puesto",
       email: "Correo",
       telefono: "Teléfono",
-      estado: "Estado"
+      estado: "Estado",
     } as any;
 
     const datosFiltrados = listaPersonas.map((item: any) => {
@@ -792,13 +838,13 @@ function CatalogoPersonas() {
     });
 
     const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
-    
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
-    
+
     await XLSX.writeFile(workbook, nombreReporte);
     setShowSpinner(false);
-  }
+  };
 
   return (
     <>
@@ -842,7 +888,7 @@ function CatalogoPersonas() {
               accion: descargaCatalogo,
               icono: <FaDownload className="me-2" size={24} />,
               texto: "Descargar",
-            }
+            },
           ]}
         ></Grid>
       </div>
@@ -884,73 +930,73 @@ function CatalogoPersonas() {
               </Form.Group>
             </Col>
           </Row>
-          <Row style={{marginTop: '1%'}}>
+          <Row style={{ marginTop: "1%" }}>
             <Col md={6}>
               <Form.Group controlId="formDepartamento">
                 <Form.Label>Departamento</Form.Label>
                 <Select
-                    value={
-                      depText !== ""
-                        ? {
-                            value: idDep,
-                            label: depText,
-                          }
-                        : null
-                    }
-                    onChange={(e: any) => handelDepChange(e)}
-                    className="GrupoFiltro"
-                    styles={{
-                      control: (provided: any) => ({
-                        ...provided,
-                        fontSize: "16px",
-                        padding: "2%",
-                        outline: "none",
-                        marginTop: "1%",
-                      }),
-                    }}
-                    placeholder="Seleccione"
-                    options={listaDepartamentos.map((x: any) => ({
-                      value: x.idDepartamento,
-                      label: x.nombre,
-                    }))}
-                    noOptionsMessage={() => "Opción no encontrada"}     
-                  />
+                  value={
+                    depText !== ""
+                      ? {
+                          value: idDep,
+                          label: depText,
+                        }
+                      : null
+                  }
+                  onChange={(e: any) => handelDepChange(e)}
+                  className="GrupoFiltro"
+                  styles={{
+                    control: (provided: any) => ({
+                      ...provided,
+                      fontSize: "16px",
+                      padding: "2%",
+                      outline: "none",
+                      marginTop: "1%",
+                    }),
+                  }}
+                  placeholder="Seleccione"
+                  options={listaDepartamentos.map((x: any) => ({
+                    value: x.idDepartamento,
+                    label: x.nombre,
+                  }))}
+                  noOptionsMessage={() => "Opción no encontrada"}
+                />
               </Form.Group>
             </Col>
             <Col md={6}>
               <Form.Group controlId="formPuesto">
                 <Form.Label>Puesto</Form.Label>
                 <Select
-                    value={
-                      puestoText !== ""
-                        ? {
-                            value: idPuesto,
-                            label: puestoText,
-                          }
-                        : null
-                    }
-                    onChange={(e: any) => handelPuestoChange(e)}
-                    className="GrupoFiltro"
-                    styles={{
-                      control: (provided: any) => ({
-                        ...provided,
-                        fontSize: "16px",
-                        padding: "2%",
-                        outline: "none",
-                        marginTop: "1%",
-                      }),
-                    }}
-                    placeholder="Seleccione"
-                    options={listaPuestos.map((x: any) => ({
-                      value: x.idPuesto,
-                      label: x.nombre,
-                    }))}
-                    noOptionsMessage={() => "Opción no encontrada"}     
-                  />
+                  value={
+                    puestoText !== ""
+                      ? {
+                          value: idPuesto,
+                          label: puestoText,
+                        }
+                      : null
+                  }
+                  onChange={(e: any) => handelPuestoChange(e)}
+                  className="GrupoFiltro"
+                  styles={{
+                    control: (provided: any) => ({
+                      ...provided,
+                      fontSize: "16px",
+                      padding: "2%",
+                      outline: "none",
+                      marginTop: "1%",
+                    }),
+                  }}
+                  placeholder="Seleccione"
+                  options={listaPuestos.map((x: any) => ({
+                    value: x.idPuesto,
+                    label: x.nombre,
+                  }))}
+                  noOptionsMessage={() => "Opción no encontrada"}
+                />
               </Form.Group>
             </Col>
           </Row>
-          <Row style={{marginTop: '1%'}}>
+          <Row style={{ marginTop: "1%" }}>
             <Col md={6}>
               <Form.Group controlId="formTelefono">
                 <Form.Label>Teléfono</Form.Label>
@@ -979,34 +1025,32 @@ function CatalogoPersonas() {
               </Form.Group>
             </Col>
           </Row>
-          <Row style={{marginTop: '1%'}}>
-            <Col  md={{ span: 6, offset: 6 }}>
-                <Form.Group controlId="formEstado">
-                  <div
-                    style={{
-                      display: "flex",
-                      alignContent: "start",
-                      alignItems: "start",
-                      flexDirection: "column"
-                    }}
-                  >
-                    <Form.Label>
-                      Persona activa
-                    </Form.Label>
-                    <div className="w-100">
-                      <BootstrapSwitchButton
-                        checked={nuevaPersona.estado === true}
-                        onlabel="Sí"
-                        onstyle="success"
-                        offlabel="No"
-                        offstyle="danger"
-                        style="w-100 mx-3;"
-                        onChange={(checked) => nuevaPersona.estado = checked}
-                      />
-                    </div>
+          <Row style={{ marginTop: "1%" }}>
+            <Col md={{ span: 6, offset: 6 }}>
+              <Form.Group controlId="formEstado">
+                <div
+                  style={{
+                    display: "flex",
+                    alignContent: "start",
+                    alignItems: "start",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Form.Label>Persona activa</Form.Label>
+                  <div className="w-100">
+                    <BootstrapSwitchButton
+                      checked={nuevaPersona.estado === true}
+                      onlabel="Sí"
+                      onstyle="success"
+                      offlabel="No"
+                      offstyle="danger"
+                      style="w-100 mx-3;"
+                      onChange={(checked) => (nuevaPersona.estado = checked)}
+                    />
                   </div>
-                </Form.Group>
-              </Col>
+                </div>
+              </Form.Group>
+            </Col>
           </Row>
         </Form>
       </CustomModal>

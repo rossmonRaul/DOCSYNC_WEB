@@ -391,6 +391,7 @@ function CatalogoCriterioBusqueda() {
 
         // Validar que todos los campos son correctos
         formattedData.forEach((item: any) => {
+          try {
           // Validar columnas
           if (!item.criterioBusqueda) {
             setShowAlert(true);
@@ -461,6 +462,13 @@ function CatalogoCriterioBusqueda() {
             item.criterioBusqueda = undefined; // Se marca como undefined para no cargarlo
             nombresRepetidos = true;
           }
+        }catch(error){
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "Ha ocurrido un error inesperado. Por favor, valide el formato del contenido del documento.",
+          });
+        }
         });
 
         // Indicador de validaciones que no existen en sistema

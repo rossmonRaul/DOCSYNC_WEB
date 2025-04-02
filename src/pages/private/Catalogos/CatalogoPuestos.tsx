@@ -274,22 +274,6 @@ function CatalogoPuestos() {
           properties.forEach((property, index) => {
             const value = row[index];
 
-            if (
-              property === "Criterio búsqueda" &&
-              (value === undefined || value === "")
-            )
-              InfoValida = false;
-            if (
-              property === "Tipo de validación" &&
-              (value === undefined || value === "")
-            )
-              InfoValida = false;
-            if (
-              property === "Valor externo" &&
-              (value === undefined || value === "")
-            )
-              InfoValida = false;
-
             // Asignar valores al objeto
             if (property === "Nombre puesto") obj.nombre = value;
             
@@ -319,6 +303,7 @@ function CatalogoPuestos() {
 
         // Validar que todos los campos son correctos
         formattedData.forEach((item: any) => {
+          try{
           // Validar columnas
           if (!item.nombre) {
             setShowAlert(true);
@@ -358,6 +343,13 @@ function CatalogoPuestos() {
             item.nombre = undefined; // Se marca como undefined para no cargarlo
             nombresRepetidos = true;
           }
+        }catch(error){
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "Ha ocurrido un error inesperado. Por favor, valide el formato del contenido del documento.",
+          });
+        }
         });
         
         // Indicador de nombres repetidos

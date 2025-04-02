@@ -289,11 +289,19 @@ const [nuevaEstado, setNuevaEstado] = useState<Estado>({
 
         // Validar que todos los campos son correctos
         formattedData.forEach(({ codigoEstado, descripcionEstado }) => {
+          try{
           if (typeof codigoEstado !== "string" || codigoEstado === null)
             errores.push("Código");
           if (codigoEstado.length > 3) errores.push("Código (máximo 3 caracteres)");         
           if (typeof descripcionEstado !== "string" || descripcionEstado === null)
             errores.push("Descripción");
+        }catch(error){
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "Ha ocurrido un error inesperado. Por favor, valide el formato del contenido del documento.",
+          });
+        }
         });
 
         if (errores.length > 0) {

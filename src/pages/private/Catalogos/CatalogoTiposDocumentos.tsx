@@ -445,11 +445,19 @@ function CatalogoTiposDocumentos() {
 
         // Validar que todos los campos son correctos
         formattedData.forEach(({ codigo, descripcion }) => {
+          try{
           if (typeof codigo !== "string" || codigo === null)
             errores.push("Código");
           if (codigo.length > 10) errores.push("Código (máximo 10 caracteres)");
           if (typeof descripcion !== "string" || descripcion === null)
             errores.push("Descripción");
+        }catch(error){
+          setShowAlert(true);
+          setMensajeRespuesta({
+            indicador: 2,
+            mensaje: "Ha ocurrido un error inesperado. Por favor, valide el formato del contenido del documento.",
+          });
+        }
         });
 
         if (errores.length > 0) {
