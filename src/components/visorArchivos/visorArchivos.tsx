@@ -15,7 +15,7 @@ export const VisorArchivos: React.FC<any> = ({
   documentoDescarga,
   cerrar,
   esLista,
-  esCarga
+  esCarga,
 }) => {
   const [error, setError] = useState("");
   const [fileExtension, setFileExtension] = useState<any>(null);
@@ -63,6 +63,11 @@ export const VisorArchivos: React.FC<any> = ({
     }
   };
 
+  const handleContextMenu = (event: any) => {
+    event.preventDefault();
+  };
+
+
   useEffect(() => {
     if (documentoDescarga) {
       setTimeout(() => {
@@ -104,7 +109,6 @@ export const VisorArchivos: React.FC<any> = ({
 
   useEffect(() => {
     if (documento) {
-      console.log(documento.type);
       if (documento.type === "application/msword") {
         obtenerDocConvertidoPDF();
       } else {
@@ -132,7 +136,7 @@ export const VisorArchivos: React.FC<any> = ({
       {showAlert && (
         <AlertDismissible mensaje={mensajeRespuesta} setShow={setShowAlert} />
       )}
-      <div style={{ width: "100%", height: "100%", padding: "1%"}}>
+      <div  onContextMenu={handleContextMenu} style={{ width: "100%", height: "100%", padding: "1%" }}>
         <div className="mb-2 d-flex justify-content-between align-items-center">
           <h4 className="mb-0">
             {documento?.name || documentoDescarga?.nomDocumento}
@@ -148,7 +152,7 @@ export const VisorArchivos: React.FC<any> = ({
               maxHeight: "327vh",
               overflowY: "auto",
               width: "100%",
-              height: esCarga ? '61%' : (esLista ? "675px" : "98%")
+              height: esCarga ? "61%" : esLista ? "675px" : "98%",
             }}
           >
             <FileViewer

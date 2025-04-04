@@ -182,6 +182,7 @@ function Bitacora() {
 
     // Llama a ObtenerArchivos solo cuando se hace clic en "Buscar"
     const resultadosObtenidos = await ObtenerBitacora(filtro);
+    console.log(resultadosObtenidos)
 
     setListaBitacoraTabla(resultadosObtenidos);
     setPendiente(false);
@@ -503,7 +504,7 @@ function Bitacora() {
                   gridHeading={encabezadoBitacora}
                   gridData={listaBitacoraTabla}
                   selectableRows={false}
-                  filterColumns={["usuario", "accion", "descripcion", "fecha"]}
+                  filterColumns={["usuario", "descripcionAccion", "descripcion", "fecha"]}
                   nameButtonOpcion1={"Descargar"}
                   visibleButtonOpcion1={true}
                   botonesAccion={[
