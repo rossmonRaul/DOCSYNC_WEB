@@ -9,6 +9,7 @@ import {
   EliminarDepartamento,
   ObtenerDepartamentos,
 } from "../../../servicios/ServicioDepartamento";
+import { ObtenerInstitucion } from "../../../servicios/ServicioInstitucion";
 import { FaBan, FaDownload, FaRedo, FaUpload } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -39,9 +40,34 @@ function CatalogoDepartamentos() {
   const [listaImportar, setListaImportar] = useState<any[]>([]);
   const [showImportButton, setShowImportButton] = useState(false);
   const [file, setFile] = useState(null);
+  const [instituciones, setInstituciones] = useState<any[]>([]);
+  const [idInstitucion, setIdInstitucion] = useState<number>(0);
 
   useEffect(() => {
-    obtenerDepartamentos();
+    const cargarDatos = async () => {
+      try {
+        setShowSpinner(true);
+        const [deptos, inst] = await Promise.all([
+          ObtenerDepartamentos(),
+          ObtenerInstitucion()
+        ]);
+        
+        // Mapeo correcto usando nomInstitucion
+        const institucionesFormateadas = inst.map((item: { idInstitucion: any; nomInstitucion: any; }) => ({
+          idInstitucion: item.idInstitucion,
+          nombre: item.nomInstitucion // Aquí está el cambio clave
+        }));
+  
+        setDepartamentos(deptos);
+        setInstituciones(institucionesFormateadas);
+        setShowSpinner(false);
+      } catch (error) {
+        console.error("Error al obtener datos:", error);
+        setShowSpinner(false);
+      }
+    };
+    
+    cargarDatos();
   }, []);
 
   const obtenerDepartamentos = async () => {
@@ -52,10 +78,10 @@ function CatalogoDepartamentos() {
       setShowSpinner(false);
     } catch (error) {
       console.error("Error al obtener departamentos:", error);
+      setShowSpinner(false);
     }
   };
 
-  // Función para inhabilitar un departamento
   const eliminar = (row: any) => {
     openConfirm("¿Está seguro que desea cambiar el estado?", async () => {
       try {
@@ -76,104 +102,100 @@ function CatalogoDepartamentos() {
         setShowSpinner(false);
       } catch (error) {
         console.error("Error al eliminar departamento:", error);
+        setShowSpinner(false);
       }
     });
   };
 
-  // Función para abrir el modal y editar
   const editar = (row: any) => {
     setNombre(row.nombre);
     setEstado(row.estado);
     setIdDep(row.idDepartamento);
+    setIdInstitucion(row.idInstitucion || 0);
     setIsEditing(true);
     setShowModal(true);
   };
 
-  // Función para manejar el cierre del modal
   const handleModal = () => {
     setShowModal(!showModal);
     setIsEditing(false);
     setNombre("");
     setEstado(false);
     setIdDep("");
+    setIdInstitucion(0);
   };
 
-  // Maneja el envío del formulario para agregar o editar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowSpinner(true);
-    if (isEditing) {
-      try {
-        if (nombre === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el nombre del departamento",
-          });
-        } else {
-          const identificacionUsuario = localStorage.getItem(
-            "identificacionUsuario"
-          );
+    
+    // Validaciones
+    if (idInstitucion === 0) {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Seleccione una institución",
+      });
+      setShowSpinner(false);
+      return;
+    }
 
-          const obj = {
-            idDepartamento: idDep,
-            nombre: nombre,
-            estado: estado,
-            usuarioModificacion: identificacionUsuario,
-            fechaModificacion: new Date().toISOString(),
-          };
+    if (nombre.trim() === "") {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ingrese el nombre del departamento",
+      });
+      setShowSpinner(false);
+      return;
+    }
 
-          const response = await ActualizarDepartamento(obj);
+    try {
+      const identificacionUsuario = localStorage.getItem("identificacionUsuario");
+      
+      if (isEditing) {
+        const obj = {
+          idDepartamento: idDep,
+          nombre: nombre.trim(),
+          estado: estado,
+          usuarioModificacion: identificacionUsuario,
+          fechaModificacion: new Date().toISOString(),
+          idInstitucion: idInstitucion
+        };
 
-          if (response.indicador === 0) {
-            handleModal();
-            obtenerDepartamentos();
-          }
+        const response = await ActualizarDepartamento(obj);
 
-          setShowAlert(true);
-          setMensajeRespuesta(response);
+        if (response.indicador === 0) {
+          handleModal();
+          obtenerDepartamentos();
         }
-      } catch (error) {
-        console.error("Error al actualizar departamento:", error);
-      }
-    } else {
-      try {
-        const identificacionUsuario = localStorage.getItem(
-          "identificacionUsuario"
-        );
+        setShowAlert(true);
+        setMensajeRespuesta(response);
+      } else {
+        const obj = {
+          nombre: nombre.trim(),
+          estado: estado,
+          usuarioCreacion: identificacionUsuario,
+          fechaCreacion: new Date().toISOString(),
+          idInstitucion: idInstitucion
+        };
 
-        if (nombre === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el nombre del departamento",
-          });
-        } else {
-          const obj = {
-            nombre: nombre,
-            estado: estado,
-            usuarioCreacion: identificacionUsuario,
-            fechaCreacion: new Date().toISOString(),
-          };
+        const response = await AgregarDepartamento(obj);
 
-          const response = await AgregarDepartamento(obj);
-
-          if (response.indicador === 0) {
-            handleModal(); // Cierra el modal
-            obtenerDepartamentos();
-          }
-
-          setShowAlert(true);
-          setMensajeRespuesta(response);
+        if (response.indicador === 0) {
+          handleModal();
+          obtenerDepartamentos();
         }
-        setShowSpinner(false);
-      } catch (error) {
-        console.error("Error al crear la departamento:", error);
+        setShowAlert(true);
+        setMensajeRespuesta(response);
       }
+      setShowSpinner(false);
+    } catch (error) {
+      console.error("Error:", error);
+      setShowSpinner(false);
     }
   };
 
-  // Encabezados de la tabla con acciones
   const encabezadoTabla = [
     {
       id: "nombre",
@@ -182,15 +204,30 @@ function CatalogoDepartamentos() {
       sortable: true,
       style: {
         fontSize: "1.2em",
+        color: '#212529'
+      },
+    },
+    {
+      id: "institucion",
+      name: "Institución",
+      selector: (row: any) => {
+        const institucion = instituciones.find(i => i.idInstitucion === row.idInstitucion);
+        return institucion ? institucion.nombre : 'No asignado';
+      },
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+        color: '#212529'
       },
     },
     {
       id: "estado",
       name: "Estado",
-      selector: (row: any) => (row.estado ? "Activo" : "Inactivo"),
+      selector: (row: any) => row.estado ? "Activo" : "Inactivo",
       sortable: true,
       style: {
         fontSize: "1.2em",
+        color: '#212529'
       },
     },
     {
@@ -207,8 +244,9 @@ function CatalogoDepartamentos() {
           </Button>
           <Button
             size="sm"
-             onClick={() => eliminar(row)}
-            className="bg-secondary">
+            onClick={() => eliminar(row)}
+            className="bg-secondary"
+          >
             {row.estado ? <FaBan /> : <FaRedo />}
           </Button>      
         </>
@@ -216,8 +254,7 @@ function CatalogoDepartamentos() {
       width: "120px",
     },
   ];
-
-  // Función para manejar el cierre del modal de importar
+ // Función para manejar el cierre del modal de importar
   const handleModalImportar = () => {
     setListaImportar([]);
     setFile(null);
@@ -240,13 +277,9 @@ function CatalogoDepartamentos() {
       const reader = new FileReader();
 
       reader.onload = (e) => {
-        const identificacionUsuario = localStorage.getItem(
-          "identificacionUsuario"
-        );
+        const identificacionUsuario = localStorage.getItem("identificacionUsuario");
 
         const arrayBuffer = e.target?.result as ArrayBuffer;
-
-        // Convierte el ArrayBuffer a una cadena binaria
         const binaryString = new Uint8Array(arrayBuffer).reduce(
           (acc, byte) => acc + String.fromCharCode(byte),
           ""
@@ -255,45 +288,24 @@ function CatalogoDepartamentos() {
         const workbook = XLSX.read(binaryString, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as (
-          | string
-          | number
-        )[][];
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as (string | number)[][];
 
-        // Obtener nombres de propiedades desde la primera fila
         const properties: (string | number)[] = jsonData[0];
         let FormatoValido = true;
         let mensaje = "";
 
-        // Crear un array de objetos utilizando los nombres de propiedades
         const formattedData: any[] = jsonData.slice(1).map((row) => {
           const obj: Partial<any> = {};
 
           properties.forEach((property, index) => {
             const value = row[index];
 
-            if (
-              property === "Criterio búsqueda" &&
-              (value === undefined || value === "")
-            )
-              InfoValida = false;
-            if (
-              property === "Tipo de validación" &&
-              (value === undefined || value === "")
-            )
-              InfoValida = false;
-            if (
-              property === "Valor externo" &&
-              (value === undefined || value === "")
-            )
+            if (property === "Nombre departamento" && (value === undefined || value === ""))
               InfoValida = false;
 
-            // Asignar valores al objeto
             if (property === "Nombre departamento") obj.nombre = value;
             
-            obj.usuarioCreacion = identificacionUsuario
-              ? identificacionUsuario
-              : "";
+            obj.usuarioCreacion = identificacionUsuario || "";
             obj.fechaCreacion = new Date().toISOString();
           });
           return obj as any;
@@ -303,111 +315,68 @@ function CatalogoDepartamentos() {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
-            mensaje:
-              "Información incompleta. Verifique los campos requeridos en el archivo.",
+            mensaje: "El archivo debe contener la columna 'Nombre departamento' con datos válidos",
           });
           setShowSpinner(false);
           return;
         }
 
         const errores: string[] = [];
-
         var nombresRep = "";
         var nombresRepetidos = false;
 
-        // Validar que todos los campos son correctos
         formattedData.forEach((item: any) => {
-          // Validar columnas
           if (!item.nombre) {
-            setShowAlert(true);
-            setMensajeRespuesta({
-              indicador: 1,
-              mensaje: 'No se encontró la columna "Nombre departamento"',
-            });
+            errores.push("Nombre departamento");
             return;
           }          
-          if (
-            typeof item.nombre !== "string" ||
-            item.nombre === null
-          )
+          
+          if (typeof item.nombre !== "string" || item.nombre === null)
             errores.push("Nombre departamento");
+          
           if (item.nombre.length > 50)
             errores.push("Nombre departamento (máximo 50 caracteres)");
 
-          // Se identifican los nombres ya existentes
-          if (
-            listaDepartamentos.filter(
+          if (listaDepartamentos.filter(
               (x: any) => x.nombre.toLowerCase() === item.nombre.toLowerCase().trim()
-            ).length > 0
-          ) {
-            nombresRep +=
-              nombresRep === ""
-                ? item.nombre
-                : ", " + item.nombre;
-            item.nombre = undefined; // Se marca como undefined para no cargarlo
+            ).length > 0) {
+            nombresRep += nombresRep === "" ? item.nombre : ", " + item.nombre;
+            item.nombre = undefined;
           }
 
-          // Se identifican nombres repetidos en documento
-          if (
-            formattedData.filter(
-              (x: any) => x.nombre === item.nombre
-            ).length > 1
-          ) {
-            item.nombre = undefined; // Se marca como undefined para no cargarlo
+          if (formattedData.filter((x: any) => x.nombre === item.nombre).length > 1) {
+            item.nombre = undefined;
             nombresRepetidos = true;
           }
         });
         
-        // Indicador de nombres repetidos
         if (nombresRep.length > 0) {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
-            mensaje:
-              "Los siguientes departamentos, ya existen en el sistema: " +
-              nombresRep +
-              ". Por lo que no serán cargados",
+            mensaje: `Los siguientes departamentos ya existen: ${nombresRep}. No serán cargados.`,
           });
-          setShowSpinner(false);
-        }
-        // Indicador de nombres repetidos en el archivo de carga
-        else if (nombresRepetidos) {
+        } else if (nombresRepetidos) {
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 2,
-            mensaje:
-              "Se encontraron registros con el mismo nombre, por lo que serán descartados para la carga. Favor validar los registros",
+            mensaje: "Se encontraron registros duplicados en el archivo. Serán descartados.",
           });
-          setShowSpinner(false);
         } else if (errores.length > 0) {
-          const columnasErroneas = Array.from(new Set(errores)); // Elimina duplicados
-          const mensaje =
-            columnasErroneas.length === 1
-              ? `La columna ${columnasErroneas[0]} no cumple con el formato esperado.`
-              : `Debe cargar un archivo de Excel con las siguientes columnas: ${columnasErroneas.join(
-                  ", "
-                )}.`;
+          const columnasErroneas = Array.from(new Set(errores));
+          const mensaje = columnasErroneas.length === 1
+            ? `La columna ${columnasErroneas[0]} no cumple con el formato esperado.`
+            : `Debe cargar un archivo con las siguientes columnas válidas: ${columnasErroneas.join(", ")}.`;
+          
           setShowAlert(true);
           setMensajeRespuesta({
             indicador: 1,
             mensaje: mensaje,
           });
-          setShowSpinner(false);
-        } else if (!FormatoValido) {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: mensaje,
-          });
-          setShowSpinner(false);
         }
 
         setShowSpinner(false);
-        setListaImportar(
-          formattedData.filter(
-            (x: any) => x.nombre
-          )
-        );
+        setListaImportar(formattedData.filter((x: any) => x.nombre));
         setShowImportButton(true);
       };
 
@@ -431,15 +400,15 @@ function CatalogoDepartamentos() {
       });
     } else {
       setShowSpinner(true);
+      const defaultInstitucion = instituciones.length > 0 ? instituciones[0].idInstitucion : 0;
 
-      var listaImportada = listaImportar.map((item) => {
-        return {
-          nombre: item.nombre,
-          estado: true,
-          usuarioCreacion: item.usuarioCreacion,
-          fechaCreacion: new Date().toISOString(),
-        };
-      });
+      const listaImportada = listaImportar.map((item) => ({
+        nombre: item.nombre,
+        estado: true,
+        usuarioCreacion: item.usuarioCreacion,
+        fechaCreacion: new Date().toISOString(),
+        idInstitucion: defaultInstitucion
+      }));
 
       const response = await CargaMasivaDepartamento(listaImportada);
 
@@ -450,7 +419,6 @@ function CatalogoDepartamentos() {
       obtenerDepartamentos();
     }
   };
-
   // Encabezados de la tabla de importación sin acciones
   const encabezadoImportar = [
     {
@@ -460,46 +428,31 @@ function CatalogoDepartamentos() {
       sortable: true,
       style: {
         fontSize: "1.2em",
+        color: '#212529'
       },
     }
   ];
 
-  // Descarga de catálogo
   const descargaCatalogo = async () => {
     setShowSpinner(true);
-    const nombreReporte = "Reporte de departamentos DocSync - " + new Date().toLocaleDateString() +".xlsx";
+    const nombreReporte = `Reporte de departamentos - ${new Date().toLocaleDateString()}.xlsx`;
     const nombreHoja = "Departamentos";
 
-    const columnsSelect = [
-      "nombre",
-      "estado"
-    ];
-
-    const columnas = {
-      nombre: "Nombre departamento",
-      estado: "Estado"
-    } as any;
-
     const datosFiltrados = listaDepartamentos.map((item: any) => {
-      const filteredItem: any = {};
-      columnsSelect.forEach((column: any) => {
-        if (column === "estado") {
-          filteredItem[columnas[column]] = item[column] ? "Activo" : "Inactivo";
-        } else {
-          filteredItem[columnas[column]] = item[column];
-        }
-      });
-      return filteredItem;
+      const institucion = instituciones.find(i => i.idInstitucion === item.idInstitucion);
+      return {
+        "Nombre departamento": item.nombre,
+        "Institución": institucion ? institucion.nombre : 'No asignado',
+        "Estado": item.estado ? "Activo" : "Inactivo"
+      };
     });
 
     const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
-    
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
-    
     await XLSX.writeFile(workbook, nombreReporte);
     setShowSpinner(false);
-  }
+  };
 
   return (
     <>
@@ -510,13 +463,12 @@ function CatalogoDepartamentos() {
         )}
         <br />
 
-        {/* Tabla */}
         <Grid
           handle={handleModal}
           buttonVisible={true}
           gridHeading={encabezadoTabla}
           gridData={listaDepartamentos}
-          filterColumns={["nombre", "estado"]}
+          filterColumns={["nombre", "institucion", "estado"]}
           selectableRows={false}
           botonesAccion={[
             {
@@ -532,10 +484,10 @@ function CatalogoDepartamentos() {
               texto: "Descargar",
             }
           ]}
-        ></Grid>
+        />
       </div>
 
-      {/* Modal para agregar o editar */}
+      {/* Modal para agregar/editar */}
       <CustomModal
         show={showModal}
         onHide={handleModal}
@@ -547,47 +499,71 @@ function CatalogoDepartamentos() {
         <Form onSubmit={handleSubmit} id="formDep">
           <Row>
             <Col md={6}>
-              <Form.Group controlId="formNombre">
+              <Form.Group controlId="formInstitucion" className="mb-3">
+                <Form.Label>Institución*</Form.Label>
+                <Form.Select
+                  value={idInstitucion}
+                  onChange={(e) => setIdInstitucion(Number(e.target.value))}
+                  required
+                  style={{
+                    fontSize: "16px",
+                    padding: "10px",
+                    color: '#212529',
+                    backgroundColor: '#fff',
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px'
+                  }}
+                >
+                  <option value="0" style={{ color: '#6c757d' }}>
+                    Seleccione una institución
+                  </option>
+                  {instituciones.map((inst) => (
+                    <option 
+                      key={inst.idInstitucion} 
+                      value={inst.idInstitucion}
+                      style={{ color: '#212529' }}
+                    >
+                      {inst.nombre}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group controlId="formNombre" className="mb-3">
                 <Form.Label>Nombre del departamento*</Form.Label>
                 <Form.Control
                   type="text"
                   name="nombre"
                   value={nombre}
-                  onChange={(e: any) => setNombre(e.target.value)}
+                  onChange={(e) => setNombre(e.target.value)}
                   maxLength={50}
                   style={{
                     fontSize: "16px",
-                    padding: "2%",
-                    outline: "none",
-                    marginTop: "1%",
+                    padding: "10px",
+                    color: '#212529',
+                    backgroundColor: '#fff',
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px'
                   }}
                 />
               </Form.Group>
             </Col>
+          </Row>
+          <Row>
             <Col md={6}>
-              <Form.Group controlId="formEstado">
-                <div
-                  style={{
-                    display: "flex",
-                    alignContent: "start",
-                    alignItems: "start",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Form.Label>
-                    Departamento activo
-                  </Form.Label>
-                  <div className="w-100" style={{marginTop: '1%'}}>
-                    <BootstrapSwitchButton
-                      checked={estado === true}
-                      onlabel="Sí"
-                      onstyle="success"
-                      offlabel="No"
-                      offstyle="danger"
-                      style="w-100 mx-3;"
-                      onChange={(checked) => setEstado(checked)}
-                    />
-                  </div>
+              <Form.Group controlId="formEstado" className="mb-3">
+                <Form.Label>Estado del departamento</Form.Label>
+                <div style={{ marginTop: '5px' }}>
+                  <BootstrapSwitchButton
+                    checked={estado}
+                    onlabel="Activo"
+                    offlabel="Inactivo"
+                    onstyle="success"
+                    offstyle="danger"
+                    width={100}
+                    onChange={(checked) => setEstado(checked)}
+                  />
                 </div>
               </Form.Group>
             </Col>
@@ -595,15 +571,14 @@ function CatalogoDepartamentos() {
         </Form>
       </CustomModal>
 
-      {/* Modal para importar*/}
+      {/* Modal para importar */}
       <CustomModal
-        size={"xl"}
+        size="xl"
         show={showModalImportar}
         onHide={handleModalImportar}
-        title={"Importar registros"}
+        title="Importar registros"
         showSubmitButton={false}
       >
-        {/* Importar */}
         <Container className="d-Grid align-content-center">
           <Form>
             <Form.Group controlId="file">
@@ -625,10 +600,9 @@ function CatalogoDepartamentos() {
                 </Col>
                 <Col md={3} className="d-flex justify-content-end">
                   <Button
-                    style={{ margin: 4 }}
-                    className="btn-crear"
                     variant="primary"
                     onClick={importarExcel}
+                    style={{ margin: 4 }}
                   >
                     <FaUpload className="me-2" size={24} />
                     Cargar archivo
@@ -638,9 +612,8 @@ function CatalogoDepartamentos() {
             </Form.Group>
           </Form>
         </Container>
-        <br></br>
-
-        {/* Tabla de importar */}
+        <br />
+{/* Tabla de importar */}
         <Grid
           gridHeading={encabezadoImportar}
           gridData={listaImportar}
@@ -651,14 +624,12 @@ function CatalogoDepartamentos() {
         <Row>
           <Col md={12} className="d-flex justify-content-end">
             <Button
+              variant="primary"
+              onClick={importarArchivoExcel}
               style={{
                 margin: 4,
                 display: showImportButton ? "inline-block" : "none",
               }}
-              className="btn-save"
-              variant="primary"
-              type="submit"
-              onClick={importarArchivoExcel}
             >
               <RiSaveFill className="me-2" size={24} />
               Guardar

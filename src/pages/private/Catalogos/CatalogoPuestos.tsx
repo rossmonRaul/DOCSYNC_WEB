@@ -9,6 +9,7 @@ import {
   EliminarPuesto,
   ObtenerPuestos,
 } from "../../../servicios/ServicioPuesto";
+import { ObtenerInstitucion } from "../../../servicios/ServicioInstitucion";
 import { FaBan, FaDownload, FaRedo, FaUpload } from "react-icons/fa";
 import { VscEdit } from "react-icons/vsc";
 import { AlertDismissible } from "../../../components/alert/alert";
@@ -39,9 +40,37 @@ function CatalogoPuestos() {
   const [listaImportar, setListaImportar] = useState<any[]>([]);
   const [showImportButton, setShowImportButton] = useState(false);
   const [file, setFile] = useState(null);
+  const [instituciones, setInstituciones] = useState<any[]>([]);
+  const [idInstitucion, setIdInstitucion] = useState<number>(0);
+  
 
   useEffect(() => {
-    obtenerPuestos();
+    const cargarDatos = async () => {
+         try {
+           setShowSpinner(true);
+           const [puesto, inst] = await Promise.all([
+             ObtenerPuestos(),
+             ObtenerInstitucion()
+           ]);
+           
+           console.log(puesto)
+           console.log(instituciones)
+           // Mapeo correcto usando nomInstitucion
+           const institucionesFormateadas = inst.map((item: { idInstitucion: any; nomInstitucion: any; }) => ({
+             idInstitucion: item.idInstitucion,
+             nomInstitucion: item.nomInstitucion // Aquí está el cambio clave
+           }));
+     
+           setpuestos(puesto);
+           setInstituciones(institucionesFormateadas);
+           setShowSpinner(false);
+         } catch (error) {
+           console.error("Error al obtener datos:", error);
+           setShowSpinner(false);
+         }
+       };
+       
+       cargarDatos();
   }, []);
 
   const obtenerPuestos = async () => {
@@ -85,6 +114,7 @@ function CatalogoPuestos() {
     setNombre(row.nombre);
     setEstado(row.estado);
     setIdPuesto(row.idPuesto);
+    setIdInstitucion(row.idInstitucion || 0);
     setIsEditing(true);
     setShowModal(true);
   };
@@ -96,84 +126,78 @@ function CatalogoPuestos() {
     setNombre("");
     setEstado(false);
     setIdPuesto("");
+    setIdInstitucion(0);
   };
 
   // Maneja el envío del formulario para agregar o editar
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    setShowSpinner(true);
-    if (isEditing) {
-      try {
-        if (nombre === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el nombre del puesto",
-          });
-        } else {
-          const identificacionUsuario = localStorage.getItem(
-            "identificacionUsuario"
-          );
-
-          const obj = {
-            idPuesto: idPuesto,
-            nombre: nombre,
-            estado: estado,
-            usuarioModificacion: identificacionUsuario,
-            fechaModificacion: new Date().toISOString(),
-          };
-
-          const response = await ActualizarPuesto(obj);
-
-          if (response.indicador === 0) {
-            handleModal();
-            obtenerPuestos();
-          }
-
-          setShowAlert(true);
-          setMensajeRespuesta(response);
-        }
-      } catch (error) {
-        console.error("Error al actualizar puesto:", error);
-      }
-    } else {
-      try {
-        const identificacionUsuario = localStorage.getItem(
-          "identificacionUsuario"
-        );
-
-        if (nombre === "") {
-          setShowAlert(true);
-          setMensajeRespuesta({
-            indicador: 1,
-            mensaje: "Ingrese el nombre del puesto",
-          });
-        } else {
-          const obj = {
-            nombre: nombre,
-            estado: estado,
-            usuarioCreacion: identificacionUsuario,
-            fechaCreacion: new Date().toISOString(),
-          };
-
-          const response = await AgregarPuesto(obj);
-
-          if (response.indicador === 0) {
-            handleModal(); // Cierra el modal
-            obtenerPuestos();
-          }
-
-          setShowAlert(true);
-          setMensajeRespuesta(response);
-        }
-      } catch (error) {
-        console.error("Error al crear la puesto:", error);
-      }
+    // Validaciones
+    if (idInstitucion === 0) {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Seleccione una institución",
+      });
+      setShowSpinner(false);
+      return;
     }
+    
+    if (nombre.trim() === "") {
+      setShowAlert(true);
+      setMensajeRespuesta({
+        indicador: 1,
+        mensaje: "Ingrese el nombre del puesto",
+      });
+      setShowSpinner(false);
+      return;
+    }
+ try {
+      const identificacionUsuario = localStorage.getItem("identificacionUsuario");
+      
+      if (isEditing) {
+        const obj = {
+          idPuesto: idPuesto,
+          nombre: nombre.trim(),
+          estado: estado,
+          usuarioModificacion: identificacionUsuario,
+          fechaModificacion: new Date().toISOString(),
+          idInstitucion: idInstitucion
+        };
 
-    setShowSpinner(false);
+        const response = await ActualizarPuesto(obj);
+
+        if (response.indicador === 0) {
+          handleModal();
+          obtenerPuestos();
+        }
+        setShowAlert(true);
+        setMensajeRespuesta(response);
+      } else {
+        const obj = {
+          nombre: nombre.trim(),
+          estado: estado,
+          usuarioCreacion: identificacionUsuario,
+          fechaCreacion: new Date().toISOString(),
+          idInstitucion: idInstitucion
+        };
+
+        const response = await AgregarPuesto(obj);
+
+        if (response.indicador === 0) {
+          handleModal();
+          obtenerPuestos();
+        }
+        setShowAlert(true);
+        setMensajeRespuesta(response);
+      }
+      setShowSpinner(false);
+    } catch (error) {
+      console.error("Error:", error);
+      setShowSpinner(false);
+    }
   };
+
 
   // Encabezados de la tabla con acciones
   const encabezadoTabla = [
@@ -184,6 +208,19 @@ function CatalogoPuestos() {
       sortable: true,
       style: {
         fontSize: "1.2em",
+      },
+    },
+    {
+      id: "institucion",
+      name: "Institución",
+      selector: (row: any) => {
+        const institucion = instituciones.find(i => i.idInstitucion === row.idInstitucion);
+        return institucion ? institucion.nomInstitucion : 'No asignado';
+      },
+      sortable: true,
+      style: {
+        fontSize: "1.2em",
+        color: '#212529'
       },
     },
     {
@@ -434,14 +471,15 @@ function CatalogoPuestos() {
     } else {
       setShowSpinner(true);
 
-      var listaImportada = listaImportar.map((item) => {
-        return {
-          nombre: item.nombre,
-          estado: true,
-          usuarioCreacion: item.usuarioCreacion,
-          fechaCreacion: new Date().toISOString(),
-        };
-      });
+      const defaultInstitucion = instituciones.length > 0 ? instituciones[0].idInstitucion : 0;
+
+      const listaImportada = listaImportar.map((item) => ({
+        nombre: item.nombre,
+        estado: true,
+        usuarioCreacion: item.usuarioCreacion,
+        fechaCreacion: new Date().toISOString(),
+        idInstitucion: defaultInstitucion
+      }));
 
       const response = await CargaMasivaPuesto(listaImportada);
 
@@ -472,36 +510,20 @@ function CatalogoPuestos() {
     const nombreReporte = "Reporte de puestos DocSync - " + new Date().toLocaleDateString() +".xlsx";
     const nombreHoja = "Puestos";
 
-    const columnsSelect = [
-      "nombre",
-      "estado"
-    ];
-
-    const columnas = {
-      nombre: "Nombre puesto",
-      estado: "Estado"
-    } as any;
-
     const datosFiltrados = listapuestos.map((item: any) => {
-      const filteredItem: any = {};
-      columnsSelect.forEach((column: any) => {
-        if (column === "estado") {
-          filteredItem[columnas[column]] = item[column] ? "Activo" : "Inactivo";
-        } else {
-          filteredItem[columnas[column]] = item[column];
-        }
-      });
-      return filteredItem;
+      const institucion = instituciones.find(i => i.idInstitucion === item.idInstitucion);
+      return {
+        "Nombre Puesto": item.nombre,
+        "Institución": institucion ? institucion.nomInstitucion : 'No asignado',
+        "Estado": item.estado ? "Activo" : "Inactivo"
+      };
     });
-
     const worksheet = XLSX.utils.json_to_sheet(datosFiltrados);
-    
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
-    
     await XLSX.writeFile(workbook, nombreReporte);
     setShowSpinner(false);
-  }
+  };
 
   return (
     <>
@@ -518,7 +540,7 @@ function CatalogoPuestos() {
           buttonVisible={true}
           gridHeading={encabezadoTabla}
           gridData={listapuestos}
-          filterColumns={["nombre", "estado"]}
+          filterColumns={["nombre", "institucion", "estado"]}
           selectableRows={false}          
           botonesAccion={[
             {
@@ -548,6 +570,31 @@ function CatalogoPuestos() {
       >
         <Form onSubmit={handleSubmit} id="formDep">
           <Row>
+            <Col md={6}>
+              <Form.Group controlId="formInstitucion" className="mb-3">
+                <Form.Label>Institución*</Form.Label>
+                <Form.Select
+                  value={idInstitucion}
+                  onChange={(e) => setIdInstitucion(Number(e.target.value))}
+                  required
+                  style={{
+                    fontSize: "16px",
+                    padding: "10px",
+                    color: '#212529',
+                    backgroundColor: '#fff',
+                    border: '1px solid #ced4da',
+                    borderRadius: '4px'
+                  }}
+                >
+                  <option value="0">Seleccione una institución</option>
+                  {instituciones.map((inst) => (
+                    <option key={inst.idInstitucion} value={inst.idInstitucion}>
+                      {inst.nomInstitucion} 
+                  </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Col>
             <Col md={6}>
               <Form.Group controlId="formNombre">
                 <Form.Label>Nombre del puesto*</Form.Label>
